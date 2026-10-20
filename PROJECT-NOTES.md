@@ -102,14 +102,52 @@ After any change to the rules, re-run the test messages and check nothing has mo
 ## How to update the live page
 
 1. Edit `index.html`.
-2. In `sw.js`, bump the cache name (for example `itas-v10` to `itas-v11`) so phones pick up the new version.
+2. In `sw.js`, bump the cache name (for example `itas-v11` to `itas-v12`) so phones pick up the new version.
 3. Commit and push to `main`. GitHub Pages updates within a minute or two.
+
+## Known problems to fix
+
+Found in a review on 20 October 2026. Not fixed yet.
+
+1. **Shared messages go online (privacy).** Android "Share to" puts the whole message in the web address (`?text=...`). `sw.js` tries the network first, so the address, message included, reaches GitHub's servers. It also saves a copy of every page it loads, so the message stays stored on the phone. That breaks the promise "Nothing you paste is sent anywhere". The page clears the address bar afterwards, but by then it has already been sent and saved.
+   - *Fix:* in `sw.js`, answer shared messages from the saved copy of the page without going online, and never store addresses that contain a message.
+2. **False alarms on genuine messages.** The test messages pass, but realistic genuine ones don't:
+   - A shop newsletter with Facebook, Instagram and Twitter links scored 75 ("very likely a scam"). Each link to a different website adds 25 points.
+   - An accountant's email saying "Revenue for Q3 is up 4%" scored 37. The word "revenue" counts as the tax office, so any other link is flagged.
+   - "Hi Mum, saw that book on Amazon" with a newspaper link scored 30. Mentioning Amazon makes any non-Amazon link a strong warning.
+   - Bait words in sender addresses match inside real names: "pay" in paypal.com, "fee" in coffee, "account" in byrneaccounts.ie.
+   - *Fix:* count "link goes somewhere else" once per message and ignore well-known sites like social media. Only count a company mention when the message also asks for money, a login or personal details. Only flag bait words in a sender address when it has a hyphen, as the link check already does.
+3. **The test messages aren't saved in the repository.** Add them, plus realistic genuine messages like the ones above, with a small script that runs them all. Then "re-run the test messages" takes one command.
+4. **Smaller points.**
+   - The screenshot reader (tesseract.js) loads from a CDN without an integrity check. Add one.
+   - `summary()` sorts the findings twice.
+
+## Goal: passing a message on without copying and pasting
+
+Copying, pasting and taking screenshots are hard for many older people. Forwarding a message is something they already know how to do, and it's safer: they never have to tap inside the scam message. This is the main thing to aim for.
+
+Options, from easiest to hardest:
+
+| Option | How it works for the person | What it needs | Notes |
+| --- | --- | --- | --- |
+| **Android "Share to"** (already built) | Press and hold the message, tap Share, choose "Is This a Scam?" | Nothing more, once problem 1 is fixed | Only works after adding the page to the home screen. Not possible on iPhone |
+| **iPhone Shortcut** | Press and hold, tap Share, choose "Check for scams" | A ready-made Apple Shortcut that opens the page with the message | No server. Put the message after a `#` in the address, so it is never sent online. Someone has to install the shortcut once, maybe a family member |
+| **Forward by email** | Forward the email to an address such as `check@...` and get a reply with the answer | A small server or email service (for example on the netcup server) and a domain name | Forwarding "as attachment" also brings the hidden details, so the identity checks work |
+| **Forward on WhatsApp** | Forward the message to a "Scam Check" WhatsApp contact and get a reply | A server, WhatsApp's business service (Meta business check) and a phone number | Probably the most useful for older people. Replies to messages people send in are currently free, but check WhatsApp's prices first |
+| **Forward a text (SMS)** | Forward the text to a short number and get a reply | An SMS provider number (for example Twilio) and a server | Costs a small amount per message. Many older people already forward texts |
+
+Things to think about before building a forwarding service:
+
+- **Privacy changes.** With email, WhatsApp or SMS forwarding, messages *do* go to a server. That needs a clear privacy notice (GDPR) covering what is kept and for how long (ideally nothing, deleted straight after replying). The README must say so honestly.
+- **It could be copied by scammers.** A fake "scam checker" number could become a scam itself. Publish the real number or address in one place only (this page and the leaflet), and never have the service ask for anything.
+- **Same checker everywhere.** The server should run the same rules as `index.html`, so answers match. Moving the rules into their own file would let both use them.
+- **Family helper.** The reply could include "Send this to someone you trust", so a family member sees it too.
 
 ## Ideas for later
 
 - Website age and known scam-list checks, using a small server (for example on the netcup server)
-- A WhatsApp number people can forward a message to, which replies with the answer (needs a server and WhatsApp's business service)
-- A proper domain name once real people use it
+- Forwarding by WhatsApp, email or text: see "Goal: passing a message on without copying and pasting" above
+- A proper domain name once real people use it (needed for an email forwarding address)
 - Watch two or three older people use it without help, and fix what confuses them
 - A demo video for the course
 - Questions written fresh by an AI each time (only works inside Claude; lessons can't be checked in advance)
