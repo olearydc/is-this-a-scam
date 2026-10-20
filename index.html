@@ -1315,7 +1315,7 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
 
   /* ---------- send the result to someone ---------- */
   var SITE = "https://olearydc.github.io/is-this-a-scam/";
-  function summary(maxMsg) {
+  function summary(maxMsg, maxFind, short) {
     if (!current) return "";
     var lines = [], d = new Date();
     lines.push("Is This a Scam? result");
@@ -1326,19 +1326,43 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
     var warn = current.order.map(function (fi) { return current.a.findings[fi]; }).filter(function (f) { return f.level !== "info"; });
     if (warn.length) {
       lines.push(""); lines.push("What we found:");
-      warn.forEach(function (f, i) { lines.push((i + 1) + ". " + f.title + " (" + CHIP[f.level] + "): " + f.why); });
+      var shown = maxFind ? warn.slice(0, maxFind) : warn;
+      shown.forEach(function (f, i) { lines.push((i + 1) + ". " + f.title + " (" + CHIP[f.level] + "): " + f.why + (f.dest && f.why.indexOf(f.dest) === -1 ? " Real website: " + f.dest + "." : "")); });
+      if (shown.length < warn.length) lines.push("...and " + (warn.length - shown.length) + " more warning signs.");
     }
     lines.push(""); lines.push("What to do now:");
-    Array.prototype.forEach.call($("todo").querySelectorAll("li"), function (li) { lines.push("- " + li.textContent); });
+    if (short) lines.push("Don't click links or reply. Check with the company or person using a phone number you already know.");
+    else Array.prototype.forEach.call($("todo").querySelectorAll("li"), function (li) { lines.push("- " + li.textContent); });
     if ($("incMsg").checked && current.msg) {
       var m = current.msg;
       if (maxMsg && m.length > maxMsg) m = m.slice(0, maxMsg) + "... (shortened)";
-      lines.push(""); lines.push("The message that was checked:"); lines.push("\"\"\""); lines.push(m); lines.push("\"\"\"");
+      lines.push(""); lines.push("The message that was checked:");
+      lines.push("(Links and email addresses have been switched off so they can't be opened by mistake.)");
+      lines.push("\"\"\""); lines.push(defang(m)); lines.push("\"\"\"");
     }
-    lines.push(""); lines.push("Checked with Is This a Scam?: " + SITE);
-    return lines.join("\n");
+    /* switch off any website names in the text too, so no email app turns them into links */
+    var body = lines.join("\n").replace(/\b((?:[a-z0-9-]+\.)+[a-z]{2,})\b/gi, function (m) { return /\[\.\]/.test(m) ? m : m.replace(/\./g, "[.]"); });
+    return body + "\n\nChecked with Is This a Scam?: " + SITE;
   }
   function passMsg(t) { $("passMsg").textContent = t; }
+  /* make links and email addresses in a forwarded message impossible to tap, and say why */
+  function defang(msg) {
+    var why = {};
+    current.a.findings.forEach(function (f) {
+      if (f.cat !== "links" || !f.ranges || !f.ranges.length) return;
+      var raw = current.text.slice(f.ranges[0][0], f.ranges[0][1]);
+      (why[raw] = why[raw] || { t: [], dest: f.dest }).t.push(f.title);
+    });
+    var out = "", pos = 0;
+    parseLinks(msg).forEach(function (L) {
+      var w = why[L.raw];
+      var reason = w ? w.t.join(", ") + (w.dest ? ", real website " + w.dest : "") : "don't open links in a message you're unsure about";
+      out += msg.slice(pos, L.start) + L.raw.replace(/^http/i, "hxxp").replace(/\./g, "[.]") + " [link switched off: " + reason + "]";
+      pos = L.end;
+    });
+    out += msg.slice(pos);
+    return out.replace(/([A-Za-z0-9._%+-]+)@([A-Za-z0-9.-]+\.[A-Za-z]{2,})/g, function (m, u, d) { return u + "[at]" + d.replace(/\./g, "[.]"); });
+  }
   var canShare = !inClaude && !!navigator.share;
   if (!canShare) $("shareBtn").hidden = true;
   if (inClaude) { $("mailBtn").hidden = true; $("saveRes").hidden = true; $("printRes").hidden = true; }
@@ -1349,7 +1373,7 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
   });
   $("mailBtn").addEventListener("click", function () {
     $("mailBtn").href = "mailto:?subject=" + encodeURIComponent("Can you check this message for me? (" + $("verdictTitle").textContent + ")") +
-      "&body=" + encodeURIComponent(summary(600));
+      "&body=" + encodeURIComponent(summary(400, 3, true));
     passMsg("Your email app should open with the result ready. Add who it's for, then press Send.");
   });
   $("copyRes").addEventListener("click", function () {
