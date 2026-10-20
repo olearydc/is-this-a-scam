@@ -93,6 +93,7 @@ body.matrix h1, body.matrix .verdict-title {
 .size { display: flex; align-items: center; gap: 6px; }
 .size span { font-size: 0.85rem; color: var(--muted); }
 
+.main-col { display: grid; gap: 22px; min-width: 0; }
 .panel {
   background: var(--panel); border: 1px solid var(--panel-line); border-radius: 10px;
   padding: 22px; display: grid; gap: 16px; min-width: 0;
@@ -229,6 +230,23 @@ body.alarm-mid .verdict-title { color: #7a5200; }
 .vband.gone { height: 0; opacity: 0; margin-bottom: -18px; }
 .hdr-box { min-height: 140px; font-family: Consolas, "Courier New", monospace; font-size: 0.85rem; }
 .steps { margin: 0; padding-left: 1.3em; display: grid; gap: 6px; font-size: 0.98rem; }
+.report { border-top: 1px solid var(--panel-line); padding-top: 14px; }
+.report summary { font-weight: 700; }
+.report .other { gap: 10px; }
+.report ol, .report ul { margin: 0; padding-left: 1.3em; display: grid; gap: 6px; }
+.report a { color: var(--accent); font-weight: 700; }
+.src { font-size: 0.85rem; color: var(--muted); }
+.src a { color: inherit; }
+.quiz-msg { white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.7; border: 2px solid var(--panel-line); border-radius: 8px; padding: 16px; }
+.quiz-btns { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); gap: 10px; }
+.quiz-btns button { height: 58px; font-size: 1.05rem; }
+.quiz-feedback { display: grid; gap: 10px; border-radius: 8px; padding: 16px; border: 2px solid var(--panel-line); }
+.quiz-feedback.right { border-color: #9cd3b0; background: #f2fbf5; }
+.quiz-feedback.wrong { border-color: #efd08f; background: #fffaf0; }
+.quiz-feedback h3 { font-size: 1.15rem; }
+.quiz-feedback ul { margin: 0; padding-left: 1.3em; display: grid; gap: 4px; }
+.quiz-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
+.linkish { border: 0; background: none; padding: 0; min-height: 44px; color: var(--accent); text-decoration: underline; text-underline-offset: 3px; font-weight: 700; }
 .passon { border-top: 1px solid var(--panel-line); padding-top: 16px; display: grid; gap: 10px; }
 .passon-panel { display: grid; gap: 10px; }
 .passon-panel[hidden] { display: none; }
@@ -276,6 +294,7 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
     </div>
   </header>
 
+  <main class="main-col">
   <section class="panel" id="inputView">
     <label for="msg" class="big-label">Paste the email or text message here</label>
     <div class="row" id="quickRow">
@@ -324,6 +343,7 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
       <div><i>3</i><b>Get a clear answer</b><span>Plus simple steps on what to do next.</span></div>
     </div>
     <div class="examples">
+      <p>New to this? <button type="button" class="linkish" id="quizStart">Practise spotting scams (6 quick questions)</button></p>
       <p>Or try a made-up example:</p>
       <div class="row" id="exRow">
         <button type="button" data-ex="bank">Bank email</button>
@@ -337,12 +357,20 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
     </div>
   </section>
 
+  <section class="panel" id="quizView" hidden>
+    <div class="quiz-top">
+      <h2 id="quizTitle" tabindex="-1">Practise spotting scams</h2>
+      <span class="found-count" id="quizProgress"></span>
+    </div>
+    <div id="quizBody"></div>
+  </section>
+
   <section class="panel verdict-panel" id="resultView" hidden aria-live="polite">
     <div class="vband" id="vband" hidden aria-hidden="true"><canvas id="vrain"></canvas></div>
     <p class="eyebrow">Our answer</p>
     <div class="verdict-head">
       <svg class="verdict-icon" id="verdictIcon" viewBox="0 0 24 24" aria-hidden="true"></svg>
-      <h2 class="verdict-title" id="verdictTitle" tabindex="-1"></h2>
+      <h2 class="verdict-title" id="verdictTitle" tabindex="-1">Our answer</h2>
     </div>
     <p class="verdict-sub" id="verdictSub"></p>
     <div class="meter" aria-hidden="true">
@@ -357,6 +385,20 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
       <li>Ask someone you trust before you do anything.</li>
       <li>If you have already clicked, given details or sent money, call your bank straight away, then report it at your local Garda station.</li>
     </ul>
+    <details class="report" id="reportBox">
+      <summary>How to report it, or what to do if you've been caught out</summary>
+      <div class="other">
+        <p><b>If you haven't replied, clicked or paid:</b> you don't need to do anything else. Don't reply. If it pretends to be a company, you can let that company know, using contact details from its own website or your bills.</p>
+        <p><b>If you clicked a link, gave details or sent money:</b></p>
+        <ol>
+          <li>Call your bank straight away, using the number on your card or statement. Ask them to stop or reverse the payment and to put a hold on your account.</li>
+          <li>Report it at your local Garda station. <a href="https://www.garda.ie/en/contact-us/station-directory/" target="_blank" rel="noopener">Find your local station</a>.</li>
+          <li>Keep the message. Don't delete it. Take a screenshot, and note the dates, amounts and any reference numbers. Your bank and the Gardaí may need them.</li>
+        </ol>
+        <p><b>Remember:</b> Gardaí, banks and government departments will never ask for your PIN or password, or ask you to move your money.</p>
+        <p class="src">Advice from <a href="https://www.garda.ie/en/crime/fraud/" target="_blank" rel="noopener">An Garda Síochána</a>, the <a href="https://www.ccpc.ie/consumers/money/scams/scams-what-to-watch-out-for/" target="_blank" rel="noopener">CCPC</a> and <a href="https://www.gov.ie/en/department-of-public-expenditure-infrastructure-public-service-reform-and-digitalisation/publications/alert-on-scam-phone-calls-and-text-messages/" target="_blank" rel="noopener">gov.ie</a>.</p>
+      </div>
+    </details>
     <div class="row">
       <button type="button" class="big-btn" id="againBtn">Check another message</button>
       <button type="button" id="speakBtn">Read this aloud</button>
@@ -387,7 +429,7 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
       </div>
     </div>
     <div class="scan-grid">
-      <div class="scan-box" id="scanBox" tabindex="0" aria-label="The message being checked">
+      <div class="scan-box" id="scanBox" tabindex="0" role="region" aria-label="The message being checked">
         <div class="scan-inner" id="scanInner">
           <div class="scan-text" id="scanText"></div>
           <div class="scan-line" id="scanLine"></div>
@@ -429,6 +471,8 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
       </div>
     </details>
   </section>
+
+  </main>
 
   <footer>This checker looks for common scam signs. It cannot catch every scam, and it can never prove a message is safe. Scams written with AI often have perfect spelling, so what a message asks you to do matters more than how well it is written. It only checks messages written in English. If you are unsure, ask someone you trust, or contact the company directly using a number you already have.</footer>
 </div>
@@ -848,7 +892,7 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
       var lb = baseDomain(L.host), lr = [[L.start, L.end]], lab = lb.split(".")[0];
       var la = function (k, o) { o.dest = lb; addOnce(k, o); };
       var tracked = TRACKERS.some(function (t) { return L.host === t || L.host.slice(-t.length - 1) === "." + t; });
-      var orgOk = function (o) { return o.k.some(function (k) { return L.host.indexOf(k) !== -1; }); };
+      var orgOk = function (o) { return o.k.some(function (k) { return lb.indexOf(k) !== -1; }); };
       if (/^\d{1,3}(\.\d{1,3}){3}$/.test(L.host)) la("ip" + L.host, { cat: "links", level: "high", title: "Link to a number, not a website", ranges: lr,
         why: "Genuine companies link to their own website name, not a string of numbers." });
       if (SHORT.indexOf(lb) !== -1 || SHORT.indexOf(L.host) !== -1) la("sh" + L.host, { cat: "links", level: "medium", title: "Shortened link", ranges: lr,
@@ -1093,6 +1137,7 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
     $("foundList").innerHTML = "";
     $("foundSummary").hidden = true;
     $("sendPanel").hidden = true; $("sendToggle").setAttribute("aria-expanded", "false"); $("passMsg").textContent = "";
+    $("reportBox").open = false;
     $("foundEmpty").hidden = false;
     $("foundEmpty").textContent = "Nothing yet. Still checking.";
     $("foundCount").textContent = "0 warning signs so far";
@@ -1100,6 +1145,7 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
     $("pulse").classList.remove("stopped");
     $("skipBtn").hidden = false;
     $("inputView").hidden = true;
+    $("quizView").hidden = true;
     $("resultView").hidden = true;
     $("aiView").hidden = true;
     $("scanView").hidden = false;
@@ -1271,7 +1317,7 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
   $("againBtn").addEventListener("click", function () {
     cancelAnimationFrame(rafScan); stopSpeaking(); if (aiCtl) aiCtl.abort();
     current = null;
-    $("scanView").hidden = true; $("resultView").hidden = true; $("aiView").hidden = true; $("vband").hidden = true;
+    $("scanView").hidden = true; $("resultView").hidden = true; $("aiView").hidden = true; $("vband").hidden = true; $("quizView").hidden = true;
     $("inputView").hidden = false;
     document.body.classList.remove("alarm-high", "alarm-mid", "alarm-none");
     applyTheme(0);
@@ -1480,6 +1526,77 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
   $("printRes").addEventListener("click", function () {
     $("printArea").textContent = summary();
     try { window.print(); } catch (e) { passMsg("Printing didn't work here. Try \"Save as a file\" instead."); }
+  });
+
+  /* ---------- practise quiz (all messages made up) ---------- */
+  var QUIZ = [
+    { scam: true, msg: "An Post: We tried to deliver your parcel today but a customs fee of \u20ac1.80 is unpaid. Pay now to arrange delivery: https://anpost-ie.delivery-fee.top/pay",
+      lesson: "An Post does not ask for customs fees by text with a link. The link goes to a website that has nothing to do with An Post." },
+    { scam: false, msg: "From: Cork City Library <events@corklibrary.example>\nSubject: Book club this Thursday\n\nHi all, just a reminder that book club meets this Thursday at 6pm in the main library. Tea and biscuits as usual. See you there!",
+      lesson: "It doesn't ask you to click, pay or share anything, and nothing is urgent. That's what most genuine messages look like." },
+    { scam: true, msg: "Hi Dad, it's me. I've a new number, my phone broke. Can you send \u20ac450 to my friend's account for a bill today? I'll explain later, can't talk now x",
+      lesson: "This is the \"Hi Mum, Hi Dad\" scam. Before sending anything, ring your son or daughter on the number you already have." },
+    { scam: true, msg: "From: Revenue <refunds@revenue-ie-refund.com>\nSubject: Tax refund available\n\nDear Customer, you are due a tax refund of \u20ac286.40. Confirm your card details within 48 hours to receive it: https://revenue-ie-refund.com/claim",
+      lesson: "Revenue does not send refunds by asking for your card details. Notice the \"Dear Customer\" and the 48-hour deadline too." },
+    { scam: false, msg: "From: Greenfield Medical Centre <appointments@greenfieldmedical.example>\nSubject: Appointment reminder\n\nThis is a reminder of your appointment with Dr Walsh on Tuesday at 10:30. If you can't make it, please phone the surgery on the usual number.",
+      lesson: "A simple reminder that asks nothing of you, and tells you to use the number you already have. A good sign." },
+    { scam: true, msg: "Hi, this is Sarah from the fraud team at your bank. We've stopped a suspicious payment of \u20ac950. To protect your money we need to move it to a secure account. We'll text you a code, please read it back to us when we call.",
+      lesson: "No spelling mistakes, and it sounds helpful, but no real bank will ever ask you to move money to a \"secure account\" or read out a code. Hang up and ring your bank on the number on your card." }
+  ];
+  var qi = 0, qScore = 0;
+  function showQuiz() {
+    cancelAnimationFrame(rafScan); current = null;
+    $("inputView").hidden = true; $("scanView").hidden = true; $("resultView").hidden = true; $("aiView").hidden = true;
+    $("quizView").hidden = false;
+    document.body.classList.remove("alarm-high", "alarm-mid", "alarm-none");
+    applyTheme(0);
+    renderQ();
+    window.scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" });
+    try { $("quizTitle").focus({ preventScroll: true }); } catch (e) {}
+  }
+  function renderQ() {
+    var q = QUIZ[qi];
+    $("quizProgress").textContent = "Question " + (qi + 1) + " of " + QUIZ.length;
+    $("quizBody").innerHTML = '<div style="display:grid;gap:14px"><p>Read this message. Is it a scam, or genuine?</p>' +
+      '<div class="quiz-msg" id="quizMsg">' + esc(q.msg) + '</div>' +
+      '<div class="quiz-btns"><button type="button" class="big-btn" data-a="scam">Looks like a scam</button><button type="button" class="big-btn" data-a="real">Looks genuine</button></div></div>';
+  }
+  function answerQ(saidScam) {
+    var q = QUIZ[qi], right = saidScam === q.scam;
+    if (right) qScore++;
+    var a = analyse(q.msg, null);
+    var warn = a.findings.filter(function (f) { return f.level !== "info"; });
+    var b = buildMarks(q.msg, warn);
+    $("quizMsg").innerHTML = b.html;
+    Array.prototype.forEach.call($("quizMsg").querySelectorAll("mark.flag"), function (m) {
+      var mm = b.marks[+m.dataset.m], lv = "low";
+      mm.f.forEach(function (fi) { if (PTS[warn[fi].level] > PTS[lv]) lv = warn[fi].level; });
+      m.classList.add("on", lv);
+    });
+    var btns = $("quizBody").querySelector(".quiz-btns");
+    var fb = document.createElement("div");
+    fb.className = "quiz-feedback " + (right ? "right" : "wrong");
+    fb.innerHTML = "<h3>" + (right ? "Well spotted. " : "Not quite. ") + (q.scam ? "This is a scam." : "This one is genuine.") + "</h3>" +
+      "<p>" + esc(q.lesson) + "</p>" +
+      (q.scam && warn.length ? "<p><b>The signs:</b></p><ul>" + warn.slice(0, 5).map(function (f) { return "<li>" + esc(f.title) + "</li>"; }).join("") + "</ul>" : "") +
+      '<div class="row"><button type="button" class="big-btn" id="quizNext">' + (qi < QUIZ.length - 1 ? "Next question" : "See how you did") + "</button></div>";
+    btns.replaceWith(fb);
+    try { $("quizNext").focus(); } catch (e) {}
+  }
+  function finishQuiz() {
+    $("quizProgress").textContent = "";
+    var msg = qScore === QUIZ.length ? "Perfect. You know the signs well." : qScore >= QUIZ.length - 2 ? "Well done. You spotted most of them." : "That's a good start. Scams are designed to fool people, so it's normal to get caught out.";
+    $("quizBody").innerHTML = '<div style="display:grid;gap:14px"><h3 style="font-size:1.4rem">You got ' + qScore + " out of " + QUIZ.length + "</h3><p>" + esc(msg) + "</p>" +
+      "<p><b>The three things to remember:</b></p><ul class=\"todo\"><li>Be suspicious of anything urgent that asks you to click, pay or share details.</li><li>Check by contacting the company or person yourself, using a number you already have.</li><li>Never share a code, PIN or password, and never move money to a \"safe account\".</li></ul>" +
+      '<div class="row"><button type="button" class="big-btn" id="quizBack">Check a real message</button><button type="button" id="quizAgain">Try the quiz again</button></div></div>';
+  }
+  $("quizStart").addEventListener("click", function () { qi = 0; qScore = 0; showQuiz(); });
+  $("quizBody").addEventListener("click", function (ev) {
+    var b = ev.target.closest("button"); if (!b) return;
+    if (b.dataset.a) answerQ(b.dataset.a === "scam");
+    else if (b.id === "quizNext") { qi++; if (qi < QUIZ.length) { renderQ(); try { $("quizBody").querySelector("button").focus(); } catch (e) {} } else finishQuiz(); }
+    else if (b.id === "quizAgain") { qi = 0; qScore = 0; renderQ(); }
+    else if (b.id === "quizBack") { $("quizView").hidden = true; $("inputView").hidden = false; window.scrollTo({ top: 0 }); $("msg").focus(); }
   });
 
   /* hidden-details help */

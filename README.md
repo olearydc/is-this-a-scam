@@ -23,9 +23,18 @@ Paste the message in, watch it being checked, and get a clear answer with plain 
 - **Send the result to someone:** share it, email it, copy it, save it as a file, or print it, so a family member or friend can take a look too. Any links and email addresses in the shared copy are switched off, with the reason, so nobody opens them by mistake.
 - **Share from WhatsApp or Messages (Android):** once it's on your home screen, press and hold a message, tap Share, and choose "Is This a Scam?". It opens and checks the message straight away. iPhones don't allow this for web pages, so use copy and paste there.
 
+## Practise and report
+
+- **Practise spotting scams:** six quick made-up messages. Guess "scam" or "genuine", then see the signs.
+- **How to report it:** clear steps for Ireland, based on advice from An Garda Síochána, the CCPC and gov.ie.
+
 ## Privacy
 
 The check runs entirely in your web browser. Nothing you paste is sent anywhere. If you choose to copy the question into an AI tool such as ChatGPT, Copilot or Claude, that tool will see what you paste, so remove your name, address and account numbers first.
+
+## Accessibility
+
+Checked with the axe accessibility checker (no problems found), and every text colour meets the WCAG AA contrast standard. Text size buttons, a calm mode, read-aloud and screen-reader announcements are built in.
 
 ## Limits
 
