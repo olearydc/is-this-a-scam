@@ -42,7 +42,7 @@ img{max-width:100%}
   --scan: #1b6886;
   --font: "Atkinson Hyperlegible", Verdana, Tahoma, sans-serif;
   --matrix-font: "Share Tech Mono", Consolas, "Courier New", monospace;
-  --fs: 19px;
+  --fs: 17px;
   color-scheme: light;
 }
 body.matrix {
@@ -205,12 +205,12 @@ body.matrix .copy-msg { color: var(--accent); }
 
 .hdr summary { font-size: 1rem; }
 .alarm-frame { position: fixed; inset: 0; pointer-events: none; z-index: 5; border: 0 solid transparent; transition: border-color .8s ease, border-width .8s ease; }
-body.alarm-high .alarm-frame { border-width: 8px; border-color: #c62839; }
-body.alarm-mid .alarm-frame { border-width: 8px; border-color: #d08a00; }
-body.alarm-high #resultView { border: 4px solid #c62839; }
-body.alarm-mid #resultView { border: 4px solid #d08a00; }
-body.alarm-high .verdict-title { color: #b8233a; }
-body.alarm-mid .verdict-title { color: #8a5a00; }
+body.alarm-high .alarm-frame { border-width: 5px; border-color: #eea6ae; }
+body.alarm-mid .alarm-frame { border-width: 5px; border-color: #efd08f; }
+body.alarm-high #resultView { border: 2px solid #eea6ae; background: #fff6f7; }
+body.alarm-mid #resultView { border: 2px solid #efd08f; background: #fffaf0; }
+body.alarm-high .verdict-title { color: #9e2a3a; }
+body.alarm-mid .verdict-title { color: #7a5200; }
 .mid-btn { min-height: 54px; font-size: 1.02rem; padding: 10px 20px; }
 .vband { height: 56px; border-radius: 8px; overflow: hidden; background: #020805; transition: height .8s ease, opacity .8s ease, margin .8s ease; }
 .vband canvas { display: block; width: 100%; height: 100%; }
@@ -245,6 +245,7 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
       <button type="button" class="small-btn" id="sizeDown" aria-label="Smaller text">A&minus;</button>
       <button type="button" class="small-btn" id="sizeUp" aria-label="Bigger text">A+</button>
       <button type="button" class="small-btn" id="fxBtn" aria-pressed="false">Matrix effect: off</button>
+      <button type="button" class="small-btn" id="resetBtn">Start again</button>
     </div>
   </header>
 
@@ -1169,6 +1170,10 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
     check();
   });
   $("skipBtn").addEventListener("click", function () { if (current) current.start = -1e9; });
+  $("resetBtn").addEventListener("click", function () {
+    $("msg").value = ""; $("hdr").value = ""; $("inputError").textContent = "";
+    $("againBtn").click();
+  });
   $("againBtn").addEventListener("click", function () {
     cancelAnimationFrame(rafScan); stopSpeaking(); if (aiCtl) aiCtl.abort();
     current = null;
@@ -1299,12 +1304,12 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
   showSteps("gmail");
 
   /* text size */
-  var SIZES = [17, 19, 22, 25], sizeI = 1;
-  try { var saved = parseInt(localStorage.getItem("itas-size"), 10); if (SIZES.indexOf(saved) !== -1) sizeI = SIZES.indexOf(saved); } catch (e) {}
+  var SIZES = [15, 17, 19, 22, 25], sizeI = 1;
+  try { var saved = parseInt(localStorage.getItem("itas-size2"), 10); if (SIZES.indexOf(saved) !== -1) sizeI = SIZES.indexOf(saved); } catch (e) {}
   function setSize() {
     document.documentElement.style.setProperty("--fs", SIZES[sizeI] + "px");
     $("sizeDown").disabled = sizeI === 0; $("sizeUp").disabled = sizeI === SIZES.length - 1;
-    try { localStorage.setItem("itas-size", String(SIZES[sizeI])); } catch (e) {}
+    try { localStorage.setItem("itas-size2", String(SIZES[sizeI])); } catch (e) {}
   }
   $("sizeDown").addEventListener("click", function () { if (sizeI > 0) { sizeI--; setSize(); } });
   $("sizeUp").addEventListener("click", function () { if (sizeI < SIZES.length - 1) { sizeI++; setSize(); } });
