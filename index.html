@@ -1,0 +1,1265 @@
+<!doctype html>
+<html lang="en-IE">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Paste an email or text message you're unsure about. Is This a Scam? checks it for the tricks scammers use and tells you what to do. Free, and nothing you paste leaves your device.">
+<style>
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0}
+img{max-width:100%}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<title>Is This a Scam?</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Share+Tech+Mono&display=swap">
+<style>
+/* Layout: one calm column for older readers (paste, scan, answer, second opinion); the page darkens into code rain as warning signs are found. Single dynamic theme by design: light at rest, dark only when the score is high. */
+:root {
+  --bg: #eef3f6;
+  --panel: #ffffff;
+  --panel-line: #d3dde3;
+  --fg: #14222b;
+  --muted: #475c68;
+  --accent: #1b6886;
+  --accent-ink: #ffffff;
+  --hl-high: #ffd3d8;
+  --hl-high-line: #b8233a;
+  --hl-medium: #ffe7ad;
+  --hl-medium-line: #9a6400;
+  --hl-low: #dfe8ee;
+  --hl-low-line: #56707e;
+  --scan: #1b6886;
+  --font: "Atkinson Hyperlegible", Verdana, Tahoma, sans-serif;
+  --matrix-font: "Share Tech Mono", Consolas, "Courier New", monospace;
+  --fs: 19px;
+  color-scheme: light;
+}
+body.matrix {
+  --panel: rgba(4, 15, 9, 0.93);
+  --panel-line: #1e4a31;
+  --fg: #daf5e4;
+  --muted: #93b7a0;
+  --accent: #39ff7a;
+  --accent-ink: #021006;
+  --hl-high: rgba(255, 92, 110, 0.30);
+  --hl-high-line: #ff8593;
+  --hl-medium: rgba(255, 184, 76, 0.26);
+  --hl-medium-line: #ffc672;
+  --hl-low: rgba(150, 180, 160, 0.20);
+  --hl-low-line: #a7c6b1;
+  --scan: #39ff7a;
+  color-scheme: dark;
+}
+html { font-size: var(--fs); }
+body {
+  background-color: var(--bg); color: var(--fg); font-family: var(--font);
+  font-size: 1rem; line-height: 1.6;
+  transition: background-color 0.9s ease, color 0.9s ease;
+}
+#rain { position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; opacity: 0; transition: opacity 1.2s ease; }
+.wrap {
+  position: relative; z-index: 1; max-width: 920px; margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 24px 48px;
+  display: grid; gap: 22px;
+}
+h1, h2, h3 { margin: 0; line-height: 1.2; text-wrap: balance; }
+h1 { font-size: clamp(2rem, 6vw, 2.8rem); font-weight: 700; letter-spacing: -0.01em; transition: color .7s; }
+h2 { font-size: 1.35rem; }
+h3 { font-size: 1.1rem; }
+p { margin: 0; }
+.muted { color: var(--muted); }
+body.matrix h1, body.matrix .verdict-title {
+  font-family: var(--matrix-font); font-weight: 400; letter-spacing: 0.04em; color: var(--accent);
+  text-shadow: 0 0 16px rgba(57, 255, 122, 0.45);
+}
+
+/* top bar */
+.top { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap; }
+.top-text { display: grid; gap: 6px; min-width: 0; max-width: 40ch; }
+.top-text p { font-size: 1.08rem; color: var(--muted); }
+.size { display: flex; align-items: center; gap: 6px; }
+.size span { font-size: 0.85rem; color: var(--muted); }
+
+.panel {
+  background: var(--panel); border: 1px solid var(--panel-line); border-radius: 10px;
+  padding: 22px; display: grid; gap: 16px; min-width: 0;
+  transition: background-color .9s ease, border-color .9s ease, color .9s ease;
+}
+textarea, .scan-box, .card, .ai-out { transition: background-color .9s ease, border-color .9s ease, color .9s ease; }
+.verdict-head { display: flex; align-items: center; gap: 14px; }
+.verdict-icon { width: 2.4rem; height: 2.4rem; flex: none; }
+.verdict-icon.high { color: var(--hl-high-line); }
+.verdict-icon.mid { color: var(--hl-medium-line); }
+.verdict-icon.low { color: var(--accent); }
+body.matrix .verdict-icon.high { color: var(--accent); }
+.dest { font-size: 1rem; }
+.dest b { font-size: 1.1rem; overflow-wrap: anywhere; }
+
+/* buttons */
+button, .btn {
+  font: inherit; font-size: 0.95rem; font-weight: 700; color: var(--fg); background: transparent;
+  border: 2px solid var(--panel-line); border-radius: 8px; padding: 10px 16px; min-height: 48px;
+  cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  transition: border-color .2s, background-color .2s, color .2s;
+}
+button:hover, .btn:hover { border-color: var(--accent); }
+button:focus-visible, .btn:focus-visible, textarea:focus-visible, summary:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+button:disabled { opacity: .55; cursor: default; }
+.big-btn { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-size: 1.1rem; padding: 14px 26px; min-height: 58px; }
+.big-btn:hover { filter: brightness(1.08); }
+.small-btn { min-height: 44px; padding: 6px 12px; font-size: 0.85rem; }
+
+/* input */
+.big-label { font-size: 1.2rem; font-weight: 700; }
+.hint { font-size: 0.92rem; color: var(--muted); max-width: 62ch; }
+textarea {
+  width: 100%; box-sizing: border-box; min-height: 230px; resize: vertical;
+  font: inherit; font-size: 1rem; line-height: 1.55; color: var(--fg); background: var(--panel);
+  border: 2px solid var(--panel-line); border-radius: 8px; padding: 14px;
+}
+.row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.error { color: var(--hl-high-line); font-weight: 700; }
+.examples { display: grid; gap: 10px; border-top: 1px solid var(--panel-line); padding-top: 16px; }
+.examples p { font-weight: 700; }
+.how { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.how div { display: grid; gap: 4px; }
+.how b { font-size: 1rem; }
+.how span { font-size: 0.88rem; color: var(--muted); }
+.how i { font-style: normal; display: inline-grid; place-items: center; width: 1.8em; height: 1.8em; border-radius: 50%; background: var(--hl-low); font-weight: 700; font-size: 0.85rem; margin-bottom: 4px; }
+
+/* scan */
+.scan-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+.scan-status { font-size: 1.1rem; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+.pulse { width: 12px; height: 12px; border-radius: 50%; background: var(--scan); animation: pulse 1s infinite ease-in-out; flex: none; }
+.pulse.stopped { animation: none; opacity: .4; }
+@keyframes pulse { 50% { transform: scale(0.6); opacity: .5; } }
+.found-count { font-size: 0.95rem; color: var(--muted); }
+.scan-grid { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+.scan-box { max-height: min(62vh, 560px); overflow: auto; border: 2px solid var(--panel-line); border-radius: 8px; background: var(--panel); }
+.scan-inner { position: relative; padding: 16px; }
+.scan-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 1rem; line-height: 1.75; }
+.scan-line { position: absolute; left: 0; right: 0; top: 0; height: 3px; background: var(--scan); box-shadow: 0 0 12px var(--scan); pointer-events: none; transition: opacity .5s; }
+.scan-line::before { content: ""; position: absolute; left: 0; right: 0; bottom: 3px; height: 46px; background: linear-gradient(to bottom, transparent, var(--scan)); opacity: 0.12; }
+.scan-line.gone { opacity: 0; }
+mark.flag { background: transparent; color: inherit; border-radius: 3px; padding: 1px 0; transition: background-color .45s ease, box-shadow .45s ease; }
+mark.flag.on.high { background: var(--hl-high); box-shadow: inset 0 -3px 0 var(--hl-high-line); }
+mark.flag.on.medium { background: var(--hl-medium); box-shadow: inset 0 -3px 0 var(--hl-medium-line); }
+mark.flag.on.low { background: var(--hl-low); box-shadow: inset 0 -3px 0 var(--hl-low-line); }
+sup.tag { font-size: 0.7rem; font-weight: 700; margin-left: 2px; color: var(--muted); }
+
+.found { display: grid; gap: 12px; align-content: start; min-width: 0; }
+.found-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.card { border: 1px solid var(--panel-line); border-radius: 8px; padding: 12px 14px; display: grid; gap: 6px; background: var(--panel); animation: pop .45s ease; }
+@keyframes pop { from { transform: translateY(6px); opacity: .35; } to { transform: none; opacity: 1; } }
+.card-top { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.num { font-weight: 700; font-size: 0.85rem; min-width: 1.6em; height: 1.6em; display: inline-grid; place-items: center; border-radius: 50%; background: var(--hl-low); flex: none; }
+.card b { font-size: 1rem; }
+.chip { font-size: 0.75rem; font-weight: 700; padding: 1px 8px; border-radius: 999px; border: 1.5px solid currentColor; white-space: nowrap; }
+.chip.high { color: var(--hl-high-line); }
+.chip.medium { color: var(--hl-medium-line); }
+.chip.low, .chip.info { color: var(--hl-low-line); }
+.card .quote { font-size: 0.9rem; overflow-wrap: anywhere; }
+.card .why { font-size: 0.92rem; color: var(--muted); }
+.found-empty { color: var(--muted); font-size: 0.95rem; }
+
+/* verdict */
+.verdict-panel { gap: 18px; }
+.eyebrow { font-size: 0.8rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+.verdict-title { font-size: clamp(1.7rem, 5vw, 2.3rem); font-weight: 700; }
+.verdict-sub { font-size: 1.1rem; max-width: 58ch; }
+.meter { display: grid; gap: 6px; }
+.meter-track { height: 18px; border-radius: 9px; background: var(--hl-low); overflow: hidden; }
+.meter-fill { height: 100%; width: 0; border-radius: 9px; background: var(--accent); transition: width 1s ease; }
+.meter-fill.mid { background: var(--hl-medium-line); }
+.meter-fill.high { background: var(--hl-high-line); }
+body.matrix .meter-fill.high { background: var(--accent); box-shadow: 0 0 12px var(--accent); }
+.meter-labels { display: flex; justify-content: space-between; font-size: 0.82rem; color: var(--muted); }
+.todo { margin: 0; padding-left: 1.3em; display: grid; gap: 8px; font-size: 1.02rem; max-width: 62ch; }
+.todo li::marker { color: var(--accent); font-weight: 700; }
+
+/* AI */
+.ai-out { border: 2px solid var(--panel-line); border-radius: 8px; padding: 16px; display: grid; gap: 10px; }
+.ai-out ul { margin: 0; padding-left: 1.3em; display: grid; gap: 6px; }
+.ai-verdict { font-size: 1.2rem; font-weight: 700; }
+.thinking { color: var(--muted); display: flex; align-items: center; gap: 10px; }
+details { border-top: 1px solid var(--panel-line); padding-top: 14px; }
+summary { cursor: pointer; font-weight: 700; min-height: 44px; display: flex; align-items: center; }
+.other { display: grid; gap: 12px; margin-top: 10px; }
+.seg button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+#promptOut { margin: 0; max-height: 220px; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; font-size: 0.9rem; line-height: 1.5; border: 1px solid var(--panel-line); border-radius: 6px; padding: 10px; font-family: Consolas, "Courier New", monospace; }
+.copy-msg { font-weight: 700; color: var(--accent); }
+body.matrix .copy-msg { color: var(--accent); }
+
+.hdr summary { font-size: 1rem; }
+.hdr-box { min-height: 140px; font-family: Consolas, "Courier New", monospace; font-size: 0.85rem; }
+.steps { margin: 0; padding-left: 1.3em; display: grid; gap: 6px; font-size: 0.98rem; }
+footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
+
+@media (max-width: 760px) {
+  .scan-grid { grid-template-columns: minmax(0, 1fr); }
+  .scan-box { max-height: 40vh; }
+  .found { order: -1; }
+  .how { grid-template-columns: minmax(0, 1fr); }
+  .panel { padding: 16px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before { animation: none !important; transition: none !important; }
+}
+</style>
+
+<canvas id="rain" aria-hidden="true"></canvas>
+
+<div class="wrap">
+  <header class="top">
+    <div class="top-text">
+      <h1>Is This a Scam?</h1>
+      <p>Paste a message you're not sure about. We'll check it for the tricks scammers use and tell you what to do.</p>
+    </div>
+    <div class="size">
+      <span>Text size</span>
+      <button type="button" class="small-btn" id="sizeDown" aria-label="Smaller text">A&minus;</button>
+      <button type="button" class="small-btn" id="sizeUp" aria-label="Bigger text">A+</button>
+      <button type="button" class="small-btn" id="calmBtn" aria-pressed="false">Moving background: on</button>
+    </div>
+  </header>
+
+  <section class="panel" id="inputView">
+    <label for="msg" class="big-label">Paste the email or text message here</label>
+    <p class="hint">Before you paste, remove your name, address, phone number and any account numbers. This page checks the message on your own device. Nothing is sent anywhere unless you choose to ask Claude.</p>
+    <textarea id="msg" spellcheck="false" placeholder="Copy the whole message and paste it here. For emails, include the line that says who it is from."></textarea>
+    <details class="hdr" id="hdrDetails">
+      <summary>Optional: also check the email's hidden details</summary>
+      <div class="other">
+        <p class="hint">Every email carries hidden details that show whether it really came from the company it names. This is only for emails, not text messages. Choose your email app for the steps:</p>
+        <div class="row seg" id="hdrTabs">
+          <button type="button" data-h="gmail" aria-pressed="true">Gmail</button>
+          <button type="button" data-h="outlook" aria-pressed="false">Outlook (web or new)</button>
+          <button type="button" data-h="classic" aria-pressed="false">Outlook (classic)</button>
+          <button type="button" data-h="iphone" aria-pressed="false">iPhone or iPad</button>
+        </div>
+        <ol class="steps" id="hdrSteps"></ol>
+        <label for="hdr" class="big-label" style="font-size:1rem">Paste the hidden details here</label>
+        <textarea id="hdr" class="hdr-box" spellcheck="false" placeholder="Paste the hidden details (also called the original message or headers) here."></textarea>
+      </div>
+    </details>
+    <div class="row">
+      <button type="button" class="big-btn" id="checkBtn">Check this message</button>
+      <button type="button" id="clearBtn">Clear</button>
+      <span class="error" id="inputError" role="alert"></span>
+    </div>
+    <div class="how" aria-label="How it works">
+      <div><i>1</i><b>Paste</b><span>Copy the email or text and paste it in the box.</span></div>
+      <div><i>2</i><b>Watch it check</b><span>Each warning sign lights up as it is found.</span></div>
+      <div><i>3</i><b>Get a clear answer</b><span>Plus simple steps on what to do next.</span></div>
+    </div>
+    <div class="examples">
+      <p>Or try a made-up example:</p>
+      <div class="row" id="exRow">
+        <button type="button" data-ex="bank">Bank email</button>
+        <button type="button" data-ex="parcel">Parcel text</button>
+        <button type="button" data-ex="mum">"Hi Mum" text</button>
+        <button type="button" data-ex="grant">Free money email</button>
+        <button type="button" data-ex="boss">Boss asking for gift cards</button>
+        <button type="button" data-ex="hidden">Email with hidden details</button>
+        <button type="button" data-ex="real">Genuine notice</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel verdict-panel" id="resultView" hidden aria-live="polite">
+    <p class="eyebrow">Our answer</p>
+    <div class="verdict-head">
+      <svg class="verdict-icon" id="verdictIcon" viewBox="0 0 24 24" aria-hidden="true"></svg>
+      <h2 class="verdict-title" id="verdictTitle" tabindex="-1"></h2>
+    </div>
+    <p class="verdict-sub" id="verdictSub"></p>
+    <div class="meter" aria-hidden="true">
+      <div class="meter-track"><div class="meter-fill" id="meterFill"></div></div>
+      <div class="meter-labels"><span>Few signs</span><span>Some signs</span><span>Many signs</span></div>
+    </div>
+    <h3>What to do now</h3>
+    <ul class="todo" id="todo">
+      <li>Do not click links, open attachments or call numbers given in the message.</li>
+      <li>Contact the company or person yourself, using a phone number or website you already know.</li>
+      <li>Never share a code, password or PIN, even with someone who says they are from your bank or the Gardaí (the police).</li>
+      <li>Ask someone you trust before you do anything.</li>
+      <li>If you have already clicked, given details or sent money, call your bank straight away, then report it at your local Garda station.</li>
+    </ul>
+    <div class="row">
+      <button type="button" class="big-btn" id="againBtn">Check another message</button>
+      <button type="button" id="speakBtn">Read this aloud</button>
+    </div>
+  </section>
+
+  <section class="panel" id="scanView" hidden>
+    <div class="scan-head">
+      <p class="scan-status" id="scanStatusWrap" tabindex="-1"><span class="pulse" id="pulse"></span><span id="scanStatus">Checking who sent it</span></p>
+      <div class="row">
+        <span class="found-count" id="foundCount" aria-live="polite">0 warning signs so far</span>
+        <button type="button" id="skipBtn">Skip to the answer</button>
+      </div>
+    </div>
+    <div class="scan-grid">
+      <div class="scan-box" id="scanBox" tabindex="0" aria-label="The message being checked">
+        <div class="scan-inner" id="scanInner">
+          <div class="scan-text" id="scanText"></div>
+          <div class="scan-line" id="scanLine"></div>
+        </div>
+      </div>
+      <div class="found">
+        <h2>What we found</h2>
+        <ol class="found-list" id="foundList"></ol>
+        <p class="found-empty" id="foundEmpty">Nothing yet. Still checking.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel" id="aiView" hidden>
+    <h2>Get a second opinion from an AI</h2>
+    <p class="hint" id="aiIntro">Claude is an AI assistant. Pressing the button sends this message to Claude to read, so make sure your personal details are removed first.</p>
+    <div class="row">
+      <button type="button" class="big-btn" id="askBtn">Ask Claude</button>
+      <button type="button" id="stopBtn" hidden>Stop</button>
+    </div>
+    <div class="ai-out" id="aiOut" hidden aria-live="polite"></div>
+    <p class="hint" id="aiNote"></p>
+    <details id="otherAI">
+      <summary id="otherSummary">Use ChatGPT or Copilot instead</summary>
+      <div class="other">
+        <p class="hint">Copy the question, open the AI tool, then paste it into a new chat.</p>
+        <div class="row seg" id="toolRow">
+          <button type="button" data-tool="chatgpt" aria-pressed="true">ChatGPT</button>
+          <button type="button" data-tool="copilot" aria-pressed="false">Copilot</button>
+          <button type="button" data-tool="claude" aria-pressed="false">Claude</button>
+        </div>
+        <pre id="promptOut" tabindex="0"></pre>
+        <div class="row">
+          <button type="button" id="copyBtn">Copy the question</button>
+          <a class="btn" id="openLink" href="https://chatgpt.com/" target="_blank" rel="noopener">Open ChatGPT</a>
+          <span class="copy-msg" id="copyMsg" role="status"></span>
+        </div>
+      </div>
+    </details>
+  </section>
+
+  <footer>This checker looks for common scam signs. It cannot catch every scam, and it can never prove a message is safe. Scams written with AI often have perfect spelling, so what a message asks you to do matters more than how well it is written. It only checks messages written in English. If you are unsure, ask someone you trust, or contact the company directly using a number you already have.</footer>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  var $ = function (id) { return document.getElementById(id); };
+  function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;" }[c]; }); }
+  var reduce = !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+
+  /* ================= examples (all made up) ================= */
+  var EXAMPLES = {
+    bank:
+"From: Northfield Bank Security <alerts@northfie1d-bank-verify.com>\n" +
+"Subject: URGENT: Your account will be suspended in 24 hours\n\n" +
+"Dear Customer,\n\n" +
+"We detected unusual activity on you account. To avoid suspension, please verify your details immediately by clicking the link below:\n\n" +
+"http://northfield-bank.secure-login-update.co/verify\n\n" +
+"Failure to act within 24 hours will result in permanent closure.\n\n" +
+"Regards,\nSecurity Team",
+    parcel:
+"ParcelPoint: Your parcel is on hold due to an unpaid customs fee of €2.99. Pay within 24 hours to reschedule delivery or it will be returned to sender:\n" +
+"https://parcelpoint-redelivery.top/pay",
+    mum:
+"Hi Mum, I dropped my phone in the sink so this is my new number. Can you do me a quick favour? I have a bill to pay today but my banking app won't work on the new phone. Could you transfer the money for me and I'll pay you back tomorrow? I can't talk right now, the mic is broken. Love you x",
+    grant:
+"From: Global Relief Fund <office@grf-relief-payments.xyz>\n" +
+"Subject: Grant Award Notification\n\n" +
+"GLOBAL RELIEF FUND - GRANT AWARD\n\n" +
+"Your email was randomly selected in our annual donation programme. You have been awarded a grant of 950,000.00 USD.\n\n" +
+"To receive your funds, send the following to our Payments Officer:\nFull Name\nHome Address\nPhone Number\nOccupation\n\n" +
+"Reply only to: grf.payments.office@outlook.com\n\n" +
+"Do not discuss this award with anyone until your payment is complete. Kindly reply for immediate processing of you payment.\n\n" +
+"Payments Officer\nGlobal Relief Fund",
+    boss:
+"From: Mary Collins (CEO) <mary.collins.ceo@gmail.com>\n" +
+"Subject: Quick favour\n\n" +
+"Hi,\n\nAre you at your desk? I'm in meetings all day and need a favour. Please buy 5 gift cards (EUR 100 each) for a client today and send me photos of the codes on the back. I'll pay you back tomorrow.\n\n" +
+"Please keep this between us for now, it's a surprise.\n\nMary\nSent from my iPhone",
+    hidden:
+"From: Northfield Bank <alerts@northfieldbank.ie>\n" +
+"Subject: New device signed in\n\n" +
+"Hello,\n\nA new device signed in to your online banking today. If this was you, you can ignore this message. If it wasn't, reply to this email and our team will help you protect your account.\n\nNorthfield Bank",
+    real:
+"From: Contoso IT Service Desk <servicedesk@contoso-health.example>\n" +
+"Subject: Planned maintenance this Saturday\n\n" +
+"Hello all,\n\nThe staff intranet will be offline for planned maintenance on Saturday from 08:00 to 12:00. You do not need to do anything.\n\n" +
+"Details are on the intranet:\nhttps://intranet.contoso-health.example/it/maintenance\n\n" +
+"If you have any questions, phone the IT Service Desk on extension 4400.\n\nThanks,\nContoso IT Service Desk"
+  };
+
+  var EXAMPLE_HEADERS = {
+    hidden:
+"Delivered-To: [my email]\n" +
+"Return-Path: <bounce@mailer-x7.top>\n" +
+"Authentication-Results: mx.example.net;\n" +
+"       spf=fail (sender IP is 203.0.113.45) smtp.mailfrom=mailer-x7.top;\n" +
+"       dkim=none;\n" +
+"       dmarc=fail (p=reject) header.from=northfieldbank.ie\n" +
+"Received-SPF: Fail (sender IP is 203.0.113.45)\n" +
+"From: Northfield Bank <alerts@northfieldbank.ie>\n" +
+"Reply-To: northfield.help.desk@outlook.com\n" +
+"Subject: New device signed in\n\n(message text)"
+  };
+
+  /* ================= reference lists ================= */
+  var FREEMAIL = ["gmail.com","googlemail.com","outlook.com","hotmail.com","live.com","yahoo.com","yahoo.co.uk","icloud.com","aol.com","proton.me","protonmail.com","gmx.com","mail.com","eircom.net","yandex.com","zoho.com"];
+  var GENERIC = ["security","team","support","alert","alerts","service","services","customer","customers","account","accounts","notification","notifications","admin","helpdesk","desk","department","dept","noreply","reply","info","the","and","online","center","centre","billing","payroll","official","mail","update","updates","verification","fraud","prevention","bank","from","your","ltd","limited","inc","group","dear","office"];
+  var ORGWORDS = ["ceo","cfo","director","manager","bank","support","department","payroll","finance","security","service","desk","hr","admin","police","revenue","government","officer","fund","garda"];
+  var TRACKERS = ["mailchi.mp","list-manage.com","mcusercontent.com","sendgrid.net","hubspotlinks.com","hs-sites.com","safelinks.protection.outlook.com","exacttarget.com","mailgun.org","sparkpostmail.com","awstrack.me","cmail19.com","cmail20.com","createsend.com","mjt.lu","sendibt3.com","rs6.net"];
+  var BADTLD = ["xyz","top","click","loan","work","zip","mov","icu","cam","rest","country","gq","tk","ml","cf","ga","buzz","cyou","sbs","cfd","bond"];
+  var SHORT = ["bit.ly","tinyurl.com","t.co","goo.gl","ow.ly","is.gd","rb.gy","cutt.ly","buff.ly","shorturl.at","tiny.cc","t.ly"];
+  var FREEHOST = ["weebly.com","wixsite.com","firebaseapp.com","web.app","pages.dev","vercel.app","netlify.app","github.io","blogspot.com","000webhostapp.com","ngrok.io","ngrok-free.app","glitch.me","godaddysites.com","square.site","sites.google.com","forms.gle","r2.dev","workers.dev"];
+  var BAIT = /(secure|verify|verif|login|signin|update|account|refund|redeliver|delivery|track|parcel|support|billing|payment|pay|confirm|unlock|claim|reward|wallet|auth)/;
+  var ORGS = [
+    { n: "An Post", re: /\ban post\b/i, k: ["anpost"] },
+    { n: "Revenue", re: /\brevenue\b/i, k: ["revenue.ie"] },
+    { n: "the HSE", re: /\bhse\b/i, k: ["hse.ie"] },
+    { n: "AIB", re: /\baib\b/i, k: ["aib.ie"] },
+    { n: "Bank of Ireland", re: /\bbank of ireland\b|\bboi\b/i, k: ["bankofireland", "boi.com"] },
+    { n: "PTSB", re: /\bptsb\b|\bpermanent tsb\b/i, k: ["ptsb"] },
+    { n: "Revolut", re: /\brevolut\b/i, k: ["revolut"] },
+    { n: "Electric Ireland", re: /\belectric ireland\b/i, k: ["electricireland"] },
+    { n: "Bord Gáis", re: /\bbord g[aá]is\b/i, k: ["bordgais"] },
+    { n: "DHL", re: /\bdhl\b/i, k: ["dhl"] },
+    { n: "FedEx", re: /\bfedex\b/i, k: ["fedex"] },
+    { n: "DPD", re: /\bdpd\b/i, k: ["dpd"] },
+    { n: "Royal Mail", re: /\broyal mail\b/i, k: ["royalmail"] },
+    { n: "Evri", re: /\bevri\b/i, k: ["evri"] },
+    { n: "HMRC", re: /\bhmrc\b/i, k: ["gov.uk"] },
+    { n: "Amazon", re: /\bamazon\b/i, k: ["amazon", "amzn"] },
+    { n: "eFlow", re: /\beflow\b|\bm50\b/i, k: ["eflow.ie"] },
+    { n: "Three", re: /\bthree ireland\b/i, k: ["three.ie"] },
+    { n: "Vodafone", re: /\bvodafone\b/i, k: ["vodafone"] },
+    { n: "Eir", re: /\beir\b/i, k: ["eir.ie"] },
+    { n: "PayPal", re: /\bpaypal\b/i, k: ["paypal"] },
+    { n: "Netflix", re: /\bnetflix\b/i, k: ["netflix"] },
+    { n: "Microsoft", re: /\bmicrosoft\b|\boffice ?365\b/i, k: ["microsoft", "office.com", "live.com"] },
+    { n: "Apple", re: /\bapple ?id\b|\bicloud\b/i, k: ["apple.com", "icloud.com"] },
+    { n: "the Gardaí", re: /\bgarda[ií]?\b/i, k: ["garda.ie"] },
+    { n: "the IMF", re: /\binternational monetary fund\b|\bimf\b/i, k: ["imf.org"] },
+    { n: "the United Nations", re: /\bunited nations\b/i, k: ["un.org"] },
+    { n: "the World Bank", re: /\bworld bank\b/i, k: ["worldbank.org"] },
+    { n: "WhatsApp", re: /\bwhatsapp\b/i, k: ["whatsapp"] }
+  ];
+
+  /* word rules: matched against the message with links and email addresses blanked out */
+  var RULES = [
+    { cat: "pressure", title: "Rushing you", level: "medium",
+      re: /\b(urgent(ly)?|immediately|immediate|right away|asap|as soon as possible|act now|act fast|final (notice|warning|reminder)|last chance|expires? (today|soon)|within (12|24|48|72) hours|in the next (12|24|48) hours|today only|deadline|time is running out)\b/,
+      why: "Scammers rush you so you act before you have time to think or ask someone." },
+    { cat: "pressure", title: "Threatening you", level: "medium",
+      re: /\b(suspended|suspension|will be (closed|blocked|locked|deleted|cancell?ed|terminated|disabled|frozen|returned to sender)|permanent(ly)? (clos\w*|delet\w*)|permanent closure|legal action|arrest(ed)?|warrant|court action|bailiffs?|fined|penalty|penalties|locked out|deactivat\w+|frozen)\b/,
+      why: "Frightening you is a common trick to stop you thinking clearly." },
+    { cat: "asks", title: "Asks for passwords or bank details", level: "high",
+      re: /\b(verify your (account|identity|details|information)|confirm your (account|identity|details|password|information)|(enter|confirm|verify|provide|send|give|tell) (us |me )?(your )?(password|pin|card number|card details)|log ?in details|sign ?in details|security code|card (number|details)|cvv|bank details|account details|update your (details|information|payment|billing)|log ?in to (restore|verify|confirm|unlock|reactivate|update)|restore (your )?access)\b/,
+      why: "Real banks and companies never ask for these by email or text." },
+    { cat: "pressure", title: "Password expiry warning", level: "medium",
+      re: /\b(passwords? (will )?(expire|expires|expired|expiring)|reset your password|password reset)\b/,
+      why: "Fake \"password expiring\" messages lead to fake login pages. Change your password by going to the website yourself." },
+    { cat: "pressure", title: "Says your account is locked", level: "medium",
+      re: /\b(card|account|myaccount|apple id|profile)\b[^.\n]{0,30}\b(blocked|locked|restricted|on hold|disabled)\b/,
+      why: "\"Your account is locked\" is a common way to rush you into logging in on a fake page." },
+    { cat: "pressure", title: "Unusual activity alert", level: "medium",
+      re: /\b(unusual|suspicious|unrecognised|unrecognized|new) (sign[- ]?in|log[- ]?in|activity|device|transaction|payment)\b/,
+      why: "Scammers copy real security alerts. Check by opening your bank's app or website yourself, not the link." },
+    { cat: "asks", title: "Asks you to pass on a code", level: "high",
+      re: /\b(code|passcode|pin) (is|:)\s*\d{4,8}\b[^\n]{0,80}\b(give|tell|read) it (to|back|out)\b/,
+      why: "No genuine company will ever ask you to read out or pass on a code. That code is the key to your account." },
+    { cat: "pressure", title: "Toll or fine notice", level: "medium",
+      re: /\b(unpaid tolls?|toll (charge|fine|arrears|payment)|m50|eflow|parking fine|speeding fine|unpaid fine)\b/,
+      why: "Fake toll and fine texts are common in Ireland. Check by going to the official website yourself, not through the link." },
+    { cat: "pretend", title: "Says it's from the Gardaí", level: "low",
+      re: /\b(an garda s[ií]och[aá]na|garda[ií]?)\b/,
+      why: "Real Gardaí (police) will never contact you out of the blue asking for bank details. Hang up and ring your local Garda station." },
+    { cat: "asks", title: "Asks for a code", level: "high",
+      re: /\b(one[- ]time (code|passcode|password)|otp|verification code|6[- ]digit code|(send|share|tell|forward) (me |us )?(the |your |that )?code)\b/,
+      why: "Never share a code sent to your phone. It lets scammers into your accounts." },
+    { cat: "asks", title: "Asks for personal details", level: function (n) { return n >= 3 ? "high" : "medium"; },
+      re: /\b(full name|residential address|home address|date of birth|nationality|occupation|marital status|passport|pps number|copy of your id|photo id|driving licen[cs]e|mother'?s maiden name|eircode|revenue myaccount|phone number)\b/,
+      why: "Personal details can be used to steal your identity or open accounts in your name." },
+    { cat: "asks", title: "Asks for money in an unusual way", level: "high",
+      re: /\b(gift ?cards?|itunes cards?|google play cards?|steam cards?|amazon vouchers?|codes on the back|wire transfer|western union|moneygram|bitcoin|crypto(currency)?|usdt|transfer the money|send (me |us )?(the )?money|pay (a|the) (small )?(fee|charge)|(release|processing|handling|customs|delivery|redelivery|admin|clearing|activation|insurance|shipping|registration|verification) (fee|charge|payment)|security deposit|(send|transfer|pay)\b[^.\n]{0,30}\b(by|via|with|on|through) (revolut|apple pay|google pay|paysafe\w*))\b/,
+      why: "Gift cards, crypto and small \"fees\" are favourite scam payments, because they are hard to trace or get back." },
+    { cat: "asks", title: "Asks you to keep it secret", level: "medium",
+      re: /\b(keep (this|it) (between us|to yourself|confidential|private|quiet)|don'?t tell|do not tell|do not discuss|don'?t discuss|stop all communication|it'?s a surprise|don'?t call|do not call|can'?t talk|cannot talk|can'?t take calls)\b/,
+      why: "Scammers want to stop you checking with family, friends or the company." },
+    { cat: "asks", title: "Vague favour request", level: "low",
+      re: /\b(are you (at your desk|available|free|around)|quick favou?r|need a favou?r|do me a favou?r)\b/,
+      why: "Scammers pretending to be a boss, friend or relative often start with a vague favour." },
+    { cat: "asks", title: "Asks you to call a number", level: "low",
+      re: /\b(call|ring|phone) (us|this number|the number below|now|immediately)\b/,
+      why: "Call the company on a number you already trust, not one given in the message." },
+    { cat: "pretend", title: "\"Lost my phone\" story", level: "high",
+      re: /\b(lost my phone|broke my phone|broken phone|dropped my phone|phone (is )?broken|my (old )?phone (is )?(broke|dead|lost))\b/,
+      why: "This is how the \"Hi Mum\" scam works: someone pretends to be family on a new number. Call them on their old number to check." },
+    { cat: "pretend", title: "Messaging from a new number", level: "medium",
+      re: /\b(new number|this is my new)\b/,
+      why: "Fine if you can confirm who it is. Before sending money or details, call them on the number you already have." },
+    { cat: "pretend", title: "Family-style greeting", level: "low",
+      re: /\b(hi|hello|hey) (mum|mam|mom|mammy|dad|daddy|nana|nan|granny|gran|grandma|grandad|grandpa)\b/,
+      why: "Fine from a number you know. From an unknown number, this is how the \"Hi Mum\" scam starts." },
+    { cat: "pretend", title: "Asks to control your device", level: "high",
+      re: /\b(anydesk|teamviewer|ultraviewer|quick ?support|remote access|remote desktop|install (this|the|our) (app|software|program))\b/,
+      why: "Never let someone you don't know control your computer or phone. They can empty your accounts." },
+    { cat: "pretend", title: "Fake tech support", level: "high",
+      re: /\b(virus (has been )?detected|your (computer|device|phone) (is|has been) (infected|hacked|compromised)|(microsoft|windows|apple) (support|technician|security team)|(windows|antivirus|software|norton|mcafee|security) licen[cs]e (has )?expired)\b/,
+      why: "Real tech companies do not contact you out of the blue about viruses." },
+    { cat: "pretend", title: "Blackmail threat", level: "high",
+      re: /\b(webcam|recorded you|recorded (a )?video of you|adult (site|website|videos?)|i have access to your (device|computer|phone|accounts?)|hacked your (device|computer|phone|account))\b/,
+      why: "Claims that someone has hacked or filmed you are almost always a bluff to scare you into paying." },
+    { cat: "pretend", title: "Parcel problem", level: "medium",
+      re: /\b(could not be delivered|couldn'?t be delivered|unable to deliver|delivery (failed|attempt|was unsuccessful)|failed delivery|(parcel|package|shipment) (is )?(on hold|held|waiting|pending)|held at (the )?(depot|customs)|reschedule (your )?delivery|missed (your )?(delivery|parcel))\b/,
+      why: "Fake delivery and customs-fee messages are the most common scam in Ireland. An Post and Revenue do not ask for customs payments by text. Check on the courier's own website or app instead." },
+    { cat: "offer", title: "Free money out of the blue", level: function (n) { return n >= 2 ? "high" : "low"; },
+      re: /\b(grant|donation|awarded|beneficiary|compensation|unclaimed|inheritance|lottery|jackpot|you (have|'?ve) won|winner|prize|funds box|approved funds|random(ly)? selected|selection process|shortlisted|claim your (reward|prize|refund|money))\b/,
+      why: "You cannot win a prize or a grant you never applied for." },
+    { cat: "offer", title: "Refund offer", level: "high",
+      re: /\b(tax refund|tax rebate|refund (of|is) (due|available|pending|waiting)|(you are|you're) (due|owed|eligible for) a (refund|rebate)|overpaid|overpayment)\b/,
+      why: "Revenue and genuine companies do not send refunds by asking you to click a link and enter card details." },
+    { cat: "offer", title: "Too-good-to-be-true investment", level: "high",
+      re: /\b(guaranteed (returns?|profits?|income)|double your money|investment opportunity|trading platform|crypto investment|risk[- ]free|passive income|(state|government)[- ]backed (scheme|investment|platform)|limited places)\b/,
+      why: "Guaranteed big returns do not exist. Fake adverts even use AI videos of well-known people to promote these schemes." },
+    { cat: "asks", title: "\"Safe account\" request", level: "high",
+      re: /\b(safe account|secure account|protect your (money|savings)|transfer (it|your money|your savings|the money|your funds) to|linked to (a )?(fraud|money laundering|crime|criminal)|fraud investigation|money laundering investigation)\b/,
+      why: "No bank, Garda or official will ever ask you to move your money to a \"safe account\". This is always a scam." },
+    { cat: "offer", title: "Unrealistic returns", level: "high",
+      re: /\b\d{2,3}% (a|per|every) (month|week|day)\b|\breturns? of \d{2,3}%/,
+      why: "No genuine investment pays this much this quickly." },
+    { cat: "offer", title: "Loan or funding offer", level: "medium",
+      re: /\b(pre-?approved|business funding|funding (is )?available|credit line|line of credit|fast loan|instant loan|loan (is )?approved|guaranteed loan|no credit check)\b/,
+      why: "Unexpected loan offers often ask for a fee or your details up front, and the money never comes." },
+    { cat: "offer", title: "Easy job offer", level: "medium",
+      re: /\b(work from home|earn (€|\$|£)?\s?\d+ (a|per) (day|hour|week)|easy money|no experience (needed|required)|part[- ]time job offer|like videos and earn)\b/,
+      why: "Jobs offering easy money for little work are often scams that end with you paying them." },
+    { cat: "offer", title: "Trying too hard to seem real", level: "medium",
+      re: /\b(no need to respond|this is not a scam|not a scam|this is legit|100% (legit|genuine|safe|real)|not to ignore)\b/,
+      why: "Genuine messages rarely need to tell you they are not a scam." },
+    { cat: "style", title: "Generic greeting", level: "medium",
+      re: /\b(dear (customer|user|sir\/madam|sir or madam|valued (customer|member|client)|account holder|client|member|beneficiary|friend|email user))\b/,
+      why: "Your bank or provider knows your name. \"Dear Customer\" is a sign of a mass scam." },
+    { cat: "style", title: "Spelling mistakes", level: "medium",
+      re: /\b(this massage|the massage|massage you|re-validated|pay list|you account|you password|you payment|recieve|acount|verfy|pasword|immediatly|informations|securty|suspention|uptade|kindly do the needful|your welcome)\b/,
+      why: "Spelling and grammar mistakes are common in scam messages." },
+    { cat: "style", title: "Uses the word \"kindly\"", level: "low",
+      re: /\bkindly\b/,
+      why: "\"Kindly\" turns up very often in scam messages." },
+    { cat: "files", title: "Risky attachment", level: "high",
+      re: /\b[\w-]+\.(zip|exe|scr|iso|rar|vbs|bat|js|htm|html|img)\b/,
+      why: "These file types can install viruses. Do not open them." },
+    { cat: "files", title: "Asks you to switch on macros", level: "high",
+      re: /\benable (macros|content|editing)\b/,
+      why: "Turning on macros or content in a document is how many viruses get in." },
+    { cat: "files", title: "QR code", level: "medium",
+      re: /\bqr ?codes?\b/,
+      why: "A QR code can hide a fake website. Go to the company's website yourself instead." },
+    { cat: "asks", title: "Asks to change bank details", level: "high",
+      re: /\b(new bank (details|account)|change(d)? (of )?(our|my|the) bank (details|account)|bank details (have|has) changed|update (our|the) (bank|payment) details|(iban|account number) has changed|pay (into|to) (this|the|our) new account)\b/,
+      why: "Fake \"we've changed bank account\" messages are a common way to steal payments. Always confirm by phone on a number you already have." },
+    { cat: "pretend", title: "Unexpected order or invoice", level: "medium",
+      re: /\b(your order (has been|was|is) (placed|confirmed|processed)|invoice (attached|is attached|overdue)|overdue invoice|unpaid invoice|payment (overdue|failed|declined|unsuccessful)|subscription (has )?(expired|renewed|ended)|auto[- ]?renew(al|ed)?)\b/,
+      why: "If you don't remember ordering or owing anything, check with the company yourself. Don't use the message's links." },
+    { cat: "pretend", title: "Fake shared document", level: "medium",
+      re: /\b(shared (a |the )?(document|file|folder|files) with you|(has|have) been shared with you|(has|have) shared (a |the )?(document|file|folder|files)|view (the )?documents?|open (the )?(pdf|file|document)|review and sign|docusign|onedrive|sharepoint|secure (message|portal|document))\b/,
+      why: "Fake \"a document has been shared with you\" links usually lead to a fake login page that steals your password." },
+    { cat: "files", title: "Locked attachment", level: "medium",
+      re: /\b(password[- ]protected|protected (pdf|document|file|zip)|(pdf|document|file|zip) password|the password (is|to open))\b/,
+      why: "Scammers lock attachments with a password so security filters can't look inside." },
+    { cat: "asks", title: "Asks you to enter a code on a login page", level: "high",
+      re: /\b(device (login|code)|devicelogin|enter (this|the) code (at|on|into))\b/,
+      why: "Typing a code someone sends you into a login page can give them access to your account, even on a real website." },
+    { cat: "links", title: "Pushes you to click", level: "low",
+      re: /\b(click (here|the link|below|on the link)|clicking (here|the link|below)|tap (the link|here)|follow the link|link below|(use|visit|open|access) (this|the|our|the following) (link|page|portal))\b/,
+      why: "Go to the company's website yourself instead of using a link in a message." }
+  ];
+  var PTS = { high: 25, medium: 12, low: 5, info: 0 };
+  var CHIP = { high: "Strong warning", medium: "Warning", low: "Small sign", info: "Good to know" };
+
+  /* ================= helpers ================= */
+  function baseDomain(host) {
+    var l = host.split(".").filter(Boolean);
+    if (l.length <= 2) return l.join(".");
+    var sld = l[l.length - 2], tld = l[l.length - 1];
+    if (tld.length === 2 && ["co","com","org","gov","ac","net","nhs","edu","ltd","plc"].indexOf(sld) !== -1) return l.slice(-3).join(".");
+    return l.slice(-2).join(".");
+  }
+  function tldOf(host) { var l = host.split("."); return l[l.length - 1]; }
+  function look(s) { return s.replace(/0/g, "o").replace(/1/g, "l").replace(/3/g, "e").replace(/5/g, "s").replace(/rn/g, "m").replace(/vv/g, "w"); }
+  function titleCase(s) { return s.replace(/\b[a-z]/g, function (c) { return c.toUpperCase(); }); }
+
+  function parseFrom(text) {
+    var m = /^[ \t]*from:[ \t]*(.+)$/im.exec(text);
+    var r = { addr: "", name: "", domain: "", addrStart: -1 };
+    if (!m) return r;
+    var line = m[1], lineStart = m.index + m[0].indexOf(m[1]);
+    var a = line.match(/<\s*([^>\s]+@[^>\s]+)\s*>/) || line.match(/([^\s<>"]+@[^\s<>"]+)/);
+    if (!a) { r.name = line.trim(); return r; }
+    r.addr = a[1].toLowerCase().replace(/[>.,;]+$/, "");
+    r.addrStart = lineStart + line.toLowerCase().indexOf(r.addr);
+    r.name = line.replace(a[0], " ").replace(/["'<>()]/g, " ").replace(/\s+/g, " ").trim();
+    r.domain = r.addr.split("@")[1] || "";
+    return r;
+  }
+  function parseLinks(text) {
+    var re = /\b((?:https?:\/\/|www\.)[^\s<>"')\]]+)/gi, m, out = [];
+    while ((m = re.exec(text))) {
+      var raw = m[1].replace(/[.,;:!?]+$/, "");
+      try {
+        var u = new URL(/^www\./i.test(raw) ? "http://" + raw : raw);
+        out.push({ raw: raw, start: m.index, end: m.index + raw.length, host: u.hostname.toLowerCase(), https: u.protocol === "https:" });
+      } catch (e) {}
+    }
+    return out;
+  }
+
+  /* ================= hidden details (email headers) ================= */
+  function headerBlock(raw) {
+    raw = raw.replace(/\r\n/g, "\n");
+    var cut = raw.search(/\n[ \t]*\n/);
+    return (cut === -1 ? raw : raw.slice(0, cut)).replace(/\n[ \t]+/g, " ");
+  }
+  function summariseHeaders(raw) {
+    var b = headerBlock(raw), out = [];
+    ["From", "Reply-To", "Return-Path", "Authentication-Results", "Received-SPF"].forEach(function (n) {
+      var m = new RegExp("^" + n + ":[ \\t]*(.*)$", "im").exec(b);
+      if (m && m[1].trim()) { var v = m[1].trim(); out.push(n + ": " + (v.length > 400 ? v.slice(0, 400) + "..." : v)); }
+    });
+    return out.join("\n");
+  }
+  function inlineHeaderRegion(text) {
+    var cut = text.search(/\n[ \t]*\n/);
+    if (cut < 0) return null;
+    var block = text.slice(0, cut);
+    var n = (block.match(/^[A-Za-z][\w-]*:/gm) || []).length;
+    if (n >= 4 && /^(authentication-results|received|arc-seal|dkim-signature|return-path|delivered-to):/im.test(block)) return { s: 0, e: cut };
+    return null;
+  }
+  function headerChecks(text, R, add) {
+    var H = text.slice(R.s, R.e);
+    var arm = /^authentication-results:[^\n]*(?:\n[ \t][^\n]*)*/im.exec(H);
+    var AR = arm ? arm[0] : "", arOff = arm ? R.s + arm.index : 0;
+    function inAR(re) { var m = re.exec(AR); return m ? { v: m[1].toLowerCase(), r: [arOff + m.index, arOff + m.index + m[0].length] } : null; }
+    var dmarc = inAR(/\bdmarc=(\w+)/i), spf = inAR(/\bspf=(\w+)/i), dkim = inAR(/\bdkim=(\w+)/i), comp = inAR(/\bcompauth=(\w+)/i);
+    if (!spf) {
+      var rs = /^received-spf:[ \t]*(\w+)/im.exec(H);
+      if (rs) spf = { v: rs[1].toLowerCase(), r: [R.s + rs.index, R.s + rs.index + rs[0].length] };
+    }
+    var fm = /^from:[^\n]*?([^\s<>"]+)@([^\s<>"]+)/im.exec(H);
+    var fromDom = fm ? fm[2].toLowerCase().replace(/[>.,;]+$/, "") : "";
+    var who = fromDom || "the company it names";
+    var failed = false;
+    if ((dmarc && /fail/.test(dmarc.v)) || (comp && /fail/.test(comp.v))) {
+      failed = true;
+      var hit = (dmarc && /fail/.test(dmarc.v)) ? dmarc : comp;
+      add({ cat: "hidden", level: "high", pts: 40, title: "Failed the identity check", ranges: [hit.r],
+        why: "The email says it is from " + who + ", but " + who + "'s own security check says it did not send it. This is a strong sign it is fake." });
+    }
+    if (spf && spf.v === "fail") { failed = true; add({ cat: "hidden", level: "high", title: "Sent from an unapproved computer", ranges: [spf.r],
+      why: "It was sent from a computer that " + who + " has not approved to send its emails." }); }
+    else if (spf && spf.v === "softfail") { failed = true; add({ cat: "hidden", level: "medium", title: "Sender not fully approved", ranges: [spf.r],
+      why: "The computer that sent it is not on " + who + "'s approved list." }); }
+    if (dkim && /fail/.test(dkim.v)) { failed = true; add({ cat: "hidden", level: "medium", title: "Security signature failed", ranges: [dkim.r],
+      why: "The email's digital signature didn't check out, so it may have been faked or changed on the way." }); }
+    if (AR && !failed && !(dmarc && dmarc.v === "pass") && (!spf || spf.v === "none") && (!dkim || dkim.v === "none")) add({ cat: "hidden", level: "low", title: "No security checks", ranges: [[arOff, arOff + Math.min(AR.length, 60)]],
+      why: "This email has none of the usual security checks. Most genuine companies use them." });
+    if (dmarc && dmarc.v === "pass" && !failed) add({ cat: "hidden", level: "info", title: "Passed the identity checks", ranges: [dmarc.r],
+      why: "This shows it really came from " + who + ". It does not prove " + who + " is genuine: scammers pass these checks using their own look-alike website names, so the other checks still matter." });
+    var rt = /^reply-to:[^\n]*?([^\s<>"]+@([^\s<>"]+))/im.exec(H);
+    if (rt && fromDom) {
+      var rd = rt[2].toLowerCase().replace(/[>.,;]+$/, ""), rst = R.s + rt.index + rt[0].indexOf(rt[1]);
+      if (baseDomain(rd) !== baseDomain(fromDom)) {
+        var free = FREEMAIL.indexOf(baseDomain(rd)) !== -1 && FREEMAIL.indexOf(baseDomain(fromDom)) === -1;
+        add({ cat: "hidden", level: free ? "high" : "medium", title: "Replies go somewhere else", ranges: [[rst, rst + rt[1].length]],
+          why: "If you reply, your answer goes to " + rd + (free ? ", a free email account," : "") + " not to " + fromDom + "." });
+      }
+    }
+    return !!(AR || spf);
+  }
+
+  /* ================= analysis ================= */
+  function analyse(text, hReg) {
+    var F = [];
+    function add(o) { F.push(o); }
+    var keys = {};
+    function addOnce(key, o) { if (!keys[key]) { keys[key] = 1; add(o); } }
+
+    var links = parseLinks(text).filter(function (L) { return !hReg || L.start < hReg.s || L.start >= hReg.e; });
+    var emailRe = /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g, em;
+    var emails = [];
+    while ((em = emailRe.exec(text))) emails.push({ addr: em[0].toLowerCase(), start: em.index, end: em.index + em[0].length });
+
+    /* blank links and addresses so word rules ignore them; same length keeps positions */
+    var plain = text.split("");
+    links.concat(emails).forEach(function (r) { for (var i = r.start; i < r.end; i++) plain[i] = " "; });
+    if (hReg) for (var hi = hReg.s; hi < hReg.e; hi++) plain[hi] = " ";
+    plain = plain.join("");
+
+    /* strip invisible characters (keep a map back to the original positions) */
+    var norm = "", map = [], hidden = [], zw = [], prevFlag = false;
+    for (var i = 0; i < plain.length; i++) {
+      var c = plain.charCodeAt(i);
+      if (c === 0xDB40 && i + 1 < plain.length) {
+        var c2 = plain.charCodeAt(i + 1);
+        if (c2 >= 0xDC00 && c2 <= 0xDC7F) {
+          var legit = prevFlag || (i >= 2 && plain.slice(i - 2, i) === "🏴");
+          prevFlag = legit;
+          if (!legit) hidden.push(i);
+          i++; continue;
+        }
+      }
+      prevFlag = false;
+      if (c === 0x200B || c === 0x200C || c === 0x200D || c === 0x2060 || c === 0xFEFF || c === 0x00AD || c === 0x200A || c === 0x180E) {
+        var p = i > 0 ? plain.charCodeAt(i - 1) : 0;
+        var emojiJoin = c === 0x200D && ((p >= 0xDC00 && p <= 0xDFFF) || p === 0xFE0F);
+        if (!emojiJoin && c !== 0x00AD) zw.push(i);
+        continue;
+      }
+      map.push(i); norm += plain[i];
+    }
+    map.push(plain.length);
+    function orig(idx, len) { return [map[idx], map[Math.max(idx, idx + len - 1)] + 1]; }
+
+    var orgs = ORGS.filter(function (o) { return o.re.test(norm); });
+
+    /* ---- sender ---- */
+    var s = parseFrom(text);
+    var senderBase = s.domain ? baseDomain(s.domain) : "";
+    var senderFree = senderBase && FREEMAIL.indexOf(senderBase) !== -1;
+    var sr = s.addrStart >= 0 ? [[s.addrStart, s.addrStart + s.addr.length]] : [];
+    if (s.addr) {
+      var d = s.domain, label = baseDomain(d).split(".")[0];
+      var nameWords = s.name.toLowerCase().split(/[^a-z0-9]+/).filter(function (w) { return w.length > 2 && GENERIC.indexOf(w) === -1; });
+      var orgish = s.name.toLowerCase().split(/[^a-z]+/).some(function (w) { return ORGWORDS.indexOf(w) !== -1; });
+      var lookalike = false;
+      if (senderFree && orgish) add({ cat: "sender", level: "medium", title: "Free email account", ranges: sr,
+        why: "It says it is from " + s.name + " but uses a free " + senderBase + " address. Companies and managers use work addresses." });
+      if (!senderFree && nameWords.length) {
+        var rawHit = nameWords.some(function (w) { return d.indexOf(w) !== -1; });
+        var lookHit = nameWords.some(function (w) { return look(d).indexOf(look(w)) !== -1; });
+        if (!rawHit && lookHit) { lookalike = true; add({ cat: "sender", level: "high", title: "Fake look-alike address", ranges: sr,
+          why: "The address swaps letters for numbers so it looks like " + s.name + " at a glance." }); }
+        else if (!rawHit) add({ cat: "sender", level: "medium", title: "Name and address don't match", ranges: sr,
+          why: "The sender's name is " + s.name + ", but the address it came from is " + d + "." });
+      }
+      if (!lookalike && /[a-z][0135][a-z]/.test(label)) add({ cat: "sender", level: "medium", title: "Numbers mixed into the address", ranges: sr,
+        why: "Swapping letters for numbers is a common trick to fake a real company's address." });
+      if (!senderFree && BAIT.test(label)) add({ cat: "sender", level: "medium", title: "Suspicious address name", ranges: sr,
+        why: "Words like \"secure\", \"verify\" or \"payment\" in an address are often added to make a fake one look official." });
+      if (BADTLD.indexOf(tldOf(d)) !== -1) add({ cat: "sender", level: "medium", title: "Risky address ending", ranges: sr,
+        why: "Addresses ending in ." + tldOf(d) + " are cheap and often used for throwaway scam sites." });
+    }
+
+    /* ---- links ---- */
+    var brand = s.name.toLowerCase().split(/[^a-z0-9]+/).filter(function (w) { return w.length > 3 && GENERIC.indexOf(w) === -1; });
+    links.forEach(function (L) {
+      var lb = baseDomain(L.host), lr = [[L.start, L.end]], lab = lb.split(".")[0];
+      var la = function (k, o) { o.dest = lb; addOnce(k, o); };
+      var tracked = TRACKERS.some(function (t) { return L.host === t || L.host.slice(-t.length - 1) === "." + t; });
+      var orgOk = function (o) { return o.k.some(function (k) { return L.host.indexOf(k) !== -1; }); };
+      if (/^\d{1,3}(\.\d{1,3}){3}$/.test(L.host)) la("ip" + L.host, { cat: "links", level: "high", title: "Link to a number, not a website", ranges: lr,
+        why: "Genuine companies link to their own website name, not a string of numbers." });
+      if (SHORT.indexOf(lb) !== -1 || SHORT.indexOf(L.host) !== -1) la("sh" + L.host, { cat: "links", level: "medium", title: "Shortened link", ranges: lr,
+        why: "A shortened link hides where it really goes." });
+      var sub = L.host.slice(0, Math.max(0, L.host.length - lb.length));
+      var disguised = !tracked && brand.some(function (w) { return sub.indexOf(w) !== -1 && lb.indexOf(w) === -1; });
+      var wrongOrg = orgs.filter(function (o) { return !orgOk(o); });
+      if (disguised) la("dg" + L.host, { cat: "links", level: "high", title: "Disguised link", ranges: lr,
+        why: "It puts a familiar name at the front, but the real website is " + lb + "." });
+      else if (!tracked && orgs.length && wrongOrg.length === orgs.length) la("org" + lb, { cat: "links", level: "high", title: "Link doesn't go to " + orgs[0].n, ranges: lr,
+        why: "The message mentions " + orgs[0].n + ", but the link goes to " + lb + "." });
+      else if (!tracked && senderBase && !senderFree && lb !== senderBase) la("mm" + lb, { cat: "links", level: "high", title: "Link goes somewhere else", ranges: lr,
+        why: "The email came from " + senderBase + ", but the link goes to a different website: " + lb + "." });
+      if (!L.https) la("http", { cat: "links", level: "medium", title: "Link without the padlock", ranges: lr,
+        why: "The link starts with http:// instead of https://. Genuine login pages always use https." });
+      if (BADTLD.indexOf(tldOf(L.host)) !== -1) la("tld" + lb, { cat: "links", level: "medium", title: "Risky website ending", ranges: lr,
+        why: "Websites ending in ." + tldOf(L.host) + " are cheap and often used for scams." });
+      if (FREEHOST.some(function (h) { return L.host === h || L.host.slice(-h.length - 1) === "." + h; })) la("fh" + lb, { cat: "links", level: "medium", title: "Free website service", ranges: lr,
+        why: "The link goes to a free website service that anyone can set up in minutes." });
+      if (!orgs.some(orgOk) && BAIT.test(lab) && lab.indexOf("-") !== -1) la("bt" + lb, { cat: "links", level: "medium", title: "Suspicious website name", ranges: lr,
+        why: "Names like " + lb + " are made to sound official. Real companies use their own simple name." });
+      if (/[a-z][0135][a-z]/.test(lab)) la("lk" + lb, { cat: "links", level: "medium", title: "Look-alike website name", ranges: lr,
+        why: "Numbers swapped in for letters is a trick to copy a real website name." });
+    });
+
+    /* ---- reply-to address in the body ---- */
+    emails.forEach(function (E) {
+      if (E.addr === s.addr) return;
+      if (hReg && E.start >= hReg.s && E.start < hReg.e) return;
+      var ad = baseDomain(E.addr.split("@")[1]);
+      var named = orgs.length ? orgs[0].n : (s.name && !senderFree ? s.name : "");
+      if (FREEMAIL.indexOf(ad) !== -1 && (orgs.length || (senderBase && !senderFree)))
+        addOnce("rp" + E.addr, { cat: "asks", level: "high", title: "Reply to a free email account", ranges: [[E.start, E.end]],
+          why: "It claims to be " + (named || "an organisation") + " but asks you to reply to a free " + ad + " address. Real organisations don't do this." });
+      else if (senderBase && ad !== senderBase)
+        addOnce("rp" + E.addr, { cat: "asks", level: "medium", title: "Different reply address", ranges: [[E.start, E.end]],
+          why: "It asks you to contact a different address from the one that sent it." });
+    });
+
+    /* ---- word rules ---- */
+    RULES.forEach(function (r) {
+      var re = new RegExp(r.re.source, "gi"), m, hits = [];
+      while ((m = re.exec(norm)) && hits.length < 8) { if (!m[0]) { re.lastIndex++; continue; } hits.push(m); }
+      if (!hits.length) return;
+      var distinct = [];
+      hits.forEach(function (h) { var t = h[0].toLowerCase(); if (distinct.indexOf(t) === -1) distinct.push(t); });
+      var level = typeof r.level === "function" ? r.level(distinct.length) : r.level;
+      add({ cat: r.cat, level: level, title: r.title, why: r.why,
+        ranges: hits.map(function (h) { return orig(h.index, h[0].length); }) });
+    });
+
+    /* ---- hidden characters ---- */
+    var hidLevel = hidden.length ? "high" : zw.length >= 2 ? "medium" : "";
+    if (hidLevel) {
+      var h0 = hidden.length ? hidden[0] : zw[0];
+      var hs = h0, he = h0 + 1;
+      while (hs > 0 && /[^\s]/.test(text[hs - 1])) hs--;
+      while (he < text.length && /[^\s]/.test(text[he])) he++;
+      add({ cat: "style", level: hidLevel, title: "Hidden characters", ranges: [[hs, he]],
+        why: "The message has invisible characters hidden inside words. Scammers use them to sneak past spam filters." });
+    }
+
+    /* ---- look-alike letters from other alphabets ---- */
+    var wRe = /[^\s]+/g, wm, mixed = null;
+    while ((wm = wRe.exec(norm))) { if (/[A-Za-z]/.test(wm[0]) && /[Ͱ-ϿЀ-ӿ]/.test(wm[0])) { mixed = wm; break; } }
+    if (mixed) add({ cat: "style", level: "high", title: "Look-alike letters", ranges: [orig(mixed.index, mixed[0].length)],
+      why: "Some letters here come from another alphabet but look the same as ours. It's a trick to fake a real name." });
+    links.forEach(function (L) {
+      if (L.host.indexOf("xn--") !== -1) addOnce("pc" + L.host, { cat: "links", level: "high", title: "Website name with look-alike letters", ranges: [[L.start, L.end]],
+        why: "This website name uses foreign letters that look like ordinary ones, to copy a real website." });
+    });
+
+    /* ---- large sums ---- */
+    var bigRe = /(?:[$€£]\s?)?\b\d{1,3}(?:,\d{3})+(?:\.\d+)?(?:\s?(?:us dollars?|usd|eur|euros?|gbp|pounds?|dollars?))?|\b\d+(?:\.\d+)?\s?million\b/gi, bm, big = null;
+    while ((bm = bigRe.exec(norm))) {
+      if (/million/i.test(bm[0]) || parseFloat(bm[0].replace(/[^\d.]/g, "")) >= 10000) { big = bm; break; }
+    }
+    if (big) add({ cat: "offer", level: "high", title: "A huge sum of money", ranges: [orig(big.index, big[0].length)],
+      why: "Promises of large sums are the bait in \"free money\" scams. They end with you paying fees that never stop." });
+
+    /* ---- capitals and exclamation marks ---- */
+    var capRe = /\b[A-Z]{4,}\b/g, cm, caps = [];
+    while ((cm = capRe.exec(norm))) if (["EUR","HTTP","HTTPS","USD","GBP"].indexOf(cm[0]) === -1) caps.push(orig(cm.index, cm[0].length));
+    if (caps.length >= 2) add({ cat: "style", level: "low", title: "Shouting in capitals", ranges: caps.slice(0, 4),
+      why: "Lots of capital letters is used to make you panic." });
+    var ex = /!{2,}/.exec(norm);
+    if (ex || (norm.match(/!/g) || []).length >= 3) {
+      var e1 = ex || /!/.exec(norm);
+      add({ cat: "style", level: "low", title: "Lots of exclamation marks", ranges: [orig(e1.index, e1[0].length)],
+        why: "Excited or alarmed punctuation is common in scams." });
+    }
+
+    /* ---- hidden details ---- */
+    if (hReg) headerChecks(text, hReg, add);
+
+    /* ---- text messages ---- */
+    if (!s.addr) add({ cat: "sender", level: "info", title: "No sender shown", ranges: [],
+      why: "If this is a text message: texts can show a fake sender name, even in the same thread as real messages from your bank, so check by contacting the company yourself. If it is an email, paste the From line too for a fuller check." });
+
+    var score = Math.min(100, F.reduce(function (a, f) { return a + (f.pts || PTS[f.level]); }, 0));
+    return { findings: F, score: score };
+  }
+
+  /* ================= theme and code rain ================= */
+  function hex(h) { return [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)]; }
+  function mixHex(a, b, t) { var A = hex(a), B = hex(b); return "rgb(" + A.map(function (v, i) { return Math.round(v + (B[i] - v) * t); }).join(",") + ")"; }
+  var level = 0, targetLevel = 0;
+  function applyTheme(t) {
+    targetLevel = t;
+    var bg = t < 0.5 ? mixHex("#eef3f6", "#b6c3c9", t / 0.5) : mixHex("#13201a", "#020805", (t - 0.5) / 0.5);
+    document.body.style.backgroundColor = bg;
+    document.body.classList.toggle("matrix", t >= 0.5);
+    $("rain").style.opacity = String(Math.max(0, Math.min(1, (t - 0.12) * 1.6)));
+  }
+
+  var canvas = $("rain"), ctx = canvas.getContext("2d");
+  var GLYPHS = "アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワン0123456789$#<>/=";
+  var FS = 16, cols = 0, drops = [], gate = [], W = 0, H = 0;
+  function resize() {
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    W = window.innerWidth; H = window.innerHeight;
+    canvas.width = W * dpr; canvas.height = H * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    cols = Math.ceil(W / FS); drops = []; gate = [];
+    for (var c = 0; c < cols; c++) { drops.push(Math.random() * -H / FS); gate.push(Math.random()); }
+  }
+  function frame() {
+    if (calm) return;
+    level += (targetLevel - level) * 0.05;
+    var L = level;
+    if (L < 0.1) { ctx.clearRect(0, 0, W, H); return; }
+    ctx.globalCompositeOperation = "destination-out";
+    ctx.fillStyle = "rgba(0,0,0," + (0.12 - 0.04 * L).toFixed(3) + ")";
+    ctx.fillRect(0, 0, W, H);
+    ctx.globalCompositeOperation = "source-over";
+    var active = 0.15 + 0.85 * L, speed = 0.3 + 0.9 * L;
+    var r = Math.round(80 - 23 * L), g = Math.round(110 + 145 * L), b = Math.round(118 + 4 * L);
+    ctx.font = FS + "px 'Share Tech Mono', monospace";
+    for (var c = 0; c < cols; c++) {
+      if (gate[c] > active) continue;
+      var y = drops[c] * FS;
+      ctx.fillStyle = (L > 0.55 && Math.random() < 0.07) ? "rgba(225,255,232,0.95)" : "rgba(" + r + "," + g + "," + b + "," + (0.35 + 0.6 * L).toFixed(2) + ")";
+      ctx.fillText(GLYPHS[(Math.random() * GLYPHS.length) | 0], c * FS, y);
+      drops[c] += speed * (0.6 + gate[c] * 0.8);
+      if (y > H && Math.random() > 0.975) drops[c] = Math.random() * -8;
+    }
+  }
+  var last = 0;
+  function loop(ts) { if (ts - last > 33) { frame(); last = ts; } requestAnimationFrame(loop); }
+  window.addEventListener("resize", resize);
+  resize();
+  var calm = reduce;
+  try { if (localStorage.getItem("itas-calm") === "1") calm = true; } catch (e) {}
+  function setCalm() {
+    canvas.hidden = calm;
+    $("calmBtn").textContent = "Moving background: " + (calm ? "off" : "on");
+    $("calmBtn").setAttribute("aria-pressed", calm ? "true" : "false");
+  }
+  $("calmBtn").addEventListener("click", function () {
+    calm = !calm; setCalm();
+    try { localStorage.setItem("itas-calm", calm ? "1" : "0"); } catch (e) {}
+  });
+  setCalm();
+  requestAnimationFrame(loop);
+
+  /* ================= scan ================= */
+  var current = null, rafScan = 0;
+  function narrow() { return !!(window.matchMedia && window.matchMedia("(max-width: 760px)").matches); }
+  var STATUS = ["Checking who sent it", "Checking the links", "Checking what it asks you to do", "Checking for pressure and threats", "Checking spelling, style and hidden details"];
+
+  function buildMarks(text, findings) {
+    var spans = [];
+    findings.forEach(function (f, fi) { (f.ranges || []).forEach(function (r) { spans.push({ s: r[0], e: r[1], f: fi }); }); });
+    spans.sort(function (a, b) { return a.s - b.s || b.e - a.e; });
+    var marks = [];
+    spans.forEach(function (sp) {
+      var prev = marks[marks.length - 1];
+      if (prev && sp.s < prev.e) { prev.e = Math.max(prev.e, sp.e); if (prev.f.indexOf(sp.f) === -1) prev.f.push(sp.f); return; }
+      marks.push({ s: sp.s, e: sp.e, f: [sp.f] });
+    });
+    var html = "", pos = 0;
+    marks.forEach(function (m, i) {
+      html += esc(text.slice(pos, m.s)) + '<mark class="flag" data-m="' + i + '">' + esc(text.slice(m.s, m.e)) + '</mark><sup class="tag" id="tag' + i + '"></sup>';
+      pos = m.e;
+    });
+    html += esc(text.slice(pos));
+    return { html: html, marks: marks };
+  }
+
+  function startScan(text, hReg) {
+    cancelAnimationFrame(rafScan);
+    var a = analyse(text, hReg);
+    var b = buildMarks(text, a.findings);
+    $("scanText").innerHTML = b.html;
+    $("foundList").innerHTML = "";
+    $("foundEmpty").hidden = false;
+    $("foundEmpty").textContent = "Nothing yet. Still checking.";
+    $("foundCount").textContent = "0 warning signs so far";
+    $("scanLine").classList.remove("gone");
+    $("pulse").classList.remove("stopped");
+    $("skipBtn").hidden = false;
+    $("inputView").hidden = true;
+    $("resultView").hidden = true;
+    $("aiView").hidden = true;
+    $("scanView").hidden = false;
+    $("scanBox").scrollTop = 0;
+    resetAI();
+    current = {
+      text: text, a: a, marks: b.marks.map(function (m, i) { return { el: document.querySelector('mark[data-m="' + i + '"]'), f: m.f, on: false, i: i }; }),
+      shown: {}, n: 0, score: 0, warn: 0,
+      dur: reduce ? 0 : Math.max(5000, Math.min(8000, 4500 + text.length * 3)),
+      start: performance.now(), done: false
+    };
+    applyTheme(0);
+    window.scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" });
+    try { $("scanStatusWrap").focus({ preventScroll: true }); } catch (e) {}
+    rafScan = requestAnimationFrame(step);
+  }
+
+  function levelOfMark(m) {
+    var best = "info";
+    m.f.forEach(function (fi) { var l = current.a.findings[fi].level; if (PTS[l] > PTS[best]) best = l; });
+    return best === "info" ? "low" : best;
+  }
+  function revealMark(m) {
+    m.on = true;
+    if (m.el) m.el.classList.add("on", levelOfMark(m));
+    m.f.forEach(revealFinding);
+  }
+  function revealFinding(fi) {
+    if (current.shown[fi]) return;
+    current.shown[fi] = true;
+    var f = current.a.findings[fi];
+    var n = ++current.n;
+    current.marks.forEach(function (m) { if (m.f.indexOf(fi) !== -1) { var t = $("tag" + m.i); if (t && !t.textContent) t.textContent = n; } });
+    var quote = (f.ranges && f.ranges.length) ? current.text.slice(f.ranges[0][0], f.ranges[0][1]) : "";
+    var li = document.createElement("li");
+    li.className = "card";
+    li.innerHTML = '<div class="card-top"><span class="num">' + n + '</span><b>' + esc(f.title) + '</b><span class="chip ' + f.level + '">' + CHIP[f.level] + '</span></div>' +
+      (quote ? '<p class="quote">"' + esc(quote.length > 80 ? quote.slice(0, 77) + "..." : quote) + '"</p>' : "") +
+      (f.dest ? '<p class="dest">Real website: <b>' + esc(f.dest) + '</b></p>' : "") +
+      '<p class="why">' + esc(f.why) + '</p>';
+    if (narrow()) $("foundList").insertBefore(li, $("foundList").firstChild); else $("foundList").appendChild(li);
+    $("foundEmpty").hidden = true;
+    if (f.level !== "info") current.warn++;
+    current.score = Math.min(100, current.score + (f.pts || PTS[f.level]));
+    $("foundCount").textContent = current.warn + (current.warn === 1 ? " warning sign" : " warning signs") + " so far";
+    applyTheme(current.score / 100);
+  }
+  function step(ts) {
+    if (!current) return;
+    var p = current.dur ? Math.min(1, (ts - current.start) / current.dur) : 1;
+    var inner = $("scanInner"), box = $("scanBox");
+    var y = p * inner.scrollHeight;
+    $("scanLine").style.transform = "translateY(" + y + "px)";
+    current.marks.forEach(function (m) { if (!m.on && m.el && m.el.offsetTop <= y) revealMark(m); });
+    box.scrollTop = Math.max(0, y - box.clientHeight * 0.45);
+    $("scanStatus").textContent = STATUS[Math.min(STATUS.length - 1, Math.floor(p * STATUS.length))];
+    if (p < 1) rafScan = requestAnimationFrame(step); else finish();
+  }
+  function finish() {
+    if (!current || current.done) return;
+    current.done = true;
+    current.marks.forEach(function (m) { if (!m.on) revealMark(m); });
+    current.a.findings.forEach(function (f, fi) { revealFinding(fi); });
+    $("scanLine").classList.add("gone");
+    $("pulse").classList.add("stopped");
+    $("skipBtn").hidden = true;
+    $("scanStatus").textContent = "Check complete";
+    if (!current.warn) { $("foundEmpty").hidden = false; $("foundEmpty").textContent = "No warning signs found in the text."; }
+    showVerdict(current.a.score);
+    $("aiView").hidden = false;
+    renderPrompt();
+    $("resultView").scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
+    try { $("verdictTitle").focus({ preventScroll: true }); } catch (e) {}
+  }
+  function showVerdict(score) {
+    var t, s, cls;
+    if (score >= 50) { t = "This is very likely a scam"; s = "We found several warning signs. Do not click any links, reply, or send money or details."; cls = "high"; }
+    else if (score >= 20) { t = "This looks suspicious"; s = "We found some warning signs. Do not click links. Check with the company or person another way, using a number you already have."; cls = "mid"; }
+    else { t = "No obvious warning signs found"; s = "That does not prove it is safe. If it asks for money, codes or personal details, check with the company using a number you already have."; cls = ""; }
+    var icons = {
+      high: '<path fill="currentColor" d="M12 2 1 21h22L12 2zm0 5.5 7.5 12.5h-15L12 7.5zM11 10v5h2v-5h-2zm0 6v2h2v-2h-2z"/>',
+      mid: '<path fill="currentColor" d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-1 3v7h2V7h-2zm0 9v2h2v-2h-2z"/>',
+      low: '<path fill="currentColor" d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-1 4v2h2V8h-2zm0 4v5h2v-5h-2z"/>'
+    };
+    var ic = cls || "low";
+    $("verdictIcon").innerHTML = icons[ic];
+    $("verdictIcon").setAttribute("class", "verdict-icon " + ic);
+    $("verdictTitle").textContent = t;
+    $("verdictSub").textContent = s;
+    var fill = $("meterFill");
+    fill.className = "meter-fill" + (cls ? " " + cls : "");
+    fill.style.width = Math.max(4, score) + "%";
+    $("resultView").hidden = false;
+    applyTheme(score / 100);
+  }
+
+  /* ================= controls ================= */
+  function check() {
+    var text = $("msg").value.replace(/\r\n/g, "\n");
+    if (!text.trim()) { $("inputError").textContent = "Paste a message first, or try one of the examples below."; $("msg").focus(); return; }
+    $("inputError").textContent = "";
+    var raw = $("hdr").value.trim(), hReg = null;
+    if (raw) {
+      var sum = summariseHeaders(raw);
+      if (sum) {
+        var start = text.replace(/\s+$/, "").length + 2 + "--- Hidden details ---\n".length;
+        text = text.replace(/\s+$/, "") + "\n\n--- Hidden details ---\n" + sum;
+        hReg = { s: start, e: text.length };
+      } else {
+        $("inputError").textContent = "We couldn't find the hidden details in what you pasted, so we checked the message on its own.";
+      }
+    } else {
+      hReg = inlineHeaderRegion(text);
+    }
+    startScan(text, hReg);
+  }
+  $("checkBtn").addEventListener("click", check);
+  $("clearBtn").addEventListener("click", function () { $("msg").value = ""; $("hdr").value = ""; $("inputError").textContent = ""; $("msg").focus(); });
+  $("exRow").addEventListener("click", function (ev) {
+    var b = ev.target.closest("button"); if (!b) return;
+    $("msg").value = EXAMPLES[b.dataset.ex];
+    $("hdr").value = EXAMPLE_HEADERS[b.dataset.ex] || "";
+    if (EXAMPLE_HEADERS[b.dataset.ex]) $("hdrDetails").open = true;
+    check();
+  });
+  $("skipBtn").addEventListener("click", function () { if (current) current.start = -1e9; });
+  $("againBtn").addEventListener("click", function () {
+    cancelAnimationFrame(rafScan); stopSpeaking(); if (aiCtl) aiCtl.abort();
+    current = null;
+    $("scanView").hidden = true; $("resultView").hidden = true; $("aiView").hidden = true;
+    $("inputView").hidden = false;
+    applyTheme(0);
+    window.scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" });
+    $("msg").focus();
+  });
+
+  /* hidden-details help */
+  var HSTEPS = {
+    gmail: ["Open the email on a computer.", "Click the three dots next to the Reply arrow.", "Click \"Show original\".", "Click \"Copy to clipboard\", then paste it in the box below."],
+    outlook: ["Open the email.", "Click the three dots at the top of the email.", "Choose \"View\", then \"View message details\".", "Select all the text, copy it, and paste it in the box below."],
+    classic: ["Open the email in its own window.", "Click \"File\", then \"Properties\".", "Copy everything in the \"Internet headers\" box and paste it below."],
+    iphone: ["The iPhone and iPad Mail app does not show these details.", "Open the email on a computer instead, or skip this part. The main check still works without it."]
+  };
+  function showSteps(k) {
+    $("hdrSteps").innerHTML = HSTEPS[k].map(function (x) { return "<li>" + esc(x) + "</li>"; }).join("");
+    Array.prototype.forEach.call($("hdrTabs").querySelectorAll("button"), function (b) { b.setAttribute("aria-pressed", b.dataset.h === k ? "true" : "false"); });
+  }
+  $("hdrTabs").addEventListener("click", function (ev) { var b = ev.target.closest("button"); if (b) showSteps(b.dataset.h); });
+  showSteps("gmail");
+
+  /* text size */
+  var SIZES = [17, 19, 22, 25], sizeI = 1;
+  try { var saved = parseInt(localStorage.getItem("itas-size"), 10); if (SIZES.indexOf(saved) !== -1) sizeI = SIZES.indexOf(saved); } catch (e) {}
+  function setSize() {
+    document.documentElement.style.setProperty("--fs", SIZES[sizeI] + "px");
+    $("sizeDown").disabled = sizeI === 0; $("sizeUp").disabled = sizeI === SIZES.length - 1;
+    try { localStorage.setItem("itas-size", String(SIZES[sizeI])); } catch (e) {}
+  }
+  $("sizeDown").addEventListener("click", function () { if (sizeI > 0) { sizeI--; setSize(); } });
+  $("sizeUp").addEventListener("click", function () { if (sizeI < SIZES.length - 1) { sizeI++; setSize(); } });
+  setSize();
+
+  /* read aloud */
+  var canSpeak = "speechSynthesis" in window && typeof SpeechSynthesisUtterance === "function";
+  if (!canSpeak) $("speakBtn").hidden = true;
+  function stopSpeaking() { try { if (canSpeak) window.speechSynthesis.cancel(); } catch (e) {} $("speakBtn").textContent = "Read this aloud"; }
+  $("speakBtn").addEventListener("click", function () {
+    try {
+      if (window.speechSynthesis.speaking) { stopSpeaking(); return; }
+      var items = Array.prototype.map.call($("todo").querySelectorAll("li"), function (li) { return li.textContent; });
+      var u = new SpeechSynthesisUtterance($("verdictTitle").textContent + ". " + $("verdictSub").textContent + " What to do now. " + items.join(" "));
+      u.rate = 0.92;
+      u.onend = function () { $("speakBtn").textContent = "Read this aloud"; };
+      u.onerror = function () { $("speakBtn").textContent = "Read this aloud"; };
+      window.speechSynthesis.speak(u);
+      $("speakBtn").textContent = "Stop reading";
+    } catch (e) { $("speakBtn").hidden = true; }
+  });
+
+  /* ================= second opinion ================= */
+  function buildPrompt(msg) {
+    if (msg.length > 12000) msg = msg.slice(0, 12000);
+    return "You are helping an older person who is not technical decide whether a message they received is a scam. The message may be an email or a phone text.\n\n" +
+      "Check: who sent it, any links, pressure or threats, what it asks for (money, gift cards, codes, passwords, personal details), offers that seem too good to be true, and spelling or style.\n\n" +
+      "Rules:\n- Only describe what you can see in the message. Do not guess or invent details.\n- If something cannot be checked from the text alone, such as whether a website is real, say so.\n- Never say the message is definitely safe.\n- Use plain, friendly English. No tables, no bold, no other headings.\n\n" +
+      "Reply in exactly this layout:\nVERDICT: one of \"Very likely a scam\", \"Suspicious\" or \"No obvious warning signs\"\nWHY:\n- up to 5 short reasons, each under 20 words\nWHAT TO DO:\n- up to 3 short steps\n\n" +
+      "The message:\n\"\"\"\n" + msg + "\n\"\"\"";
+  }
+  function renderAI(t) {
+    var lines = String(t).replace(/\*\*/g, "").split(/\n/);
+    var html = "", inList = false;
+    lines.forEach(function (raw) {
+      var l = raw.trim();
+      if (!l) return;
+      var li = /^[-•*]\s+(.*)$/.exec(l);
+      if (li) { if (!inList) { html += "<ul>"; inList = true; } html += "<li>" + esc(li[1]) + "</li>"; return; }
+      if (inList) { html += "</ul>"; inList = false; }
+      var v = /^verdict:\s*(.*)$/i.exec(l);
+      if (v) { html += '<p class="ai-verdict">' + esc(v[1].replace(/^["']|["']$/g, "")) + "</p>"; return; }
+      if (/^(why|what to do):?$/i.test(l)) { html += "<h3>" + esc(l.replace(/:$/, "").toLowerCase().replace(/^./, function (c) { return c.toUpperCase(); })) + "</h3>"; return; }
+      html += "<p>" + esc(l) + "</p>";
+    });
+    if (inList) html += "</ul>";
+    $("aiOut").innerHTML = html;
+  }
+  var sampleP = (window.claude && typeof window.claude.use === "function")
+    ? Promise.resolve(window.claude.use("sample")).catch(function () { return null; })
+    : Promise.resolve(null);
+  var aiCtl = null, aiOff = false;
+  function resetAI() {
+    $("aiOut").hidden = true; $("aiOut").innerHTML = ""; $("aiNote").textContent = "";
+    $("askBtn").disabled = false; $("stopBtn").hidden = true; $("copyMsg").textContent = "";
+    $("askBtn").hidden = aiOff;
+    if (aiOff) offMode();
+  }
+  function offMode() {
+    $("aiIntro").textContent = "Copy the question below and paste it into an AI tool such as ChatGPT, Copilot or Claude. Make sure your personal details are removed first.";
+    $("otherSummary").textContent = "Copy the question for an AI tool";
+    $("otherAI").open = true;
+  }
+  function unavailable(msg) {
+    aiOff = true;
+    $("aiNote").textContent = msg;
+    $("askBtn").hidden = true;
+    offMode();
+  }
+  sampleP.then(function (sm) { if (!sm) { aiOff = true; $("askBtn").hidden = true; offMode(); } });
+  $("askBtn").addEventListener("click", function () {
+    if (!current) return;
+    var text = current.text;
+    $("askBtn").disabled = true;
+    $("aiNote").textContent = "";
+    $("aiOut").hidden = false;
+    $("aiOut").innerHTML = '<p class="thinking"><span class="pulse"></span>Claude is reading the message...</p>';
+    sampleP.then(function (sample) {
+      if (!sample) {
+        $("aiOut").hidden = true; $("askBtn").disabled = false;
+        unavailable("Ask Claude only works when this page is opened in Claude and you are signed in. You can still copy the question below.");
+        return;
+      }
+      aiCtl = new AbortController();
+      $("stopBtn").hidden = false;
+      if (text.length > 12000) $("aiNote").textContent = "This message is very long, so only the first part was sent to Claude.";
+      sample(buildPrompt(text), { signal: aiCtl.signal, modelTier: "quick", onText: function (u) { renderAI(u.text); } })
+        .then(function (r) { renderAI(r.text); if (r.truncated) $("aiNote").textContent = "The answer was cut short."; })
+        .catch(function (e) {
+          var code = e && e.code;
+          if (e && e.text && code !== "refused") renderAI(e.text); else if (code !== "cancelled") $("aiOut").hidden = true;
+          if (code === "cancelled") { $("aiNote").textContent = "Stopped."; }
+          else if (["not_granted", "sampling_disabled", "not_declared", "capability_disabled", "capability_removed"].indexOf(code) !== -1) unavailable("Claude isn't available here. You can still copy the question below and paste it into an AI tool.");
+          else if (code === "rate_limited") $("aiNote").textContent = "Claude is busy right now. Please try again in a few minutes.";
+          else if (code === "session_expired") $("aiNote").textContent = "Please sign in to Claude again, then press Ask Claude once more.";
+          else if (code === "refused") $("aiNote").textContent = "Claude couldn't answer this one. Try the copy option below instead.";
+          else $("aiNote").textContent = "Something went wrong reaching Claude. Please press Ask Claude to try again.";
+        })
+        .then(function () { $("askBtn").disabled = false; $("stopBtn").hidden = true; });
+    });
+  });
+  $("stopBtn").addEventListener("click", function () { if (aiCtl) aiCtl.abort(); });
+
+  var TOOLS = {
+    chatgpt: { name: "ChatGPT", url: "https://chatgpt.com/" },
+    copilot: { name: "Copilot", url: "https://copilot.microsoft.com/" },
+    claude: { name: "Claude", url: "https://claude.ai/new" }
+  };
+  var tool = "chatgpt";
+  function renderPrompt() {
+    if (!current) return;
+    $("promptOut").textContent = buildPrompt(current.text);
+    $("openLink").href = TOOLS[tool].url;
+    $("openLink").textContent = "Open " + TOOLS[tool].name;
+    $("copyMsg").textContent = "";
+  }
+  $("toolRow").addEventListener("click", function (ev) {
+    var b = ev.target.closest("button"); if (!b) return;
+    tool = b.dataset.tool;
+    Array.prototype.forEach.call($("toolRow").querySelectorAll("button"), function (x) { x.setAttribute("aria-pressed", x === b ? "true" : "false"); });
+    renderPrompt();
+  });
+  $("copyBtn").addEventListener("click", function () {
+    var txt = $("promptOut").textContent;
+    function fallback() {
+      var r = document.createRange(); r.selectNodeContents($("promptOut"));
+      var sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(r);
+      $("copyMsg").textContent = "Selected. Now press Ctrl+C (or Cmd+C on a Mac) to copy.";
+    }
+    try { navigator.clipboard.writeText(txt).then(function () { $("copyMsg").textContent = "Copied. Now open " + TOOLS[tool].name + " and paste."; }, fallback); }
+    catch (e) { fallback(); }
+  });
+})();
+</script>
+
+</body>
+</html>
