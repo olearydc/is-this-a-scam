@@ -15,6 +15,13 @@ Paste the message in, watch it being checked, and get a clear answer with plain 
 - **An email's hidden details (optional):** paste them in and it checks whether the email really came from the company it names, with simple steps for Gmail and Outlook
 - **Common Irish scams:** parcel and customs fees, M50 toll texts, fake Gardaí, "Hi Mum" texts
 
+## Using it on a phone
+
+- **Paste in one tap:** copy the message, open the page, and tap "Paste what I copied".
+- **Screenshots:** tap "Check a screenshot instead" and pick the picture. The text is read on your phone; the picture is not uploaded anywhere.
+- **Home screen:** add it to your home screen and it opens like an app, even without a connection.
+- **Share from WhatsApp or Messages (Android):** once it's on your home screen, press and hold a message, tap Share, and choose "Is This a Scam?". It opens and checks the message straight away. iPhones don't allow this for web pages, so use copy and paste there.
+
 ## Privacy
 
 The check runs entirely in your web browser. Nothing you paste is sent anywhere. If you choose to copy the question into an AI tool such as ChatGPT, Copilot or Claude, that tool will see what you paste, so remove your name, address and account numbers first.
@@ -34,4 +41,4 @@ Call your bank straight away, then report it at your local Garda station.
 
 Built by Dan as part of a QQI Level 5 "Enhancing Productivity with AI" project, with help from Claude (Anthropic).
 
-The whole tool is a single file, `index.html`, with no tracking and no sign-up.
+The tool is one page (`index.html`) plus an app icon, a home-screen settings file and a small offline helper. No tracking and no sign-up.

@@ -4,6 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="description" content="Paste an email or text message you're unsure about. Is This a Scam? checks it for the tricks scammers use and tells you what to do. Free, and nothing you paste leaves your device.">
+<meta name="theme-color" content="#1b6886">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-180.png">
+<meta name="apple-mobile-web-app-title" content="Is This a Scam?">
+<meta name="mobile-web-app-capable" content="yes">
 <style>
 :root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 body{margin:0}
@@ -198,6 +204,10 @@ summary { cursor: pointer; font-weight: 700; min-height: 44px; display: flex; al
 body.matrix .copy-msg { color: var(--accent); }
 
 .hdr summary { font-size: 1rem; }
+.mid-btn { min-height: 54px; font-size: 1.02rem; padding: 10px 20px; }
+.vband { height: 56px; border-radius: 8px; overflow: hidden; background: #020805; transition: height .8s ease, opacity .8s ease, margin .8s ease; }
+.vband canvas { display: block; width: 100%; height: 100%; }
+.vband.gone { height: 0; opacity: 0; margin-bottom: -18px; }
 .hdr-box { min-height: 140px; font-family: Consolas, "Courier New", monospace; font-size: 0.85rem; }
 .steps { margin: 0; padding-left: 1.3em; display: grid; gap: 6px; font-size: 0.98rem; }
 footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
@@ -226,12 +236,18 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
       <span>Text size</span>
       <button type="button" class="small-btn" id="sizeDown" aria-label="Smaller text">A&minus;</button>
       <button type="button" class="small-btn" id="sizeUp" aria-label="Bigger text">A+</button>
-      <button type="button" class="small-btn" id="calmBtn" aria-pressed="false">Moving background: on</button>
+      <button type="button" class="small-btn" id="fxBtn" aria-pressed="false">Matrix effect: off</button>
     </div>
   </header>
 
   <section class="panel" id="inputView">
     <label for="msg" class="big-label">Paste the email or text message here</label>
+    <div class="row" id="quickRow">
+      <button type="button" class="mid-btn" id="pasteBtn">Paste what I copied</button>
+      <button type="button" class="mid-btn" id="shotBtn">Check a screenshot instead</button>
+      <input type="file" id="shotFile" accept="image/*" hidden>
+    </div>
+    <p class="hint" id="quickMsg" role="status"></p>
     <p class="hint">Before you paste, remove your name, address, phone number and any account numbers. This page checks the message on your own device. Nothing is sent anywhere unless you choose to ask Claude.</p>
     <textarea id="msg" spellcheck="false" placeholder="Copy the whole message and paste it here. For emails, include the line that says who it is from."></textarea>
     <details class="hdr" id="hdrDetails">
@@ -254,6 +270,18 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
       <button type="button" id="clearBtn">Clear</button>
       <span class="error" id="inputError" role="alert"></span>
     </div>
+    <details id="installHelp" hidden>
+      <summary>Put this on your phone's home screen</summary>
+      <div class="other">
+        <p class="hint">It then opens like an app, with its own icon, so you don't need to remember the web address.</p>
+        <button type="button" class="mid-btn" id="installBtn" hidden>Add to home screen</button>
+        <ul class="steps">
+          <li><b>Android:</b> in Chrome, tap the three dots at the top right, then "Add to Home screen" or "Install app".</li>
+          <li><b>iPhone or iPad:</b> in Safari, tap the Share button (the square with an arrow), then "Add to Home Screen".</li>
+          <li><b>Checking WhatsApp and text messages on Android:</b> once it's on your home screen, press and hold the message, tap Share, and choose "Is This a Scam?". It opens and checks the message straight away.</li>
+        </ul>
+      </div>
+    </details>
     <div class="how" aria-label="How it works">
       <div><i>1</i><b>Paste</b><span>Copy the email or text and paste it in the box.</span></div>
       <div><i>2</i><b>Watch it check</b><span>Each warning sign lights up as it is found.</span></div>
@@ -274,6 +302,7 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
   </section>
 
   <section class="panel verdict-panel" id="resultView" hidden aria-live="polite">
+    <div class="vband" id="vband" hidden aria-hidden="true"><canvas id="vrain"></canvas></div>
     <p class="eyebrow">Our answer</p>
     <div class="verdict-head">
       <svg class="verdict-icon" id="verdictIcon" viewBox="0 0 24 24" aria-hidden="true"></svg>
@@ -894,7 +923,7 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
     for (var c = 0; c < cols; c++) { drops.push(Math.random() * -H / FS); gate.push(Math.random()); }
   }
   function frame() {
-    if (calm) return;
+    if (!fx) return;
     level += (targetLevel - level) * 0.05;
     var L = level;
     if (L < 0.1) { ctx.clearRect(0, 0, W, H); return; }
@@ -918,19 +947,46 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
   function loop(ts) { if (ts - last > 33) { frame(); last = ts; } requestAnimationFrame(loop); }
   window.addEventListener("resize", resize);
   resize();
-  var calm = reduce;
-  try { if (localStorage.getItem("itas-calm") === "1") calm = true; } catch (e) {}
-  function setCalm() {
-    canvas.hidden = calm;
-    $("calmBtn").textContent = "Moving background: " + (calm ? "off" : "on");
-    $("calmBtn").setAttribute("aria-pressed", calm ? "true" : "false");
+  var fx = false;
+  try { fx = localStorage.getItem("itas-fx") === "1"; } catch (e) {}
+  if (reduce) fx = false;
+  function setFx() {
+    canvas.hidden = !fx;
+    $("fxBtn").textContent = "Matrix effect: " + (fx ? "on" : "off");
+    $("fxBtn").setAttribute("aria-pressed", fx ? "true" : "false");
   }
-  $("calmBtn").addEventListener("click", function () {
-    calm = !calm; setCalm();
-    try { localStorage.setItem("itas-calm", calm ? "1" : "0"); } catch (e) {}
+  $("fxBtn").addEventListener("click", function () {
+    fx = !fx; setFx();
+    try { localStorage.setItem("itas-fx", fx ? "1" : "0"); } catch (e) {}
   });
-  setCalm();
+  if (reduce) $("fxBtn").hidden = true;
+  setFx();
   requestAnimationFrame(loop);
+
+  /* short burst of code rain in a band above a "likely scam" answer */
+  function burstBanner() {
+    var band = $("vband");
+    if (reduce || fx) { band.hidden = true; return; }
+    var c = $("vrain"), x = c.getContext("2d");
+    band.hidden = false; band.classList.remove("gone");
+    var w = band.clientWidth || 600, h = 56, dpr = Math.min(window.devicePixelRatio || 1, 2);
+    c.width = w * dpr; c.height = h * dpr; x.setTransform(dpr, 0, 0, dpr, 0, 0);
+    var n = Math.ceil(w / 14), d = [];
+    for (var i = 0; i < n; i++) d.push(Math.random() * -6);
+    var t0 = performance.now();
+    (function tick(ts) {
+      if (ts - t0 > 3200) { band.classList.add("gone"); return; }
+      x.fillStyle = "rgba(2,8,5,0.22)"; x.fillRect(0, 0, w, h);
+      x.font = "14px 'Share Tech Mono', monospace";
+      for (var j = 0; j < n; j++) {
+        x.fillStyle = Math.random() < 0.08 ? "#e1ffe8" : "#39ff7a";
+        x.fillText(GLYPHS[(Math.random() * GLYPHS.length) | 0], j * 14, d[j] * 14);
+        d[j] += 0.5 + Math.random() * 0.4;
+        if (d[j] * 14 > h + 20) d[j] = Math.random() * -3;
+      }
+      requestAnimationFrame(tick);
+    })(t0);
+  }
 
   /* ================= scan ================= */
   var current = null, rafScan = 0;
@@ -1038,6 +1094,7 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
     $("scanStatus").textContent = "Check complete";
     if (!current.warn) { $("foundEmpty").hidden = false; $("foundEmpty").textContent = "No warning signs found in the text."; }
     showVerdict(current.a.score);
+    if (current.a.score >= 50) burstBanner(); else $("vband").hidden = true;
     $("aiView").hidden = false;
     renderPrompt();
     $("resultView").scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
@@ -1098,12 +1155,79 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
   $("againBtn").addEventListener("click", function () {
     cancelAnimationFrame(rafScan); stopSpeaking(); if (aiCtl) aiCtl.abort();
     current = null;
-    $("scanView").hidden = true; $("resultView").hidden = true; $("aiView").hidden = true;
+    $("scanView").hidden = true; $("resultView").hidden = true; $("aiView").hidden = true; $("vband").hidden = true;
     $("inputView").hidden = false;
     applyTheme(0);
     window.scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" });
     $("msg").focus();
   });
+
+  /* ---------- paste and screenshot (website version only) ---------- */
+  var inClaude = !!window.claude;
+  function quick(msg) { $("quickMsg").textContent = msg; }
+  if (inClaude || !(navigator.clipboard && navigator.clipboard.readText)) $("pasteBtn").hidden = true;
+  if (inClaude) $("shotBtn").hidden = true;
+  if ($("pasteBtn").hidden && $("shotBtn").hidden) $("quickRow").hidden = true;
+  $("pasteBtn").addEventListener("click", function () {
+    navigator.clipboard.readText().then(function (t) {
+      if (!t || !t.trim()) { quick("There's nothing copied yet. Press and hold the message, tap Copy, then come back and tap Paste."); return; }
+      $("msg").value = t;
+      quick("Pasted. Now press \"Check this message\".");
+      $("checkBtn").focus();
+    }, function () {
+      quick("Your phone didn't let us paste. Press and hold inside the box below, then choose Paste.");
+    });
+  });
+  var ocrLoading = null;
+  function loadOcr() {
+    if (window.Tesseract) return Promise.resolve();
+    if (ocrLoading) return ocrLoading;
+    ocrLoading = new Promise(function (res, rej) {
+      var sc = document.createElement("script");
+      sc.src = "https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js";
+      sc.onload = res; sc.onerror = function () { ocrLoading = null; rej(new Error("load")); };
+      document.head.appendChild(sc);
+    });
+    return ocrLoading;
+  }
+  $("shotBtn").addEventListener("click", function () { $("shotFile").value = ""; $("shotFile").click(); });
+  $("shotFile").addEventListener("change", function () {
+    var f = $("shotFile").files && $("shotFile").files[0];
+    if (!f) return;
+    $("shotBtn").disabled = true;
+    quick("Reading the text from your picture. The first time can take up to a minute. Your picture stays on your device.");
+    loadOcr().then(function () {
+      return Tesseract.createWorker("eng", 1, {
+        logger: function (m) { if (m.status === "recognizing text") quick("Reading the text from your picture: " + Math.round(m.progress * 100) + "%"); }
+      });
+    }).then(function (worker) {
+      return worker.recognize(f).then(function (r) { worker.terminate(); return r.data.text; });
+    }).then(function (text) {
+      text = String(text || "").replace(/[ \t]+/g, " ").replace(/\n{3,}/g, "\n\n").trim();
+      if (text.length < 10) { quick("We couldn't find any words in that picture. Try a clearer screenshot, or copy and paste the text instead."); return; }
+      $("msg").value = text;
+      quick("We read this text from your picture. Check it looks right, then press \"Check this message\".");
+      $("msg").scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "center" });
+    }).catch(function () {
+      quick("We couldn't read that picture. Check you're online, try a clearer screenshot, or copy and paste the text instead.");
+    }).then(function () { $("shotBtn").disabled = false; });
+  });
+
+  /* ---------- home screen app (website version only) ---------- */
+  var standalone = !!(window.matchMedia && window.matchMedia("(display-mode: standalone)").matches) || window.navigator.standalone === true;
+  if (!inClaude && !standalone) $("installHelp").hidden = false;
+  var deferredInstall = null;
+  window.addEventListener("beforeinstallprompt", function (e) {
+    e.preventDefault(); deferredInstall = e; $("installBtn").hidden = false;
+  });
+  $("installBtn").addEventListener("click", function () {
+    if (!deferredInstall) return;
+    deferredInstall.prompt();
+    deferredInstall.userChoice.then(function () { deferredInstall = null; $("installBtn").hidden = true; }, function () {});
+  });
+  if (!inClaude && "serviceWorker" in navigator && location.protocol === "https:") {
+    navigator.serviceWorker.register("./sw.js").catch(function () {});
+  }
 
   /* hidden-details help */
   var HSTEPS = {
@@ -1258,6 +1382,17 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
     try { navigator.clipboard.writeText(txt).then(function () { $("copyMsg").textContent = "Copied. Now open " + TOOLS[tool].name + " and paste."; }, fallback); }
     catch (e) { fallback(); }
   });
+
+  /* ---------- message shared from another app (Android) ---------- */
+  try {
+    var qp = new URLSearchParams(location.search);
+    var shared = [qp.get("title"), qp.get("text"), qp.get("url")].filter(function (v) { return v && v.trim(); }).join("\n");
+    if (shared.trim()) {
+      $("msg").value = shared;
+      try { history.replaceState(null, "", location.pathname); } catch (e) {}
+      check();
+    }
+  } catch (e) {}
 })();
 </script>
 
