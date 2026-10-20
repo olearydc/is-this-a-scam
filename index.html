@@ -148,7 +148,7 @@ textarea {
 @keyframes pulse { 50% { transform: scale(0.6); opacity: .5; } }
 .found-count { font-size: 0.95rem; color: var(--muted); }
 .scan-grid { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 18px; align-items: start; }
-.scan-box { max-height: min(62vh, 560px); overflow: auto; border: 2px solid var(--panel-line); border-radius: 8px; background: var(--panel); }
+.scan-box { position: sticky; top: 16px; max-height: min(62vh, 560px); overflow: auto; border: 2px solid var(--panel-line); border-radius: 8px; background: var(--panel); }
 .scan-inner { position: relative; padding: 16px; }
 .scan-text { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 1rem; line-height: 1.75; }
 .scan-line { position: absolute; left: 0; right: 0; top: 0; height: 3px; background: var(--scan); box-shadow: 0 0 12px var(--scan); pointer-events: none; transition: opacity .5s; }
@@ -174,6 +174,18 @@ sup.tag { font-size: 0.7rem; font-weight: 700; margin-left: 2px; color: var(--mu
 .card .quote { font-size: 0.9rem; overflow-wrap: anywhere; }
 .card .why { font-size: 0.92rem; color: var(--muted); }
 .found-empty { color: var(--muted); font-size: 0.95rem; }
+.ghead { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 1rem; margin-top: 6px; }
+.ghead:first-child { margin-top: 0; }
+.ghead .count { font-size: 0.85rem; font-weight: 700; min-width: 1.6em; height: 1.6em; padding: 0 6px; display: inline-grid; place-items: center; border-radius: 999px; background: var(--hl-low); }
+.ghead.high { color: var(--hl-high-line); }
+.ghead.medium { color: var(--hl-medium-line); }
+.ghead.low, .ghead.info { color: var(--muted); }
+.num.high { background: var(--hl-high); }
+.num.medium { background: var(--hl-medium); }
+.reasons { margin: 0; padding-left: 1.2em; display: grid; gap: 4px; font-size: 0.92rem; color: var(--muted); }
+.reasons b { color: var(--fg); }
+.found-summary { font-size: 0.95rem; color: var(--muted); }
+@media (max-width: 760px) { .scan-box { position: static; } }
 
 /* verdict */
 .verdict-panel { gap: 18px; }
@@ -218,6 +230,8 @@ body.alarm-mid .verdict-title { color: #7a5200; }
 .hdr-box { min-height: 140px; font-family: Consolas, "Courier New", monospace; font-size: 0.85rem; }
 .steps { margin: 0; padding-left: 1.3em; display: grid; gap: 6px; font-size: 0.98rem; }
 .passon { border-top: 1px solid var(--panel-line); padding-top: 16px; display: grid; gap: 10px; }
+.passon-panel { display: grid; gap: 10px; }
+.passon-panel[hidden] { display: none; }
 .pass-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 190px), 1fr)); gap: 10px; }
 .pass-grid > * { box-sizing: border-box; width: 100%; height: 54px; min-height: 54px; margin: 0; padding: 0 14px; font-size: 1rem; line-height: 1.2; text-align: center; }
 .pass-grid > [hidden] { display: none !important; }
@@ -348,7 +362,8 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
       <button type="button" id="speakBtn">Read this aloud</button>
     </div>
     <div class="passon">
-      <h3>Send the result to someone</h3>
+      <button type="button" class="mid-btn" id="sendToggle" aria-expanded="false" aria-controls="sendPanel">Send the result to someone</button>
+      <div id="sendPanel" class="passon-panel" hidden>
       <p class="hint">If you're not sure, ask a family member or friend to have a look too.</p>
       <label class="check-line"><input type="checkbox" id="incMsg" checked> Include the message itself</label>
       <div class="pass-grid">
@@ -359,6 +374,7 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
         <button type="button" id="printRes">Print or save as PDF</button>
       </div>
       <p class="hint" id="passMsg" role="status"></p>
+      </div>
     </div>
   </section>
 
@@ -379,6 +395,7 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
       </div>
       <div class="found">
         <h2>What we found</h2>
+        <p class="found-summary" id="foundSummary" hidden></p>
         <ol class="found-list" id="foundList"></ol>
         <p class="found-empty" id="foundEmpty">Nothing yet. Still checking.</p>
       </div>
@@ -931,6 +948,27 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
     if (!s.addr) add({ cat: "sender", level: "info", title: "No sender shown", ranges: [],
       why: "If this is a text message: texts can show a fake sender name, even in the same thread as real messages from your bank, so check by contacting the company yourself. If it is an email, paste the From line too for a fuller check." });
 
+    /* several warnings about one link become one card with the reasons inside */
+    var byLink = {}, merged = [];
+    F.forEach(function (f) {
+      if (f.cat === "links" && f.dest && f.ranges && f.ranges.length) {
+        var k = f.ranges[0][0] + ":" + f.ranges[0][1];
+        if (byLink[k]) { byLink[k].push(f); return; }
+        byLink[k] = [f];
+        merged.push({ linkKey: k });
+      } else merged.push(f);
+    });
+    F = merged.map(function (m) {
+      if (!m.linkKey) return m;
+      var g = byLink[m.linkKey];
+      if (g.length === 1) return g[0];
+      var top = g.reduce(function (a, f) { return PTS[f.level] > PTS[a.level] ? f : a; }, g[0]);
+      return { cat: "links", level: top.level, title: "Risky link", dest: top.dest, ranges: top.ranges,
+        pts: g.reduce(function (a, f) { return a + (f.pts || PTS[f.level]); }, 0),
+        why: "This link has " + g.length + " warning signs:",
+        reasons: g.map(function (f) { return { title: f.title, why: f.why }; }) };
+    });
+
     var score = Math.min(100, F.reduce(function (a, f) { return a + (f.pts || PTS[f.level]); }, 0));
     return { findings: F, score: score };
   }
@@ -1053,6 +1091,8 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
     var b = buildMarks(text, a.findings);
     $("scanText").innerHTML = b.html;
     $("foundList").innerHTML = "";
+    $("foundSummary").hidden = true;
+    $("sendPanel").hidden = true; $("sendToggle").setAttribute("aria-expanded", "false"); $("passMsg").textContent = "";
     $("foundEmpty").hidden = false;
     $("foundEmpty").textContent = "Nothing yet. Still checking.";
     $("foundCount").textContent = "0 warning signs so far";
@@ -1095,19 +1135,45 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
     var f = current.a.findings[fi];
     var n = ++current.n;
     current.marks.forEach(function (m) { if (m.f.indexOf(fi) !== -1) { var t = $("tag" + m.i); if (t && !t.textContent) t.textContent = n; } });
-    var quote = (f.ranges && f.ranges.length) ? current.text.slice(f.ranges[0][0], f.ranges[0][1]) : "";
     var li = document.createElement("li");
     li.className = "card";
-    li.innerHTML = '<div class="card-top"><span class="num">' + n + '</span><b>' + esc(f.title) + '</b><span class="chip ' + f.level + '">' + CHIP[f.level] + '</span></div>' +
-      (quote ? '<p class="quote">"' + esc(quote.length > 80 ? quote.slice(0, 77) + "..." : quote) + '"</p>' : "") +
-      (f.dest ? '<p class="dest">Real website: <b>' + esc(f.dest) + '</b></p>' : "") +
-      '<p class="why">' + esc(f.why) + '</p>';
+    li.innerHTML = cardHTML(f, n, true);
     if (narrow()) $("foundList").insertBefore(li, $("foundList").firstChild); else $("foundList").appendChild(li);
     $("foundEmpty").hidden = true;
     if (f.level !== "info") current.warn++;
     current.score = Math.min(100, current.score + (f.pts || PTS[f.level]));
     $("foundCount").textContent = current.warn + (current.warn === 1 ? " warning sign" : " warning signs") + " so far";
     applyTheme(current.score / 100);
+  }
+  function cardHTML(f, n, chip) {
+    return '<div class="card-top"><span class="num ' + f.level + '">' + n + '</span><b>' + esc(f.title) + '</b>' +
+      (chip ? '<span class="chip ' + f.level + '">' + CHIP[f.level] + '</span>' : "") + '</div>' +
+      (f.dest ? '<p class="dest">Real website: <b>' + esc(f.dest) + '</b></p>' : "") +
+      '<p class="why">' + esc(f.why) + '</p>' +
+      (f.reasons ? '<ul class="reasons">' + f.reasons.map(function (r) { return "<li><b>" + esc(r.title) + ".</b> " + esc(r.why) + "</li>"; }).join("") + "</ul>" : "");
+  }
+  var GROUPS = [["high", "Strong warnings"], ["medium", "Warnings"], ["low", "Small signs"], ["info", "Good to know"]];
+  function regroup() {
+    var c = current, num = {}, n = 0, html = "", counts = { high: 0, medium: 0, low: 0 };
+    GROUPS.forEach(function (g) {
+      var list = c.order.filter(function (fi) { return c.a.findings[fi].level === g[0]; });
+      if (!list.length) return;
+      if (counts[g[0]] !== undefined) counts[g[0]] = list.length;
+      html += '<li class="ghead ' + g[0] + '">' + g[1] + ' <span class="count">' + list.length + '</span></li>';
+      list.forEach(function (fi) { num[fi] = ++n; html += '<li class="card">' + cardHTML(c.a.findings[fi], n, false) + '</li>'; });
+    });
+    $("foundList").innerHTML = html;
+    c.marks.forEach(function (m) {
+      var t = $("tag" + m.i); if (!t) return;
+      var best = m.f.map(function (fi) { return num[fi]; }).filter(Boolean).sort(function (a, b) { return a - b; })[0];
+      t.textContent = best || "";
+    });
+    var parts = [];
+    if (counts.high) parts.push(counts.high + (counts.high === 1 ? " strong warning" : " strong warnings"));
+    if (counts.medium) parts.push(counts.medium + (counts.medium === 1 ? " warning" : " warnings"));
+    if (counts.low) parts.push(counts.low + (counts.low === 1 ? " small sign" : " small signs"));
+    $("foundSummary").textContent = parts.length ? "Most serious first: " + parts.join(", ") + "." : "";
+    $("foundSummary").hidden = !parts.length;
   }
   function step(ts) {
     if (!current) return;
@@ -1129,6 +1195,7 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
     $("pulse").classList.add("stopped");
     $("skipBtn").hidden = true;
     $("scanStatus").textContent = "Check complete";
+    regroup();
     if (!current.warn) { $("foundEmpty").hidden = false; $("foundEmpty").textContent = "No warning signs found in the text."; }
     showVerdict(current.a.score);
     if (current.a.score >= 50) burstBanner(); else $("vband").hidden = true;
@@ -1329,8 +1396,15 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
     var warn = current.order.map(function (fi) { return current.a.findings[fi]; }).filter(function (f) { return f.level !== "info"; });
     if (warn.length) {
       lines.push(""); lines.push("What we found:");
+      var lvl0 = { high: 0, medium: 1, low: 2 };
+      warn = warn.slice().sort(function (a, b) { return lvl0[a.level] - lvl0[b.level]; });
       var shown = maxFind ? warn.slice(0, maxFind) : warn;
-      shown.forEach(function (f, i) { lines.push((i + 1) + ". " + f.title + " (" + CHIP[f.level] + "): " + f.why + (f.dest && f.why.indexOf(f.dest) === -1 ? " Real website: " + f.dest + "." : "")); });
+      var lv = { high: 0, medium: 1, low: 2 };
+      shown = shown.slice().sort(function (a, b) { return lv[a.level] - lv[b.level]; });
+      shown.forEach(function (f, i) {
+        var why = f.reasons ? f.reasons.map(function (r) { return r.title; }).join(", ") + "." : f.why;
+        lines.push((i + 1) + ". " + f.title + " (" + CHIP[f.level] + "): " + why + (f.dest && why.indexOf(f.dest) === -1 ? " Real website: " + f.dest + "." : ""));
+      });
       if (shown.length < warn.length) lines.push("...and " + (warn.length - shown.length) + " more warning signs.");
     }
     lines.push(""); lines.push("What to do now:");
@@ -1354,7 +1428,8 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
     current.a.findings.forEach(function (f) {
       if (f.cat !== "links" || !f.ranges || !f.ranges.length) return;
       var raw = current.text.slice(f.ranges[0][0], f.ranges[0][1]);
-      (why[raw] = why[raw] || { t: [], dest: f.dest }).t.push(f.title);
+      var w = (why[raw] = why[raw] || { t: [], dest: f.dest });
+      (f.reasons ? f.reasons.map(function (r) { return r.title; }) : [f.title]).forEach(function (t) { w.t.push(t); });
     });
     var out = "", pos = 0;
     parseLinks(msg).forEach(function (L) {
@@ -1366,6 +1441,11 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
     out += msg.slice(pos);
     return out.replace(/([A-Za-z0-9._%+-]+)@([A-Za-z0-9.-]+\.[A-Za-z]{2,})/g, function (m, u, d) { return u + "[at]" + d.replace(/\./g, "[.]"); });
   }
+  $("sendToggle").addEventListener("click", function () {
+    var open = $("sendPanel").hidden;
+    $("sendPanel").hidden = !open;
+    $("sendToggle").setAttribute("aria-expanded", open ? "true" : "false");
+  });
   var canShare = !inClaude && !!navigator.share;
   if (!canShare) $("shareBtn").hidden = true;
   if (inClaude) { $("mailBtn").hidden = true; $("saveRes").hidden = true; $("printRes").hidden = true; }
