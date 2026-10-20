@@ -78,7 +78,7 @@ The rules live in the `RULES` list and the `analyse()` function in `index.html`.
 - Add to home screen, works offline, Android "Share to" from WhatsApp and Messages
 - Send the result to someone: share, email, copy, save, print. Links and addresses in the shared copy are switched off, with the reason.
 - Second opinion from an AI: one click inside Claude, copy-and-paste for ChatGPT, Copilot or Claude elsewhere
-- Practise quiz: 8 random questions per round from a bank of practice messages, remembering which have been seen
+- Practise quiz: 8 random questions per round (5 scams, 3 genuine) from a bank of 106 made-up messages, tagged by type, topic and difficulty, remembering which have been seen
 
 ## Decisions
 
@@ -90,10 +90,11 @@ The rules live in the `RULES` list and the `analyse()` function in `index.html`.
 
 ## Testing
 
-Test messages used so far: 29 (16 scams, 12 genuine, plus one with unreadable hidden details).
+Test messages used so far: 29 hand-made test messages plus all 106 quiz messages.
 
 - Every scam scores "suspicious" or higher.
-- Every genuine message scores 12 or less.
+- No genuine message is flagged (all score under 20; the hand-made ones 12 or less).
+- The quiz messages were drafted by AI helpers, then every one was run through the checker. That exposed real gaps (website names written without "http", "Hi Mum" variants, romance, job and selling scams, and "we will never ask for..." being read as a request), which were all fixed.
 - Accessibility: the axe checker finds no problems on the start page, result page or quiz. Every text colour meets the WCAG AA contrast standard.
 
 After any change to the rules, re-run the test messages and check nothing has moved.

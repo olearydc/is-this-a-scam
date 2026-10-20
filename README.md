@@ -25,7 +25,7 @@ Paste the message in, watch it being checked, and get a clear answer with plain 
 
 ## Practise and report
 
-- **Practise spotting scams:** six quick made-up messages. Guess "scam" or "genuine", then see the signs.
+- **Practise spotting scams:** a bank of 106 made-up messages (emails, texts and WhatsApp, easy to hard). Each round picks 8 you haven't seen yet. Guess "scam" or "genuine", then see the signs.
 - **How to report it:** clear steps for Ireland, based on advice from An Garda Síochána, the CCPC and gov.ie.
 
 ## Privacy
