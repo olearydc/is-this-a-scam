@@ -1,6 +1,6 @@
 /* Keeps a copy of the page so it opens even without a connection.
    Always tries the network first, so updates arrive straight away. */
-var CACHE = "itas-v1";
+var CACHE = "itas-v2";
 var FILES = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./icon-180.png"];
 
 self.addEventListener("install", function (e) {

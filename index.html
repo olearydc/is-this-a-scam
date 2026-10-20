@@ -244,12 +244,12 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
     <label for="msg" class="big-label">Paste the email or text message here</label>
     <div class="row" id="quickRow">
       <button type="button" class="mid-btn" id="pasteBtn">Paste what I copied</button>
-      <button type="button" class="mid-btn" id="shotBtn">Check a screenshot instead</button>
+      <button type="button" class="mid-btn" id="shotBtn">Choose a screenshot</button>
       <input type="file" id="shotFile" accept="image/*" hidden>
     </div>
     <p class="hint" id="quickMsg" role="status"></p>
     <p class="hint">Before you paste, remove your name, address, phone number and any account numbers. This page checks the message on your own device. Nothing is sent anywhere unless you choose to ask Claude.</p>
-    <textarea id="msg" spellcheck="false" placeholder="Copy the whole message and paste it here. For emails, include the line that says who it is from."></textarea>
+    <textarea id="msg" spellcheck="false" placeholder="Copy the whole message and paste it here, or paste a screenshot of it. For emails, include the line that says who it is from."></textarea>
     <details class="hdr" id="hdrDetails">
       <summary>Optional: also check the email's hidden details</summary>
       <div class="other">
@@ -1168,7 +1168,8 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
   if (inClaude || !(navigator.clipboard && navigator.clipboard.readText)) $("pasteBtn").hidden = true;
   if (inClaude) $("shotBtn").hidden = true;
   if ($("pasteBtn").hidden && $("shotBtn").hidden) $("quickRow").hidden = true;
-  $("pasteBtn").addEventListener("click", function () {
+  if (!inClaude) quick("Tip: you can also paste a screenshot straight into the box.");
+  function pasteText() {
     navigator.clipboard.readText().then(function (t) {
       if (!t || !t.trim()) { quick("There's nothing copied yet. Press and hold the message, tap Copy, then come back and tap Paste."); return; }
       $("msg").value = t;
@@ -1177,6 +1178,16 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
     }, function () {
       quick("Your phone didn't let us paste. Press and hold inside the box below, then choose Paste.");
     });
+  }
+  $("pasteBtn").addEventListener("click", function () {
+    if (!navigator.clipboard.read) { pasteText(); return; }
+    navigator.clipboard.read().then(function (items) {
+      for (var i = 0; i < items.length; i++) {
+        var img = items[i].types.filter(function (t) { return t.indexOf("image/") === 0; })[0];
+        if (img) { items[i].getType(img).then(ocrImage, pasteText); return; }
+      }
+      pasteText();
+    }, pasteText);
   });
   var ocrLoading = null;
   function loadOcr() {
@@ -1193,7 +1204,11 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
   $("shotBtn").addEventListener("click", function () { $("shotFile").value = ""; $("shotFile").click(); });
   $("shotFile").addEventListener("change", function () {
     var f = $("shotFile").files && $("shotFile").files[0];
+    if (f) ocrImage(f);
+  });
+  function ocrImage(f) {
     if (!f) return;
+    if (inClaude) { quick("Reading screenshots works on the website version of this page. Here, please copy and paste the text of the message instead."); return; }
     $("shotBtn").disabled = true;
     quick("Reading the text from your picture. The first time can take up to a minute. Your picture stays on your device.");
     loadOcr().then(function () {
@@ -1211,6 +1226,28 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
     }).catch(function () {
       quick("We couldn't read that picture. Check you're online, try a clearer screenshot, or copy and paste the text instead.");
     }).then(function () { $("shotBtn").disabled = false; });
+  }
+
+  /* a screenshot pasted or dropped straight into the page */
+  function imageFrom(list) {
+    for (var i = 0; list && i < list.length; i++) {
+      var it = list[i];
+      if (it.kind === "file" && it.type.indexOf("image/") === 0) return it.getAsFile();
+      if (it instanceof Blob && it.type && it.type.indexOf("image/") === 0) return it;
+    }
+    return null;
+  }
+  document.addEventListener("paste", function (e) {
+    if ($("inputView").hidden) return;
+    var img = imageFrom(e.clipboardData && e.clipboardData.items);
+    if (img) { e.preventDefault(); ocrImage(img); }
+  });
+  $("msg").addEventListener("dragover", function (e) {
+    if (e.dataTransfer && Array.prototype.some.call(e.dataTransfer.types || [], function (t) { return t === "Files"; })) e.preventDefault();
+  });
+  $("msg").addEventListener("drop", function (e) {
+    var img = imageFrom(e.dataTransfer && e.dataTransfer.files);
+    if (img) { e.preventDefault(); ocrImage(img); }
   });
 
   /* ---------- home screen app (website version only) ---------- */

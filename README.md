@@ -18,7 +18,7 @@ Paste the message in, watch it being checked, and get a clear answer with plain 
 ## Using it on a phone
 
 - **Paste in one tap:** copy the message, open the page, and tap "Paste what I copied".
-- **Screenshots:** tap "Check a screenshot instead" and pick the picture. The text is read on your phone; the picture is not uploaded anywhere.
+- **Screenshots:** paste a screenshot straight into the box, or tap "Choose a screenshot" and pick the picture. The text is read on your phone; the picture is not uploaded anywhere.
 - **Home screen:** add it to your home screen and it opens like an app, even without a connection.
 - **Share from WhatsApp or Messages (Android):** once it's on your home screen, press and hold a message, tap Share, and choose "Is This a Scam?". It opens and checks the message straight away. iPhones don't allow this for web pages, so use copy and paste there.
 
