@@ -42,7 +42,7 @@ img{max-width:100%}
   --scan: #1b6886;
   --font: "Atkinson Hyperlegible", Verdana, Tahoma, sans-serif;
   --matrix-font: "Share Tech Mono", Consolas, "Courier New", monospace;
-  --fs: 17px;
+  --fs: 16px;
   color-scheme: light;
 }
 body.matrix {
@@ -1497,12 +1497,12 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
   showSteps("gmail");
 
   /* text size */
-  var SIZES = [15, 17, 19, 22, 25], sizeI = 1;
-  try { var saved = parseInt(localStorage.getItem("itas-size2"), 10); if (SIZES.indexOf(saved) !== -1) sizeI = SIZES.indexOf(saved); } catch (e) {}
+  var SIZES = [14, 16, 17, 19, 22, 25], sizeI = 1;
+  try { var saved = parseInt(localStorage.getItem("itas-size3"), 10); if (SIZES.indexOf(saved) !== -1) sizeI = SIZES.indexOf(saved); } catch (e) {}
   function setSize() {
     document.documentElement.style.setProperty("--fs", SIZES[sizeI] + "px");
     $("sizeDown").disabled = sizeI === 0; $("sizeUp").disabled = sizeI === SIZES.length - 1;
-    try { localStorage.setItem("itas-size2", String(SIZES[sizeI])); } catch (e) {}
+    try { localStorage.setItem("itas-size3", String(SIZES[sizeI])); } catch (e) {}
   }
   $("sizeDown").addEventListener("click", function () { if (sizeI > 0) { sizeI--; setSize(); } });
   $("sizeUp").addEventListener("click", function () { if (sizeI < SIZES.length - 1) { sizeI++; setSize(); } });
