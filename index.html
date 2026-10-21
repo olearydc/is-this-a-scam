@@ -229,6 +229,23 @@ body.matrix .meter-fill.high { background: var(--accent); box-shadow: 0 0 12px v
 .meter-labels { display: flex; justify-content: space-between; font-size: 0.82rem; color: var(--muted); }
 .todo { margin: 0; padding-left: 1.3em; display: grid; gap: 8px; font-size: 1.02rem; max-width: 62ch; }
 .todo li::marker { color: var(--accent); font-weight: 700; }
+.main-action { font-size: 1.2rem; font-weight: 700; max-width: 58ch; }
+.trust { font-size: 0.95rem; color: var(--fg); border-left: 5px solid var(--accent); background: var(--hl-low); border-radius: 8px; padding: 10px 14px; max-width: 62ch; }
+.check-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 16px; }
+.check-row .linkish { margin-left: auto; padding: 0 6px; }
+.more-h { font-weight: 700; }
+.happened { display: grid; gap: 10px; border-top: 1px solid var(--panel-line); padding-top: 16px; }
+.hp-list { display: grid; gap: 10px; }
+.hp-btn { justify-content: space-between; text-align: left; min-height: 58px; font-size: 1.1rem; width: 100%; box-sizing: border-box; }
+.hp-btn::after { content: "+"; font-size: 1.4rem; line-height: 1; flex: none; }
+.hp-btn[aria-expanded="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.hp-btn[aria-expanded="true"]::after { content: "\2212"; }
+.hp-panel { display: grid; gap: 10px; border-left: 5px solid var(--accent); background: var(--hl-low); border-radius: 8px; padding: 14px 16px; font-size: 1.02rem; max-width: 62ch; }
+.hp-panel[hidden] { display: none; }
+.hp-panel ul, .hp-panel ol { margin: 0; padding-left: 1.3em; display: grid; gap: 8px; }
+.hp-panel a { color: var(--accent); font-weight: 700; }
+.hp-panel .nums li { display: block; min-height: 0; }
+.hp-panel .nums a, .hp-panel .tap-link { padding: 10px 2px; }
 
 /* AI */
 .ai-out { border: 2px solid var(--panel-line); border-radius: 8px; padding: 16px; display: grid; gap: 10px; }
@@ -345,7 +362,8 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
       <input type="file" id="shotFile" accept="image/*" hidden>
     </div>
     <p class="hint" id="quickMsg" role="status"></p>
-    <p class="hint">Before you paste, remove your name, address, phone number and any account numbers. This page checks the message on your own device. Nothing is sent anywhere unless you choose to ask Claude.</p>
+    <p class="hint">Remove your name, address and account numbers first. You can also paste a screenshot straight into the box.</p>
+    <p class="trust">This page never asks for your bank details, codes or passwords. Nothing you paste leaves your phone.</p>
     <details class="hdr" id="copyHelp">
       <summary>How do I copy a message from my phone?</summary>
       <div class="other">
@@ -361,26 +379,11 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
       </div>
     </details>
     <textarea id="msg" spellcheck="false" maxlength="20000" placeholder="Copy the whole message and paste it here, or paste a screenshot of it. For emails, include the line that says who it is from."></textarea>
-    <div class="row">
+    <div class="check-row">
       <button type="button" class="big-btn" id="checkBtn">Check this message</button>
-      <button type="button" id="clearBtn">Clear</button>
-      <span class="error" id="inputError" role="alert"></span>
+      <button type="button" class="linkish" id="clearBtn">Clear the box</button>
     </div>
-    <details class="hdr" id="hdrDetails">
-      <summary>Optional: also check the email's hidden details</summary>
-      <div class="other">
-        <p class="hint">Every email carries hidden details that show whether it really came from the company it names. This is only for emails, not text messages. Choose your email app for the steps:</p>
-        <div class="row seg" id="hdrTabs">
-          <button type="button" data-h="gmail" aria-pressed="true">Gmail</button>
-          <button type="button" data-h="outlook" aria-pressed="false">Outlook (web or new)</button>
-          <button type="button" data-h="classic" aria-pressed="false">Outlook (classic)</button>
-          <button type="button" data-h="iphone" aria-pressed="false">iPhone or iPad</button>
-        </div>
-        <ol class="steps" id="hdrSteps"></ol>
-        <label for="hdr" class="big-label" style="font-size:1rem">Paste the hidden details here</label>
-        <textarea id="hdr" class="hdr-box" spellcheck="false" placeholder="Paste the hidden details (also called the original message or headers) here."></textarea>
-      </div>
-    </details>
+    <p class="error" id="inputError" role="alert"></p>
     <div class="call-box">
       <p><b>Is someone on the phone to you right now,</b> asking for money, a code or your details?</p>
       <button type="button" class="mid-btn" id="callStart">Yes, help me now</button>
@@ -401,17 +404,37 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
     <div class="examples">
       <p>New to this? <button type="button" class="linkish" id="quizStart">Practise spotting scams (8 quick questions)</button></p>
       <p id="refreshLine" hidden><span id="refreshLead"></span> <button type="button" class="linkish" id="refreshStart">Quick refresher (3 messages)</button></p>
-      <p>Or try a made-up example:</p>
-      <div class="row" id="exRow">
-        <button type="button" data-ex="bank">Bank email</button>
-        <button type="button" data-ex="parcel">Parcel text</button>
-        <button type="button" data-ex="mum">"Hi Mum" text</button>
-        <button type="button" data-ex="grant">Free money email</button>
-        <button type="button" data-ex="boss">Boss asking for gift cards</button>
-        <button type="button" data-ex="hidden">Email with hidden details</button>
-        <button type="button" data-ex="real">Genuine notice</button>
-      </div>
     </div>
+    <details id="moreBox">
+      <summary>More: practise, examples and email details</summary>
+      <div class="other">
+        <p class="more-h">Try a made-up example:</p>
+        <div class="row" id="exRow">
+          <button type="button" data-ex="bank">Bank email</button>
+          <button type="button" data-ex="parcel">Parcel text</button>
+          <button type="button" data-ex="mum">"Hi Mum" text</button>
+          <button type="button" data-ex="grant">Free money email</button>
+          <button type="button" data-ex="boss">Boss asking for gift cards</button>
+          <button type="button" data-ex="hidden">Email with hidden details</button>
+          <button type="button" data-ex="real">Genuine notice</button>
+        </div>
+        <details class="hdr" id="hdrDetails">
+          <summary>Optional: also check the email's hidden details</summary>
+          <div class="other">
+            <p class="hint">Every email carries hidden details that show whether it really came from the company it names. This is only for emails, not text messages. Choose your email app for the steps:</p>
+            <div class="row seg" id="hdrTabs">
+              <button type="button" data-h="gmail" aria-pressed="true">Gmail</button>
+              <button type="button" data-h="outlook" aria-pressed="false">Outlook (web or new)</button>
+              <button type="button" data-h="classic" aria-pressed="false">Outlook (classic)</button>
+              <button type="button" data-h="iphone" aria-pressed="false">iPhone or iPad</button>
+            </div>
+            <ol class="steps" id="hdrSteps"></ol>
+            <label for="hdr" class="big-label" style="font-size:1rem">Paste the hidden details here</label>
+            <textarea id="hdr" class="hdr-box" spellcheck="false" placeholder="Paste the hidden details (also called the original message or headers) here."></textarea>
+          </div>
+        </details>
+      </div>
+    </details>
   </section>
 
   <section class="panel" id="quizView" hidden aria-labelledby="quizTitle">
@@ -430,6 +453,7 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
       <h2 class="verdict-title" id="verdictTitle" tabindex="-1">Our answer</h2>
     </div>
     <p class="verdict-sub" id="verdictSub"></p>
+    <p class="main-action" id="mainAction" hidden></p>
     <p class="want" id="want" hidden><b>What they're probably after:</b> <span id="wantText"></span></p>
     <div class="meter" aria-hidden="true">
       <div class="meter-track"><div class="meter-fill" id="meterFill"></div></div>
@@ -441,8 +465,46 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
       <li>Contact the company or person yourself, using a phone number or website you already know.</li>
       <li>Never share a code, password or PIN, even with someone who says they are from your bank or the Gardaí (the police).</li>
       <li>Ask someone you trust before you do anything.</li>
-      <li>If you have already clicked, given details or sent money, call your bank straight away, then report it at your local Garda station.</li>
     </ul>
+    <p id="happenedLinkWrap" hidden><button type="button" class="linkish" id="happenedLink" aria-expanded="false" aria-controls="happened">Already replied, clicked or paid? Get help</button></p>
+    <div class="happened" id="happened" hidden>
+      <h3 id="happenedTitle">What happened?</h3>
+      <div class="hp-list">
+        <button type="button" class="hp-btn" id="hp1" aria-expanded="false" aria-controls="hp1p">I only read it</button>
+        <div class="hp-panel" id="hp1p" hidden>
+          <p><b>You're fine.</b> Don't reply or tap anything. You can delete it, or keep it if you want to report it.</p>
+        </div>
+        <button type="button" class="hp-btn" id="hp2" aria-expanded="false" aria-controls="hp2p">I tapped a link or replied</button>
+        <div class="hp-panel" id="hp2p" hidden>
+          <ul>
+            <li>Don't type anything else into that page.</li>
+            <li>If you entered a password, change it now. Use the company's own app or website, not the link.</li>
+            <li>If you gave card or bank details, ring your bank now.</li>
+            <li>Expect follow-up calls or texts pretending to help. Hang up.</li>
+          </ul>
+        </div>
+        <button type="button" class="hp-btn" id="hp3" aria-expanded="false" aria-controls="hp3p">I paid, or gave a code or my bank details</button>
+        <div class="hp-panel" id="hp3p" hidden>
+          <ol>
+            <li><b>Ring your bank now.</b> Ask them to stop the payment and protect your account.
+              <ul class="nums">
+                <li>Bank of Ireland: <a href="tel:1800946764">1800 946 764</a> (24 hours, every day)</li>
+                <li>Other banks and credit unions: the number on the back of your card or in your banking app</li>
+              </ul></li>
+            <li><b>Report it at your local Garda station.</b> <a class="tap-link" href="https://www.garda.ie/en/contact-us/station-directory/" target="_blank" rel="noopener">Find your local station</a></li>
+            <li><b>Keep the message.</b> Don't delete it.</li>
+          </ol>
+          <p><b>It's not your fault.</b> These criminals are very skilled. Someone to talk to:</p>
+          <ul class="nums">
+            <li>Crime Victims Helpline: <a href="tel:116006">116 006</a> (Mon to Thu 10am to 7.30pm, Fri 10am to 5pm, Sat 2pm to 4pm)</li>
+            <li>Samaritans: <a href="tel:116123">116 123</a> (any time)</li>
+            <li>ALONE, for older people: <a href="tel:0818222024">0818 222 024</a> (8am to 8pm, every day)</li>
+            <li>MABS, for money worries: <a href="tel:0818072000">0818 07 2000</a></li>
+          </ul>
+          <p><b>Be careful of anyone who contacts you offering to get your money back.</b> That is a second scam.</p>
+        </div>
+      </div>
+    </div>
     <details class="report" id="reportBox">
       <summary>How to report it, or what to do if you've been caught out</summary>
       <div class="other">
@@ -454,13 +516,16 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
           <li>Keep the message. Don't delete it. Take a screenshot, and note the dates, amounts and any reference numbers. Your bank and the Gardaí may need them.</li>
         </ol>
         <p><b>Remember:</b> Gardaí, banks and government departments will never ask for your PIN or password, or ask you to move your money.</p>
+        <p>Hearing nothing back after you report it is normal. It still helps.</p>
         <p><b>Useful numbers:</b></p>
         <ul class="nums">
           <li>Someone at your door or in danger now: <a href="tel:112">999 or 112</a></li>
           <li>Garda Confidential Line, to give information about a crime: <a href="tel:1800666111">1800 666 111</a></li>
           <li>CCPC consumer helpline, for advice: <a href="tel:+35314025555">01 402 5555</a></li>
           <li>Age Action, for older people and their families: <a href="tel:+35314756989">01 475 6989</a></li>
+          <li>Bank of Ireland fraud line: <a href="tel:1800946764">1800 946 764</a> (24 hours)</li>
           <li>Your bank: the number on the back of your card</li>
+          <li>Offered an investment? Check the firm is allowed: <a href="https://registers.centralbank.ie/" target="_blank" rel="noopener">Central Bank register</a>, and its <a href="https://www.centralbank.ie/regulation/how-we-regulate/authorisation/unauthorised-firms" target="_blank" rel="noopener">warning list</a></li>
         </ul>
         <p><b>Just want to check a website address?</b> Try <a href="https://fraudsmart.scamchecker.ie/" target="_blank" rel="noopener">ScamChecker</a> from FraudSMART, run by Irish banks.</p>
         <p class="src">Advice from <a href="https://www.garda.ie/en/crime/fraud/" target="_blank" rel="noopener">An Garda Síochána</a>, the <a href="https://www.ccpc.ie/manage-your-money/scams-and-frauds/protecting-yourself-from-scams" target="_blank" rel="noopener">CCPC</a> and <a href="https://www.gov.ie/en/department-of-public-expenditure-infrastructure-public-service-reform-and-digitalisation/publications/alert-on-scam-phone-calls-and-text-messages/" target="_blank" rel="noopener">gov.ie</a>.</p>
@@ -510,7 +575,7 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
     <p class="call-lead">If they are asking for money, a code, your PIN or to install an app, <b>it is very likely a scam.</b></p>
     <ol class="call-steps">
       <li><b>Hang up now.</b> It's not rude. A real bank, Garda or company will understand.</li>
-      <li><b>Wait 5 minutes, or use a different phone.</b> Some scammers stay on the line and pretend to be the bank when you ring back.</li>
+      <li><b>Wait 5 minutes, or use a different phone.</b> Some scammers stay on the line and pretend to be the bank when you ring back. When you ring back, first check you hear a dial tone.</li>
       <li><b>Ring back on a number you find yourself:</b> on the back of your bank card, on a bill, or on the official website. Never the number they gave you.</li>
       <li><b>Talk to someone you trust</b> before you do anything.</li>
     </ol>
@@ -523,6 +588,7 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
       <li>Hand cash, cards or your cheque book to someone who calls to your door.</li>
       <li>Pay with gift cards, vouchers or cryptocurrency.</li>
       <li>Install an app they tell you to, or let them "fix" your computer.</li>
+      <li>Never let anyone onto your computer or phone, or share your screen.</li>
     </ul>
     <p><b>Banks, the Gardaí and government departments will never ask you to do any of these.</b></p>
     <p><b>If you have already given details or money:</b> ring your bank straight away on the number on your card, then report it at your local Garda station. It's not your fault. These people are very good at what they do.</p>
@@ -544,6 +610,7 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
     <h3>If you already rang them or let them in</h3>
     <ul class="todo">
       <li>Hang up. Disconnect the computer from the internet (switch off the Wi-Fi or unplug the cable).</li>
+      <li>Never let anyone onto your computer or phone, or share your screen.</li>
       <li>If you paid or gave bank details, ring your bank straight away on the number on your card.</li>
       <li>Ask someone you trust, or a local computer shop, to check the computer before you use it for banking.</li>
       <li>Change your passwords using a different device, starting with email and banking.</li>
@@ -1614,6 +1681,23 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
     return "";
   }
   var TODO_WARN = $("todo").innerHTML;
+  /* "What happened?": three choices, one open at a time */
+  function resetHappened() {
+    ["hp1", "hp2", "hp3"].forEach(function (id) { $(id).setAttribute("aria-expanded", "false"); $(id + "p").hidden = true; });
+    $("happenedLink").setAttribute("aria-expanded", "false");
+  }
+  ["hp1", "hp2", "hp3"].forEach(function (id) {
+    $(id).addEventListener("click", function () {
+      var opening = $(id).getAttribute("aria-expanded") !== "true";
+      resetHappened();
+      if (opening) { $(id).setAttribute("aria-expanded", "true"); $(id + "p").hidden = false; }
+    });
+  });
+  $("happenedLink").addEventListener("click", function () {
+    $("happened").hidden = false;
+    $("happenedLinkWrap").hidden = true;
+    try { $("happenedTitle").setAttribute("tabindex", "-1"); $("happenedTitle").focus(); } catch (e) {}
+  });
   var TODO_CALM = "<li>If it asks for money, a code or your details, check first: contact the company or person on a number you already have.</li>" +
     "<li>If something still feels wrong, trust that feeling and ask someone you trust.</li>" +
     "<li>Never share a code, password or PIN, even with someone who says they are from your bank or the Gardaí (the police).</li>";
@@ -1623,6 +1707,11 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
     else if (score >= 20) { t = "This looks suspicious"; s = "We found some warning signs. Do not click links. Check with the company or person another way, using a number you already have."; cls = "mid"; }
     else { t = "No obvious warning signs found"; s = "That does not prove it is safe. If it asks for money, codes or personal details, check with the company using a number you already have."; cls = ""; }
     $("todo").innerHTML = cls ? TODO_WARN : TODO_CALM;
+    resetHappened();
+    $("happened").hidden = !cls;
+    $("happenedLinkWrap").hidden = !!cls;
+    $("mainAction").hidden = !cls;
+    $("mainAction").textContent = cls === "high" ? "Don't click, reply or pay. Delete it, or keep it to report." : cls ? "Don't click or reply. Check with the company on a number you already have." : "";
     var icons = {
       high: '<path fill="currentColor" d="M12 2 1 21h22L12 2zm0 5.5 7.5 12.5h-15L12 7.5zM11 10v5h2v-5h-2zm0 6v2h2v-2h-2z"/>',
       mid: '<path fill="currentColor" d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-1 3v7h2V7h-2zm0 9v2h2v-2h-2z"/>',
@@ -1671,11 +1760,9 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
     check();
   });
   $("skipBtn").addEventListener("click", function () { if (current) current.start = -1e9; });
-  $("resetBtn").addEventListener("click", function () {
-    $("msg").value = ""; $("hdr").value = ""; $("inputError").textContent = "";
-    $("againBtn").click();
-  });
+  $("resetBtn").addEventListener("click", function () { $("againBtn").click(); });
   $("againBtn").addEventListener("click", function () {
+    $("msg").value = ""; $("hdr").value = ""; $("inputError").textContent = "";
     cancelAnimationFrame(rafScan); stopSpeaking(); if (aiCtl) aiCtl.abort();
     current = null;
     $("scanView").hidden = true; $("resultView").hidden = true; $("aiView").hidden = true; $("vband").hidden = true; $("quizView").hidden = true; $("callView").hidden = true; $("popView").hidden = true;
@@ -1692,7 +1779,6 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
   if (inClaude || !(navigator.clipboard && navigator.clipboard.readText)) $("pasteBtn").hidden = true;
   if (inClaude) $("shotBtn").hidden = true;
   if ($("pasteBtn").hidden && $("shotBtn").hidden) $("quickRow").hidden = true;
-  if (!inClaude) quick("Tip: you can also paste a screenshot straight into the box.");
   function pasteText() {
     navigator.clipboard.readText().then(function (t) {
       if (!t || !t.trim()) { quick("There's nothing copied yet. Press and hold the message, tap Copy, then come back and tap Paste."); return; }
@@ -1820,6 +1906,16 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
     lines.push(""); lines.push("What to do now:");
     if (short) lines.push("Don't click links or reply. Check with the company or person using a phone number you already know.");
     else Array.prototype.forEach.call($("todo").querySelectorAll("li"), function (li) { lines.push("- " + li.textContent); });
+    if (!short) ["hp1", "hp2", "hp3"].forEach(function (id) {
+      if ($(id).getAttribute("aria-expanded") !== "true") return;
+      lines.push(""); lines.push("What happened: " + $(id).textContent);
+      Array.prototype.forEach.call($(id + "p").querySelectorAll("p, li"), function (el) {
+        var c = el.cloneNode(true), sub = c.querySelector("ul");
+        if (sub) sub.parentNode.removeChild(sub);
+        var t = c.textContent.replace(/\s+/g, " ").trim();
+        if (t) lines.push("- " + t);
+      });
+    });
     if ($("incMsg").checked && current.msg) {
       var m = current.msg;
       if (maxMsg && m.length > maxMsg) m = m.slice(0, maxMsg) + "... (shortened)";
