@@ -22,6 +22,8 @@ Done by AI research helpers, then reviewed. Each report gives sources. Items mar
 
 ## Ranked list of improvements (no server needed)
 
+**Done (21 October 2026):** 1, 2, 3, 5, 6, 7, 8, 9. Number 4 is covered by the never-do list on the phone-call page. Still to do: 10.
+
 | # | Idea | Why | Effort |
 | --- | --- | --- | --- |
 | 1 | **"Someone is on the phone now" button**: hang up, ring back on a number you know, never move money, never read out a code | The most dangerous scams happen live, and no rival covers this | Low |

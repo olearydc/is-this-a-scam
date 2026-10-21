@@ -18,6 +18,7 @@ Paste the message in, watch it being checked, and get a clear answer with plain 
 ## Help beyond checking a message
 
 - **Someone on the phone to you right now?** Tap "Yes, help me now" for a short checklist: hang up, ring back on a number you find yourself, and the things never to do for anyone.
+- **A warning on your screen says you have a virus?** Tap "Help with a pop-up": don't ring the number, how to close it, and what to do if you already rang.
 - **What they're probably after:** each warning result says in one line what the scammer wants, for example "a code sent to your phone".
 - **A helper you trust:** save a family member's name and number once (kept on your phone only), then send them a result on WhatsApp or by text in one tap.
 - **How do I copy a message?** Step-by-step help for iPhone, Android, WhatsApp, email and screenshots.
@@ -32,8 +33,8 @@ Paste the message in, watch it being checked, and get a clear answer with plain 
 
 ## Practise and report
 
-- **Practise spotting scams:** a bank of 106 made-up messages (emails, texts and WhatsApp, easy to hard). Each round picks 8 you haven't seen yet. Guess "scam" or "genuine", then see the signs.
-- **How to report it:** clear steps for Ireland, based on advice from An Garda Síochána, the CCPC and gov.ie.
+- **Practise spotting scams:** a bank of 106 made-up messages (emails, texts and WhatsApp, easy to hard). Each round picks 8 you haven't seen yet. Guess "scam" or "genuine", then see the signs. A week after your last round, it offers a quick 3-message refresher, because what you learn fades without a little practice.
+- **How to report it:** clear steps for Ireland, based on advice from An Garda Síochána, the CCPC and gov.ie, with useful phone numbers (Garda Confidential, CCPC, Age Action) and a link to FraudSMART's ScamChecker for checking a website address.
 
 ## Privacy
 
