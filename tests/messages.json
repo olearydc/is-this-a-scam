@@ -371,5 +371,14 @@
   {"id":"bf-g09-ticketmaster-genuine","scam":false,"msg":"From: Ticketmaster Ireland <customer.service@ticketmaster.ie>\nSubject: Your tickets for Saturday night\n\nHi Siobhan,\n\nThanks for your order. Your tickets are in your account at https://www.ticketmaster.ie/member/tickets and in the Ticketmaster app. Doors open at 7pm.\n\nTicketmaster Ireland"},
   {"id":"bf-g10-hotel-friend","scam":false,"msg":"Hi Maeve, no worries about the late check-in, reception is open until midnight. Just ask for Tom at the desk and he will give you the key. Looking forward to seeing you both on Friday!"},
   {"id":"bf-g11-amazon-genuine","scam":false,"msg":"From: Amazon.co.uk <auto-confirm@amazon.co.uk>\nSubject: Your order has shipped\n\nHello Declan,\n\nYour package is on its way and should arrive on Thursday. Track it at https://www.amazon.co.uk/your-orders or in the Amazon app.\n\nAmazon"},
-  {"id":"bf-g12-booking-review","scam":false,"msg":"From: Booking.com <noreply@booking.com>\nSubject: How was your stay at Hotel Marine?\n\nHi Aoife,\n\nWe hope you enjoyed your stay. It takes less than a minute to leave a review: https://www.booking.com/reviewlanding\n\nThanks,\nBooking.com"}
+  {"id":"bf-g12-booking-review","scam":false,"msg":"From: Booking.com <noreply@booking.com>\nSubject: How was your stay at Hotel Marine?\n\nHi Aoife,\n\nWe hope you enjoyed your stay. It takes less than a minute to leave a review: https://www.booking.com/reviewlanding\n\nThanks,\nBooking.com"},
+  {"id":"g-three-bridges","scam":false,"msg":"From: Three Bridges Golf <news@threebridges-golf.ie>\nSubject: Captain's day\n\nEntries open at https://www.threebridges-golf.ie/captains-day"},
+  {"id":"g-apple-orchard","scam":false,"msg":"Apple picking this Saturday at the farm! Details: https://apple.kilkennyorchard.ie/events"},
+  {"id":"g-eir-sport","scam":false,"msg":"From: Eir <info@eir.ie>\nSubject: Your bill is ready\n\nView it at https://my.eir.ie/bills"},
+  {"id":"g-amazon-smile","scam":false,"msg":"Your order has shipped. Track it at https://www.amazon.co.uk/gp/your-account/order-history"},
+  {"id":"g-booking-real","scam":false,"msg":"From: Booking.com <noreply@booking.com>\nSubject: Your booking is confirmed\n\nManage it at https://secure.booking.com/myreservations.html"},
+  {"id":"g-revolut-blog","scam":false,"msg":"Revolut news: read the update at https://blog.revolut.com/new-features"},
+  {"id":"s-appleid-sub","scam":true,"msg":"Your Apple ID has been locked for security reasons. Verify your account within 24 hours at https://appleid.secure-login-check.net/verify"},
+  {"id":"s-three-bill","scam":true,"msg":"Three Ireland: your bill payment failed. Update your card details today at https://three-ie-billing.com/pay to avoid disconnection."},
+  {"id":"s-booking-sub-again","scam":true,"msg":"Your reservation at Hotel Riverside needs a quick card verification to stay confirmed: https://booking.confirm-stay88.com/r/1123"}
 ]

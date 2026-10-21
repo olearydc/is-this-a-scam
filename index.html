@@ -821,13 +821,15 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
     { n: "Airbnb", re: /\bairbnb\b/i, k: ["airbnb"] }
   ];
   /* well-known names scammers use as a sub-domain or hyphenated word of an unrelated site; "real" ends in .* when any ending is fine */
+  var COMMON_WORDS = ["three", "apple", "revenue", "amazon", "booking", "energy", "garda", "union"];
+  /* ctx: for brands that are also everyday words, the message must be about that company */
   var BRANDS = [
-    { n: "Booking.com", t: ["booking", "bookingcom"], real: ["booking.com"] },
+    { n: "Booking.com", t: ["booking", "bookingcom"], real: ["booking.com"], ctx: /\b(booking\.com|your (booking|reservation|stay)|hotel|check-?in)\b/i },
     { n: "Airbnb", t: ["airbnb"], real: ["airbnb.*"] },
     { n: "PayPal", t: ["paypal"], real: ["paypal.com", "paypal.me", "paypal.ie", "paypal.co.uk"] },
     { n: "Amazon", t: ["amazon", "amzn"], real: ["amazon.*", "amzn.to", "amzn.eu"] },
     { n: "Netflix", t: ["netflix"], real: ["netflix.com"] },
-    { n: "Apple", t: ["apple", "icloud", "appleid"], real: ["apple.com", "icloud.com"] },
+    { n: "Apple", t: ["apple", "icloud", "appleid"], real: ["apple.com", "icloud.com"], ctx: /\b(apple ?id|icloud|apple (account|pay|support|store)|itunes|app store)\b/i },
     { n: "Microsoft", t: ["microsoft", "office365"], real: ["microsoft.com", "office.com", "live.com", "microsoftonline.com", "outlook.com", "office365.com"] },
     { n: "DHL", t: ["dhl"], real: ["dhl.*"] },
     { n: "DPD", t: ["dpd"], real: ["dpd.ie", "dpd.com", "dpd.co.uk"] },
@@ -840,7 +842,7 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
     { n: "the HSE", t: ["hse"], real: ["hse.ie"] },
     { n: "Eir", t: ["eir"], real: ["eir.ie"] },
     { n: "Vodafone", t: ["vodafone"], real: ["vodafone.ie", "vodafone.com", "vodafone.co.uk"] },
-    { n: "Three", t: ["three"], real: ["three.ie", "three.co.uk"] },
+    { n: "Three", t: ["three"], real: ["three.ie", "three.co.uk"], ctx: /\bthree (ireland|mobile|account|bill|customer)\b/i },
     { n: "Ticketmaster", t: ["ticketmaster"], real: ["ticketmaster.ie", "ticketmaster.com", "ticketmaster.co.uk"] },
     { n: "Ryanair", t: ["ryanair"], real: ["ryanair.com"] },
     { n: "Aer Lingus", t: ["aerlingus"], real: ["aerlingus.com"] }
@@ -1219,7 +1221,8 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
       for (var i = 0; i < ORGS.length; i++) {
         var o = ORGS[i];
         if (ownedBy(o, base)) continue;
-        if (o.k.some(function (k) { k = k.split(".")[0]; return k !== "gov" && k !== "booking" && lab !== k && (lab.split("-").indexOf(k) !== -1 || (k.length >= 5 && lab.indexOf(k) !== -1)); })) return o;
+        /* everyday words (threebridges-golf.ie, applefarm.ie) only count as a whole part of the name, like three-ie.com */
+        if (o.k.some(function (k) { k = k.split(".")[0]; return k !== "gov" && k !== "booking" && lab !== k && (lab.split("-").indexOf(k) !== -1 || (k.length >= 5 && COMMON_WORDS.indexOf(k) === -1 && lab.indexOf(k) !== -1)); })) return o;
       }
       return null;
     }
@@ -1309,7 +1312,7 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
       bsub.forEach(function (x) { x.split("-").forEach(function (y) { bwords.push(y); }); bwords.push(x.replace(/-/g, "")); });
       if (!faked && !disguised && !tracked) {
         var bhit = BRANDS.filter(function (B) {
-          return B.t.some(function (t) { return bwords.indexOf(t) !== -1; }) &&
+          return B.t.some(function (t) { return bwords.indexOf(t) !== -1; }) && (!B.ctx || B.ctx.test(norm)) &&
             !B.real.some(function (k) { return k.slice(-2) === ".*" ? lab === k.slice(0, -2) : lb === k; });
         })[0];
         if (bhit) la("bd" + L.host, { cat: "links", level: "high", title: "Disguised link", ranges: lr,
