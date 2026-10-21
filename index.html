@@ -1195,7 +1195,8 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
     var selfReset = !!senderBase && !senderFree && links.length > 0 &&
       links.every(function (L) { return sameOwner(baseDomain(L.host), senderBase); }) &&
       /\bif you (did not|didn'?t) (request|ask for|make) (this|it)[^.\n]{0,60}\b(ignore|disregard|safely)/i.test(norm);
-    var safeAdvice = links.length === 0 && /\b(number|phone number|contact number) (printed )?on the back of your (debit |credit |bank )?card|number on your (latest )?(bank )?statement/i.test(norm);
+    /* only when the message gives no phone number of its own: a scam can copy the bank's advice and add its own number */
+    var safeAdvice = links.length === 0 && !/\+?\d[\d ()-]{7,}\d/.test(norm) && /\b(number|phone number|contact number) (printed )?on the back of your (debit |credit |bank )?card|number on your (latest )?(bank )?statement/i.test(norm);
     RULES.forEach(function (r) {
       var re = new RegExp(r.re.source, "gi"), m, hits = [];(r.re.source, "gi"), m, hits = [];
       while ((m = re.exec(norm)) && hits.length < 8) {

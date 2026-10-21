@@ -338,5 +338,13 @@
   {"id":"b4-g37-gov-passport","scam":false,"msg":"From: Passport Service <passportonline@gov.ie>\nSubject: Your passport application has been received\n\nReference number PA-2026-55012. Your application is being processed. Track it at gov.ie/passport."},
   {"id":"b4-g38-library-overdue","scam":false,"msg":"Clare County Library: Your book \"The Ballroom\" is overdue. Please return or renew at clarelibrary.example or ring 065 555 0100."},
   {"id":"b4-g39-dentist-resched","scam":false,"msg":"Ennis Dental: Sorry, Dr Hayes has to reschedule your 3pm appt today due to illness. We will ring you this afternoon with a new time. Apologies for the short notice."},
-  {"id":"b4-g40-amazon-style-real","scam":false,"msg":"Your Amazon.ie order #204-5550123 has shipped. Arrives Fri. Track in the app at amazon.ie/orders. Amazon will never ask for payment info by text."}
+  {"id":"b4-g40-amazon-style-real","scam":false,"msg":"Your Amazon.ie order #204-5550123 has shipped. Arrives Fri. Track in the app at amazon.ie/orders. Amazon will never ask for payment info by text."},
+  {"id":"g-sorry-wrong-number","scam":false,"msg":"Sorry, I think you have the wrong number! This is Mary in Tralee, not Joan. Hope you find her."},
+  {"id":"g-new-neighbour-friendly","scam":false,"msg":"Hi Kathleen, it was so lovely to meet you at the coffee morning! You're such a kind person. I'm the new neighbour at number 14. Pop in any time for a cuppa."},
+  {"id":"g-electrician-quote","scam":false,"msg":"Hi Mr Byrne, it's Declan the electrician. I can call out Thursday at 10 to look at the fuse board as we discussed on the phone. Quote to follow by email. Thanks"},
+  {"id":"g-parking-permit-council","scam":false,"msg":"From: Kildare County Council <parking@kildarecoco.ie>\nSubject: Your residents' parking permit\n\nYour residents' parking permit has been renewed for 2027. No action is needed. Your new permit will arrive by post within 10 days."},
+  {"id":"g-whatsapp-group-move","scam":false,"msg":"Hi all, the bridge club is moving our chat to a new WhatsApp group as this one is full. Mags will add everyone this evening. See you Tuesday!"},
+  {"id":"s-bank-evade-card-number","scam":true,"msg":"BOI ALERT: Unusual activity detected and your account is locked. To keep your savings safe you must act within 1 hour. Call our fraud team now on 01 555 0199. You can also use the number on the back of your card."},
+  {"id":"s-crypto-safe","scam":true,"msg":"Garda Fraud Unit: your bank account has been compromised. To protect your money, open a crypto wallet today and transfer your savings into it. An officer will call you to guide you."},
+  {"id":"s-friendly-stranger-money","scam":true,"msg":"Hello dear, sorry wrong number I think, but you seem so kind. I'm a widowed engineer working on an oil rig. Could we chat on WhatsApp? I may need a small favour soon."}
 ]
