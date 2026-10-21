@@ -309,6 +309,16 @@ body.alarm-mid .verdict-title { color: #7a5200; }
 .linkish { border: 0; background: none; padding: 0; min-height: 44px; color: var(--accent); text-decoration: underline; text-underline-offset: 3px; font-weight: 700; }
 .passon { border-top: 1px solid var(--panel-line); padding-top: 16px; display: grid; gap: 10px; }
 .passon-panel { display: grid; gap: 10px; }
+.repbox { display: grid; gap: 10px; }
+.repbox[hidden], .rep-panel[hidden], .repbox .linkish[hidden] { display: none; }
+.repbox .linkish { justify-self: start; text-align: left; }
+.rep-panel { display: grid; gap: 10px; border: 2px solid var(--panel-line); border-radius: 8px; padding: 14px; }
+.rep-label { font-weight: 700; }
+.rep-text { min-height: 9rem; }
+.rep-note { width: 100%; box-sizing: border-box; font: inherit; font-size: 1rem; color: var(--fg); background: var(--panel); border: 2px solid var(--panel-line); border-radius: 8px; padding: 12px 14px; min-height: 48px; }
+.rep-note:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+.rep-status { font-weight: 700; }
+.rep-status:empty { display: none; }
 .passon-panel[hidden] { display: none; }
 .pass-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 190px), 1fr)); gap: 10px; }
 .pass-grid > * { box-sizing: border-box; width: 100%; min-height: 54px; margin: 0; padding: 6px 14px; font-size: 1rem; line-height: 1.2; text-align: center; }
@@ -581,6 +591,21 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
       <button type="button" class="big-btn" id="againBtn">Check another message</button>
       <button type="button" id="speakBtn">Read this aloud</button>
     </div>
+    <div class="repbox" id="repBox" hidden>
+      <button type="button" class="linkish" id="repLink" aria-expanded="false" aria-controls="repPanel"></button>
+      <div class="rep-panel" id="repPanel" hidden>
+        <p>This sends the message below to the people who run this checker, so we can catch scams like it. Remove anything private first, like your name, address or account numbers. We keep it for 30 days and never know who sent it.</p>
+        <label for="repText" class="rep-label">The message we will send</label>
+        <textarea id="repText" class="rep-text" spellcheck="false" maxlength="6000"></textarea>
+        <label for="repNote" class="rep-label">Anything else? (optional)</label>
+        <input type="text" id="repNote" class="rep-note" maxlength="500" autocomplete="off">
+        <div class="row">
+          <button type="button" class="big-btn" id="repSend">Send it</button>
+          <button type="button" class="mid-btn" id="repCancel">Cancel</button>
+        </div>
+      </div>
+      <p class="rep-status" id="repStatus" role="status" tabindex="-1"></p>
+    </div>
     <div class="passon">
       <button type="button" class="mid-btn" id="sendToggle" aria-expanded="false" aria-controls="sendPanel">Send the result to someone</button>
       <div id="sendPanel" class="passon-panel" hidden>
@@ -721,7 +746,7 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
 
   </main>
 
-  <footer><p><a href="leaflet.html">Print a leaflet</a> to share with family, a club or a community centre.</p><p><button type="button" class="linkish" id="fxBtn" aria-pressed="false">Matrix effect for demonstrations: off</button></p>This checker looks for common scam signs. It cannot catch every scam, and it can never prove a message is safe. Scams written with AI often have perfect spelling, so what a message asks you to do matters more than how well it is written. It only checks messages written in English. We count how many checks are done, but never what you paste. Known scam websites from <a href="https://openphish.com/" rel="noopener noreferrer">OpenPhish</a>, <a href="https://urlhaus.abuse.ch/" rel="noopener noreferrer">URLhaus (abuse.ch)</a> and <a href="https://phishing.army/" rel="noopener noreferrer">Phishing Army</a>. If you are unsure, ask someone you trust, or contact the company directly using a number you already have.</footer>
+  <footer><p><a href="leaflet.html">Print a leaflet</a> to share with family, a club or a community centre.</p><p><button type="button" class="linkish" id="fxBtn" aria-pressed="false">Matrix effect for demonstrations: off</button></p>This checker looks for common scam signs. It cannot catch every scam, and it can never prove a message is safe. Scams written with AI often have perfect spelling, so what a message asks you to do matters more than how well it is written. It only checks messages written in English. We count how many checks are done, but never what you paste, unless you choose to send us a scam we missed. Known scam websites from <a href="https://openphish.com/" rel="noopener noreferrer">OpenPhish</a>, <a href="https://urlhaus.abuse.ch/" rel="noopener noreferrer">URLhaus (abuse.ch)</a> and <a href="https://phishing.army/" rel="noopener noreferrer">Phishing Army</a>. If you are unsure, ask someone you trust, or contact the company directly using a number you already have.</footer>
 </div>
 
 <script>
@@ -1619,6 +1644,7 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
     $("foundSummary").hidden = true;
     $("sendPanel").hidden = true; $("sendToggle").setAttribute("aria-expanded", "false"); $("passMsg").textContent = "";
     $("reportBox").open = false;
+    repReset();
     $("foundEmpty").hidden = false;
     $("foundEmpty").textContent = "Nothing yet. Still checking.";
     $("foundCount").textContent = "0 warning signs so far";
@@ -1735,6 +1761,7 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
     if (!current.warn) { $("foundEmpty").hidden = false; $("foundEmpty").textContent = "No warning signs found in the text."; }
     showVerdict(current.a.score);
     var isExample = Object.keys(EXAMPLES).some(function (k) { return EXAMPLES[k] === $("msg").value; });
+    repOffer(isExample);
     if (!isExample) countEvent(current.a.score >= 20 ? (current.a.score >= 50 ? "check-high-" : "check-mid-") + scamKind(current.a, $("msg").value) : "check-none");
     $("liveStatus").textContent = "Check complete. " + (current.warn ? current.warn + (current.warn === 1 ? " warning sign" : " warning signs") + " found." : "No warning signs found.");
     var want = current.a.score >= 20 ? wantFor(current.a.findings) : "";
@@ -1857,6 +1884,49 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
     applyTheme(score / 100);
   }
 
+  /* ---------- "Report a scam we missed": opt-in, sends only what the person leaves in the box ---------- */
+  function repReset() {
+    $("repBox").hidden = true; $("repPanel").hidden = true; $("repLink").hidden = false; $("repLink").setAttribute("aria-expanded", "false");
+    $("repText").value = ""; $("repNote").value = ""; $("repStatus").textContent = ""; $("repSend").disabled = false;
+  }
+  function repOffer(isExample) {
+    repReset();
+    if (isExample || !window.fetch || !current || !current.msg) return;
+    $("repLink").textContent = current.a.score >= 50 ? "Help us: send this scam to improve the checker" : "Think this is a scam we missed? Tell us";
+    $("repBox").hidden = false;
+  }
+  $("repLink").addEventListener("click", function () {
+    $("repText").value = current ? current.msg.slice(0, 6000) : "";
+    $("repPanel").hidden = false; $("repLink").setAttribute("aria-expanded", "true"); $("repStatus").textContent = "";
+    $("repSend").disabled = false;
+    try { $("repText").focus(); } catch (e) {}
+  });
+  $("repCancel").addEventListener("click", function () {
+    $("repPanel").hidden = true; $("repLink").setAttribute("aria-expanded", "false"); $("repStatus").textContent = "";
+    try { $("repLink").focus(); } catch (e) {}
+  });
+  $("repSend").addEventListener("click", function () {
+    var text = $("repText").value.trim();
+    if (text.length < 10) { $("repStatus").textContent = "Please leave the message in the box, so we have something to look at."; $("repText").focus(); return; }
+    var sc = current ? current.a.score : 0;
+    var body = JSON.stringify({ text: text.slice(0, 6000), note: $("repNote").value.trim().slice(0, 500), result: sc >= 50 ? "high" : sc >= 20 ? "mid" : "none" });
+    var me = current, SORRY = "Sorry, that didn't send. Please try again later.";
+    $("repSend").disabled = true; $("repStatus").textContent = "Sending...";
+    function say(msg, ok) {
+      if (current !== me) return;
+      $("repStatus").textContent = msg;
+      if (ok) { $("repPanel").hidden = true; $("repLink").hidden = true; }
+      else $("repSend").disabled = false;
+      try { $("repStatus").focus({ preventScroll: true }); } catch (e) {}
+    }
+    fetch("api/report", { method: "POST", credentials: "omit", headers: { "Content-Type": "application/json" }, body: body })
+      .then(function (r) {
+        if (r.ok) say("Thank you. We've got it.", true);
+        else if (r.status === 429) say("Thanks, we've had a lot of reports just now. Please try again later.", false);
+        else say(SORRY, false);
+      }, function () { say(SORRY, false); });
+  });
+
   /* ================= controls ================= */
   function check() {
     var text = $("msg").value.replace(/\r\n/g, "\n");
@@ -1923,7 +1993,7 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
   $("againBtn").addEventListener("click", function () {
     $("msg").value = ""; $("hdr").value = ""; $("inputError").textContent = "";
     cancelAnimationFrame(rafScan); stopSpeaking(); if (aiCtl) aiCtl.abort();
-    current = null;
+    current = null; repReset();
     $("scanView").hidden = true; $("resultView").hidden = true; $("aiView").hidden = true; $("vband").hidden = true; $("quizView").hidden = true; $("callView").hidden = true; $("popView").hidden = true;
     $("inputView").hidden = false;
     document.body.classList.remove("alarm-high", "alarm-mid", "alarm-none");
@@ -2519,7 +2589,7 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
     $("mainAction").hidden = false; $("mainAction").textContent = act;
     $("want").hidden = true; $("vband").hidden = true;
     $("todo").innerHTML = lead + core + (lvl === "low" ? "<li>If something still feels wrong, trust that feeling and ask someone you trust.</li>" : tail);
-    $("sendPanel").hidden = true; $("sendToggle").setAttribute("aria-expanded", "false"); $("reportBox").open = false;
+    $("sendPanel").hidden = true; $("sendToggle").setAttribute("aria-expanded", "false"); $("reportBox").open = false; repReset();
     $("qResultRow").hidden = false; $("againBtn").hidden = true;
     document.body.classList.remove("alarm-high", "alarm-mid", "alarm-none");
     document.body.classList.add(lvl === "high" ? "alarm-high" : lvl === "mid" ? "alarm-mid" : "alarm-none");
