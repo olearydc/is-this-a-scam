@@ -243,3 +243,25 @@ Things to think about before building a forwarding service:
 | 6. Reflection | 10% | The build log in the course project file |
 
 The written answers for each step must be in Dan's own words.
+
+## The api service (report a missed scam, AI second opinion)
+
+`tools/api.py` is a small Python service with no packages except the optional Claude SDK. `deploy.sh` copies it to
+`/home/deploy/sites/is-this-a-scam/api/` and restarts it. nginx sends `/api/...` to it. Add it once in Coolify,
+as a second service in the same compose file as `web`, with no domain of its own:
+
+```yaml
+  api:
+    image: python:3.13-alpine
+    command: sh -c "pip install -q 'anthropic<2' ; python /app/api.py"
+    volumes:
+      - /home/deploy/sites/is-this-a-scam/api:/app:ro
+      - /home/deploy/sites/is-this-a-scam/reports:/data/reports
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - AI_DAILY_LIMIT=300
+    restart: unless-stopped
+```
+
+- Reports are kept in `reports/` for 30 days. They contain only the message, an optional note and the result. They hold no address and no browser details, and nothing is logged.
+- The AI second opinion stays off until `ANTHROPIC_API_KEY` is set as a secret in Coolify (never in the repo or a chat). It uses Claude Haiku 5.5, up to `AI_DAILY_LIMIT` checks a day, and each address is limited to 10 an hour. Also set a monthly spend limit in the Anthropic console.
