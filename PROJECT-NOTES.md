@@ -191,6 +191,14 @@ Then built: rule fixes for blind batch #4 (10 missed scams, 3 false alarms; one 
 
 Ideas kept for later: website-age and reputation checks for links (would need the server, sends only the domain); forward-an-email-to-check (breaks "nothing leaves your phone", needs a privacy notice; Singapore's version saw little use); a channel picker for letters and doorstep scams; real tests with two or three older people.
 
+## Getting the message in (21 October 2026)
+
+Testing on Dan's Samsung Galaxy Z Fold7 showed the problem: Samsung Messages offers "Forward" and "Copy text", not "Share", and Chrome's "Add to home screen" is hidden further down a long menu. If this is fiddly, older people won't use it.
+
+Done: "Paste and check" is now one big button that pastes and checks straight away (and "Check a screenshot" checks straight away too). Instructions mention Samsung wording and scrolling the Chrome menu.
+
+Decided: no forwarding service yet (Dan, 21 October 2026), to keep "nothing leaves your phone". If it comes back: a text (SMS) number matches what Samsung users see ("Forward"); WhatsApp needs Meta verification; email is cheapest but doesn't help with texts.
+
 ## Goal: passing a message on without copying and pasting
 
 **Update 21 October 2026:** a full plan and a working scaffold for WhatsApp forwarding are in `forwarding/README.md`, with the research in `research/`. Correction to the table below: WhatsApp replies are **no longer free**. Since 1 October 2026 Meta gives 1,000 free replies per number per month, then charges about $0.017 each. Ranked website improvements from the research are in `research/README.md`.
