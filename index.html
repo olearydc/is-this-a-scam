@@ -2417,15 +2417,41 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
   var canSpeak = "speechSynthesis" in window && typeof SpeechSynthesisUtterance === "function";
   if (!canSpeak) $("speakBtn").hidden = true;
   function stopSpeaking() { try { if (canSpeak) window.speechSynthesis.cancel(); } catch (e) {} $("speakBtn").textContent = "Read this aloud"; }
+  /* pick the most natural English voice the device has, preferring an Irish accent */
+  var bestVoice = null;
+  function pickVoice() {
+    try {
+      var best = null, bestScore = -1;
+      window.speechSynthesis.getVoices().forEach(function (v) {
+        var lang = (v.lang || "").toLowerCase().replace("_", "-"), name = v.name || "", s = 0;
+        if (lang.indexOf("en") !== 0) return;
+        if (lang === "en-ie") s += 50; else if (lang === "en-gb") s += 30; else s += 10;
+        if (/natural|neural|online|premium|enhanced/i.test(name)) s += 40;
+        if (/^google/i.test(name)) s += 15;
+        if (/emily|connor|moira|orla|niamh/i.test(name)) s += 10;
+        if (/compact|espeak/i.test(name)) s -= 30;
+        if (s > bestScore) { bestScore = s; best = v; }
+      });
+      bestVoice = best;
+    } catch (e) {}
+  }
+  if (canSpeak) { pickVoice(); try { window.speechSynthesis.addEventListener("voiceschanged", pickVoice); } catch (e) {} }
   $("speakBtn").addEventListener("click", function () {
     try {
       if (window.speechSynthesis.speaking) { stopSpeaking(); return; }
+      if (!bestVoice) pickVoice();
       var items = Array.prototype.map.call($("todo").querySelectorAll("li"), function (li) { return li.textContent; });
-      var u = new SpeechSynthesisUtterance($("verdictTitle").textContent + ". " + $("verdictSub").textContent + ($("want").hidden ? "" : " What they're probably after: " + $("wantText").textContent) + " What to do now. " + items.join(" "));
-      u.rate = 0.92;
-      u.onend = function () { $("speakBtn").textContent = "Read this aloud"; };
-      u.onerror = function () { $("speakBtn").textContent = "Read this aloud"; };
-      window.speechSynthesis.speak(u);
+      var text = $("verdictTitle").textContent + ". " + $("verdictSub").textContent + ($("want").hidden ? "" : " What they're probably after: " + $("wantText").textContent) + " What to do now. " + items.join(" ");
+      /* one sentence at a time: sounds more natural, and Chrome stops long speech after about 15 seconds */
+      var parts = (text.match(/[^.!?]+[.!?]*/g) || [text]).map(function (p) { return p.trim(); }).filter(Boolean);
+      parts.forEach(function (p, i) {
+        var u = new SpeechSynthesisUtterance(p);
+        if (bestVoice) { u.voice = bestVoice; u.lang = bestVoice.lang; } else u.lang = "en-IE";
+        u.rate = 0.95;
+        if (i === parts.length - 1) { u.onend = function () { $("speakBtn").textContent = "Read this aloud"; }; }
+        u.onerror = function () { $("speakBtn").textContent = "Read this aloud"; };
+        window.speechSynthesis.speak(u);
+      });
       $("speakBtn").textContent = "Stop reading";
     } catch (e) { $("speakBtn").hidden = true; }
   });
