@@ -26,6 +26,7 @@ It started as the course project for QQI Level 5 *Enhancing Productivity with AI
 | `manifest.webmanifest` | Lets it be added to a phone's home screen, and makes Android's Share menu work |
 | `sw.js` | Small offline helper, so the page opens without a connection |
 | `icon-180.png`, `icon-192.png`, `icon-512.png` | App icons |
+| `tests/run-tests.js`, `tests/messages.json` | Runs every test message through the checker (see Testing) |
 | `README.md` | Public description for GitHub |
 | `PROJECT-NOTES.md` | This file |
 
@@ -90,14 +91,29 @@ The rules live in the `RULES` list and the `analyse()` function in `index.html`.
 
 ## Testing
 
-Test messages used so far: 29 hand-made test messages plus all 106 quiz messages.
+Run all the test messages with one command (needs Node.js):
 
-- Every scam scores "suspicious" or higher.
-- No genuine message is flagged (all score under 20; the hand-made ones 12 or less).
-- The quiz messages were drafted by AI helpers, then every one was run through the checker. That exposed real gaps (website names written without "http", "Hi Mum" variants, romance, job and selling scams, and "we will never ask for..." being read as a request), which were all fixed.
-- Accessibility: the axe checker finds no problems on the start page, result page or quiz. Every text colour meets the WCAG AA contrast standard.
+```
+node tests/run-tests.js            # summary and any failures
+node tests/run-tests.js --all      # every message with its score
+node tests/run-tests.js other.json # try a new batch of messages
+```
 
-After any change to the rules, re-run the test messages and check nothing has moved.
+It loads the checking code straight out of `index.html`, so it always tests the real rules. Scams must score 20 or more, genuine messages under 20.
+
+The messages are in `tests/messages.json` (179 made-up messages) plus the 106 quiz messages: 285 in all, 149 scams and 136 genuine. Lowest scam score 24, highest genuine score 17.
+
+How they were built (21 October 2026):
+- Hand-made realistic messages, including the false alarms found in the review.
+- Two "blind" batches written by AI helpers that were not allowed to see the rules. This is the honest test, because rules can't be tuned to messages nobody has seen yet.
+  - First blind batch (60): 11 of 30 genuine messages wrongly flagged, 4 of 30 scams missed.
+  - Second blind batch (80), after fixing the first: 2 of 40 genuine flagged, 12 of 40 scams missed.
+  - Both were then fixed and added to the saved tests.
+- Lesson: a rule-based checker always misses some new scams. Every new blind batch finds a few. Keep doing a blind batch every so often, and keep the "never say safe" rule.
+
+Accessibility: the axe checker finds no problems on the start page, result page or quiz. Every text colour meets the WCAG AA contrast standard.
+
+After any change to the rules, run `node tests/run-tests.js` and check everything still passes.
 
 ## How to update the live page
 
@@ -107,7 +123,13 @@ After any change to the rules, re-run the test messages and check nothing has mo
 
 ## Known problems to fix
 
-Found in a review on 20 October 2026. Not fixed yet.
+Found in a review on 20 October 2026. **All fixed on 21 October 2026:**
+1. `sw.js` now answers shared messages from the saved copy without going online, and never saves an address with a message in it. Tested in Chrome: the server saw no request containing the message, and nothing was cached.
+2. False alarms fixed: social media links, "link goes somewhere else" counted once, company names only count with a request or pressure, bait words in sender addresses need a hyphen. Many more fixes came from the blind tests (see Testing).
+3. Test messages saved in `tests/`, run with one command.
+4. Screenshot reader loads with an integrity check; `summary()` sorts once. (Its worker files still load from the CDN without a check, which the library doesn't support.)
+
+Original notes, kept for the record:
 
 1. **Shared messages go online (privacy).** Android "Share to" puts the whole message in the web address (`?text=...`). `sw.js` tries the network first, so the address, message included, reaches GitHub's servers. It also saves a copy of every page it loads, so the message stays stored on the phone. That breaks the promise "Nothing you paste is sent anywhere". The page clears the address bar afterwards, but by then it has already been sent and saved.
    - *Fix:* in `sw.js`, answer shared messages from the saved copy of the page without going online, and never store addresses that contain a message.
@@ -123,6 +145,8 @@ Found in a review on 20 October 2026. Not fixed yet.
    - `summary()` sorts the findings twice.
 
 ## Goal: passing a message on without copying and pasting
+
+**Update 21 October 2026:** a full plan and a working scaffold for WhatsApp forwarding are in `forwarding/README.md`, with the research in `research/`. Correction to the table below: WhatsApp replies are **no longer free**. Since 1 October 2026 Meta gives 1,000 free replies per number per month, then charges about $0.017 each. Ranked website improvements from the research are in `research/README.md`.
 
 Copying, pasting and taking screenshots are hard for many older people. Forwarding a message is something they already know how to do, and it's safer: they never have to tap inside the scam message. This is the main thing to aim for.
 

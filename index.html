@@ -544,10 +544,12 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
   var GENERIC = ["security","team","support","alert","alerts","service","services","customer","customers","account","accounts","notification","notifications","admin","helpdesk","desk","department","dept","noreply","reply","info","the","and","online","center","centre","billing","payroll","official","mail","update","updates","verification","fraud","prevention","bank","from","your","ltd","limited","inc","group","dear","office"];
   var ORGWORDS = ["ceo","cfo","director","manager","bank","support","department","payroll","finance","security","service","desk","hr","admin","police","revenue","government","officer","fund","garda"];
   var TRACKERS = ["mailchi.mp","list-manage.com","mcusercontent.com","sendgrid.net","hubspotlinks.com","hs-sites.com","safelinks.protection.outlook.com","exacttarget.com","mailgun.org","sparkpostmail.com","awstrack.me","cmail19.com","cmail20.com","createsend.com","mjt.lu","sendibt3.com","rs6.net"];
+  /* social media and video sites that genuine newsletters link to all the time */
+  var WELLKNOWN = ["facebook.com","fb.com","instagram.com","twitter.com","x.com","linkedin.com","youtube.com","youtu.be","tiktok.com","pinterest.com","threads.net","bsky.app","linktr.ee"];
   var BADTLD = ["xyz","top","click","loan","work","zip","mov","icu","cam","rest","country","gq","tk","ml","cf","ga","buzz","cyou","sbs","cfd","bond","live"];
   var SHORT = ["bit.ly","tinyurl.com","t.co","goo.gl","ow.ly","is.gd","rb.gy","cutt.ly","buff.ly","shorturl.at","tiny.cc","t.ly"];
   var FREEHOST = ["weebly.com","wixsite.com","firebaseapp.com","web.app","pages.dev","vercel.app","netlify.app","github.io","blogspot.com","000webhostapp.com","ngrok.io","ngrok-free.app","glitch.me","godaddysites.com","square.site","sites.google.com","forms.gle","r2.dev","workers.dev"];
-  var BAIT = /(secure|verify|verif|login|signin|update|account|refund|redeliver|delivery|track|parcel|support|billing|payment|pay|confirm|unlock|claim|reward|wallet|auth|help|donate|now|fee)/;
+  var BAIT = /(secure|verify|verif|login|signin|update|account|refund|redeliver|delivery|track|parcel|support|billing|payment|pay|confirm|unlock|claim|reward|wallet|auth|help|donate|now|fee|prize|bonus|grant|promo)/;
   var ORGS = [
     { n: "An Post", re: /\ban post\b/i, k: ["anpost"] },
     { n: "Revenue", re: /\brevenue\b/i, k: ["revenue.ie"] },
@@ -571,25 +573,31 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
     { n: "Eir", re: /\beir\b/i, k: ["eir.ie"] },
     { n: "PayPal", re: /\bpaypal\b/i, k: ["paypal"] },
     { n: "Netflix", re: /\bnetflix\b/i, k: ["netflix"] },
-    { n: "Microsoft", re: /\bmicrosoft\b|\boffice ?365\b/i, k: ["microsoft", "office.com", "live.com"] },
+    { n: "Microsoft", re: /\bmicrosoft\b|\boffice ?365\b/i, k: ["microsoft", "office.com", "live.com", "microsoftonline.com", "sharepoint.com", "outlook.com", "office365.com"] },
     { n: "Apple", re: /\bapple ?id\b|\bicloud\b/i, k: ["apple.com", "icloud.com"] },
     { n: "the Gardaí", re: /\bgarda[ií]?\b/i, k: ["garda.ie"] },
     { n: "the IMF", re: /\binternational monetary fund\b|\bimf\b/i, k: ["imf.org"] },
     { n: "the United Nations", re: /\bunited nations\b/i, k: ["un.org"] },
     { n: "the World Bank", re: /\bworld bank\b/i, k: ["worldbank.org"] },
+    { n: "Social Welfare", re: /\b(social welfare|department of social protection|dsp|mywelfare|state pension)\b/i, k: ["gov.ie", "mywelfare.ie", "welfare.ie"] },
+    { n: "Sky", re: /\bsky( tv| broadband| ireland| ?:)/i, k: ["sky.com", "sky.ie"] },
+    { n: "Tesco", re: /\btesco\b/i, k: ["tesco", "tesco-email.com"] },
+    { n: "Irish Rail", re: /\birish rail\b|\biarnr[oó]d [eé]ireann\b/i, k: ["irishrail.ie"] },
+    { n: "the NCT", re: /\bnct\b|\bnational car test\b/i, k: ["ncts.ie"] },
+    { n: "Ryanair", re: /\bryanair\b/i, k: ["ryanair"] },
     { n: "WhatsApp", re: /\bwhatsapp\b/i, k: ["whatsapp"] }
   ];
 
   /* word rules: matched against the message with links and email addresses blanked out */
   var RULES = [
     { cat: "pressure", title: "Rushing you", level: "medium",
-      re: /\b(urgent(ly)?|immediately|immediate|right away|asap|as soon as possible|act now|act fast|final (notice|warning|reminder)|last chance|expires? (today|soon)|within (12|24|48|72) ?(hours|hrs)|in the next (12|24|48) ?(hours|hrs)|expires? in \d+ ?(hours|hrs)|today only|deadline|time is running out)\b/,
+      re: /\b(urgent(ly)?|immediately|immediate|right away|asap|as soon as possible|act now|act fast|final (notice|warning|reminder)|last chance|expires? (today|tonight|soon)|claim (it )?today|funds are limited|limited funds|within (12|24|48|72) ?(hours|hrs)|before \d{1,2}(:\d\d)? ?(am|pm)( today| tonight| tomorrow)?|within (an?|one|1|\d+) ?(hour|hours|hrs|minutes|mins)|in the next (12|24|48) ?(hours|hrs)|expires? in \d+ ?(hours|hrs)|today only|deadline|time is running out)\b/,
       why: "Scammers rush you so you act before you have time to think or ask someone." },
     { cat: "pressure", title: "Threatening you", level: "medium",
       re: /\b(suspended|suspension|will be (closed|blocked|locked|deleted|cancell?ed|terminated|disabled|frozen|returned to sender)|permanent(ly)? (clos\w*|delet\w*)|permanent closure|legal action|arrest(ed)?|warrant|court action|bailiffs?|fined|penalty|penalties|locked out|deactivat\w+|frozen)\b/,
       why: "Frightening you is a common trick to stop you thinking clearly." },
     { cat: "asks", title: "Asks for passwords or bank details", level: "high",
-      re: /\b(verify your (account|identity|details|information)|confirm your (account|identity|details|password|information)|(enter|confirm|verify|provide|send|give|tell|update) (us |me )?(your )?(password|pin|card number|card details|(debit |credit |bank )?card)|(debit|credit) card (number|details)|log ?in details|sign ?in details|security code|card (number|details)|cvv|bank details|account details|update your (details|information|payment|billing)|log ?in to (restore|verify|confirm|unlock|reactivate|update)|restore (your )?access)\b/,
+      re: /\b(verify your (account|identity|details|information)|confirm your (account|identity|details|password|information)|(enter|confirm|verify|provide|send|give|tell|update|share|reply with|text us) (us |me )?(your )?(full )?(password|pin|card number|card details|(debit |credit |bank )?card|bank (details|account( number| details)?)|account (details|number)|iban)|(debit|credit) card (number|details)|log ?in details|sign ?in details|security code|(?<!(library|loyalty|clubcard|membership|leap|travel) )card (number|details)|cvv|update your (details|information|payment|billing)|log ?in to (restore|verify|confirm|unlock|reactivate|update)|(enter|entering|type|typing|provide|providing|confirm|confirming) (in )?your (online banking |internet banking |mobile banking |banking |bank |account )?(password|pin|passcode)|restore (your )?access)\b/,
       why: "Real banks and companies never ask for these by email or text." },
     { cat: "pressure", title: "Password expiry warning", level: "medium",
       re: /\b(passwords? (will )?(expire|expires|expired|expiring)|reset your password|password reset)\b/,
@@ -598,19 +606,19 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
       re: /\b(card|account|myaccount|apple id|profile)\b[^.\n]{0,30}\b(blocked|locked|restricted|on hold|disabled)\b/,
       why: "\"Your account is locked\" is a common way to rush you into logging in on a fake page." },
     { cat: "pressure", title: "Unusual activity alert", level: "medium",
-      re: /\b(unusual|suspicious|unrecognised|unrecognized|new) (sign[- ]?in|log[- ]?in|activity|device|transaction|payment)|(stopped|blocked|flagged) a (payment|transaction)\b/,
+      re: /\b(unusual|suspicious|unrecognised|unrecognized|new) (sign[- ]?in|log[- ]?in|activity|device|transaction|payment)|(stopped|blocked|flagged) a (payment|transaction)|(new|unknown) payee\b/,
       why: "Scammers copy real security alerts. Check by opening your bank's app or website yourself, not the link." },
     { cat: "asks", title: "Asks you to pass on a code", level: "high",
       re: /\b(code|passcode|pin) (is|:)\s*\d{4,8}\b[^\n]{0,80}\b(give|tell|read) it (to|back|out)\b/,
       why: "No genuine company will ever ask you to read out or pass on a code. That code is the key to your account." },
     { cat: "pressure", title: "Toll or fine notice", level: "medium",
-      re: /\b(unpaid tolls?|toll (charge|fine|arrears|payment)|m50|eflow|parking fine|speeding fine|unpaid fine)\b/,
+      re: /\b(parking (enforcement )?notice|parked without|unpaid tolls?|toll (charge|fine|arrears|payment)|m50|eflow|parking fine|speeding fine|unpaid fine)\b/,
       why: "Fake toll and fine texts are common in Ireland. Check by going to the official website yourself, not through the link." },
     { cat: "pretend", title: "Says it's from the Gardaí", level: "low",
       re: /\b(an garda s[ií]och[aá]na|garda[ií]?)\b/,
       why: "Real Gardaí (police) will never contact you out of the blue asking for bank details. Hang up and ring your local Garda station." },
     { cat: "asks", title: "Asks for a code", level: "high",
-      re: /\b(one[- ]time (code|passcode|password)|otp|verification code|6[- ]digit code|(send|share|tell|forward) (me |us )?(the |your |that )?code)\b/,
+      re: /\b((send|share|tell|forward|give|read)( out| back)? (me |us )?(the |your |that |this )?(\d[- ]digit )?(code|otp|passcode)|code\b[^.!?\n]{0,60}\b(send|forward|give|read|share|screenshot) (it|that|them)|code[^.\n]{0,40}by (mistake|accident))\b/,
       why: "Never share a code sent to your phone. It lets scammers into your accounts." },
     { cat: "asks", title: "Asks for personal details", level: function (n) { return n >= 3 ? "high" : "medium"; },
       re: /\b(full name|residential address|home address|date of birth|nationality|occupation|marital status|passport|pps number|copy of your id|photo id|driving licen[cs]e|mother'?s maiden name|eircode|revenue myaccount|phone number)\b/,
@@ -633,6 +641,15 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
     { cat: "pretend", title: "Messaging from a new number", level: "medium",
       re: /\b(new number|this is my new)\b/,
       why: "Fine if you can confirm who it is. Before sending money or details, call them on the number you already have." },
+    { cat: "pretend", title: "Emergency story", level: "medium",
+      re: /\b((i'?m|i am) in (trouble|hospital|jail|prison|a cell|a police station)|(car|road) (accident|crash)|been (arrested|in an accident)|(guards|police|gardai|gardaí) (have )?(taken|arrested|kept)|need (bail|a solicitor|a lawyer)|for (a |the )?(solicitor|lawyer|bail))\b/,
+      why: "A sudden emergency is used to panic you into sending money. Voices can now be copied by computer, so ring the person back on the number you already have." },
+    { cat: "asks", title: "Someone will collect the money", level: "high",
+      re: /\b(man|woman|courier|driver|friend|colleague|someone|somebody|officer|garda)\b[^.\n]{0,20}\b(will|is going to|can) (come|call)( to your (house|home|door))? (to )?(collect|pick up)\b/,
+      why: "Sending someone to your door to collect cash or cards is a common scam on older people. No bank, Garda or solicitor does this." },
+    { cat: "pressure", title: "Pulling at your heartstrings", level: "medium",
+      re: /\b(donate now|save a (life|child)|needs your help (today|now)|every second counts|before it'?s too late)\b/,
+      why: "Real charities don't rush you. To give, go to the charity's own website yourself, or check it on the Charities Regulator register." },
     { cat: "pretend", title: "Family-style greeting", level: "low",
       re: /\b(hi|hello|hey) (mum|mam|mom|mammy|dad|daddy|nana|nan|granny|gran|grandma|grandad|grandpa)\b/,
       why: "Fine from a number you know. From an unknown number, this is how the \"Hi Mum\" scam starts." },
@@ -648,23 +665,29 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
     { cat: "pretend", title: "Parcel problem", level: "medium",
       re: /\b(could not be delivered|couldn'?t be delivered|unable to deliver|delivery (failed|attempt|was unsuccessful)|failed delivery|(parcel|package|shipment) (is )?(on hold|held|waiting|pending)|held at (the )?(depot|customs)|reschedule (your )?delivery|missed (your )?(delivery|parcel))\b/,
       why: "Fake delivery and customs-fee messages are the most common scam in Ireland. An Post and Revenue do not ask for customs payments by text. Check on the courier's own website or app instead." },
-    { cat: "offer", title: "Free money out of the blue", level: function (n) { return n >= 2 ? "high" : "low"; },
-      re: /\b(grant|donation|awarded|beneficiary|compensation|unclaimed|inheritance|lottery|jackpot|you (have|'?ve) won|winner|prize|funds box|approved funds|random(ly)? selected|selection process|shortlisted|claim your (reward|prize|refund|money))\b/,
+    { cat: "offer", title: "Free money out of the blue", level: function (n, words) {
+        /* "no jackpot winner" in a club lotto result is not a prize scam */
+        var strong = words.filter(function (w) { return !/^(jackpot|winner|lottery|prize|donation|grant|awarded|congratulations)$/.test(w); });
+        return n >= 2 && strong.length ? "high" : "low"; },
+      re: /\b(grant|donation|awarded|beneficiary|compensation|unclaimed|inheritance|lottery|jackpot|you (have|'?ve) won|winner|prize|funds box|approved funds|random(ly)? selected|selection process|shortlisted|claim your (reward|prize|refund|money)|congratulations|you qualify for|you(('re| are) eligible| have been approved) for|selected to (win|receive)|(your number|your email|you) (was|were|has been|have been) (selected|chosen))\b/,
       why: "You cannot win a prize or a grant you never applied for." },
+    { cat: "pressure", title: "Call to cancel a charge", level: "medium",
+      re: /\b(if you (did not|didn'?t) (authori[sz]e|make|recogni[sz]e|order|request) (this|it)|to cancel (this|the) (order|payment|renewal|subscription|charge))\b[^.\n]{0,80}\b(call|ring|phone|contact)\b/,
+      why: "A surprise charge with a number to ring is a trick: the person who answers is the scammer. Check your account by going to the company's own website or app yourself." },
     { cat: "offer", title: "Refund offer", level: "high",
       re: /\b(tax refund|tax rebate|refund (of|is) (due|available|pending|waiting)|refund expires|(a )?credit of [\u20ac$\u00a3]?\d|claim (it|your refund|your credit) (now|today)|(you are|you're) (due|owed|eligible for) a (refund|rebate)|overpaid|overpayment)\b/,
       why: "Revenue and genuine companies do not send refunds by asking you to click a link and enter card details." },
     { cat: "offer", title: "Too-good-to-be-true investment", level: "high",
-      re: /\b(guaranteed (returns?|profits?|income)|double your money|investment opportunity|trading platform|crypto investment|risk[- ]free|passive income|(state|government)[- ]backed (scheme|investment|platform)|limited places)\b/,
+      re: /\b(guaranteed (returns?|profits?|income)|double your money|investment opportunity|trading platform|crypto investment|risk[- ]free|passive income|(state|government)[- ]backed (scheme|investment|platform)|limited places|trading bot|vip (group|club)|investment (group|club)|investors? club|deposit (from|of) (€|\$|£)?\d+ to start)\b/,
       why: "Guaranteed big returns do not exist. Fake adverts even use AI videos of well-known people to promote these schemes." },
     { cat: "asks", title: "\"Safe account\" request", level: "high",
       re: /\b(safe account|secure account|(secure|safe) holding account|holding account|mov(e|ing) your (money|savings)|protect your (money|savings)|transfer (it|your money|your savings|the money|your funds) to|linked to (a )?(fraud|money laundering|crime|criminal)|fraud investigation|money laundering investigation)\b/,
       why: "No bank, Garda or official will ever ask you to move your money to a \"safe account\". This is always a scam." },
     { cat: "offer", title: "Unrealistic returns", level: "high",
-      re: /\b\d{2,3}% (a|per|every) (month|week|day)\b|\breturns? of \d{2,3}%/,
+      re: /\b\d{2,3} ?(%|percent) (a|per|every|this|last) (month|week|day)\b|\breturns? (of|were|was) \d{2,3} ?(%|percent)|\b(made|returned|earned) \d{2,3} ?(%|percent)/,
       why: "No genuine investment pays this much this quickly." },
     { cat: "pretend", title: "Common romance-scam story", level: function (n) { return n >= 2 ? "high" : "medium"; },
-      re: /\b(oil rig|working (offshore|overseas)|deployed (abroad|overseas)|on a (ship|rig)|my flight home|stuck (abroad|at the airport)|(lend|loan) me)\b/,
+      re: /\b(oil rig|working (offshore|overseas)|deployed (abroad|overseas)|on a (ship|rig)|my flight home|stuck (abroad|at the airport)|(lend|loan) me|do you have whatsapp|add me on whatsapp|(text|message) me on whatsapp)\b/,
       why: "Someone you haven't met in person asking for money, with a story about working far away, is a classic romance scam." },
     { cat: "pretend", title: "Buyer or seller who can't meet", level: "medium",
       re: /\b(my courier will collect|(shipping|courier) (company|agent) (needs|requires|will)|not in ireland|(working|living) abroad|can't come (to )?(view|see)|overpaid|pay (you )?more than the asking)\b/,
@@ -676,12 +699,12 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
       re: /\b(pre-?approved|business funding|funding (is )?available|credit line|line of credit|fast loan|instant loan|loan (is )?approved|guaranteed loan|no credit check)\b/,
       why: "Unexpected loan offers often ask for a fee or your details up front, and the money never comes." },
     { cat: "offer", title: "Easy job offer", level: function (n) { return n >= 2 ? "high" : "medium"; },
-      re: /\b(work from home|working from home|earn (€|\$|£)?\s?\d+ (a|per) (day|hour|week)|easy money|no experience (needed|required)|part[- ]time job offer|like videos and earn|liking (instagram |facebook |tiktok )?(posts|videos)|selected for a (part[- ]time )?job)\b/,
+      re: /\b(work from home|working from home|earn (€|\$|£)?\s?\d+(\s?[-–]\s?(€|\$|£)?\d+)? (a|per) (day|hour|week)|(earn|make) [^.\n]{0,40}from home|easy money|no experience (needed|required)|part[- ]time job offer|like videos and earn|liking (instagram |facebook |tiktok |youtube )?(posts|videos)|selected for a (part[- ]time )?job)\b/,
       why: "Jobs offering easy money for little work are often scams that end with you paying them." },
     { cat: "offer", title: "Trying too hard to seem real", level: "medium",
       re: /\b(no need to respond|this is not a scam|not a scam|this is legit|100% (legit|genuine|safe|real)|not to ignore)\b/,
       why: "Genuine messages rarely need to tell you they are not a scam." },
-    { cat: "style", title: "Generic greeting", level: "medium",
+    { cat: "style", title: "Generic greeting", level: "low",
       re: /\b(dear (customer|user|sir\/madam|sir or madam|valued (customer|member|client)|account holder|client|member|beneficiary|friend|email user|applicant|candidate))\b/,
       why: "Your bank or provider knows your name. \"Dear Customer\" is a sign of a mass scam." },
     { cat: "style", title: "Spelling mistakes", level: "medium",
@@ -700,7 +723,7 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
       re: /\bqr ?codes?\b/,
       why: "A QR code can hide a fake website. Go to the company's website yourself instead." },
     { cat: "asks", title: "Asks to change bank details", level: "high",
-      re: /\b(new bank (details|account)|change(d)? (of )?(our|my|the) bank (details|account)|bank details (have|has) changed|update (our|the) (bank|payment) details|(iban|account number) has changed|pay (into|to) (this|the|our) new account)\b/,
+      re: /\b(new bank (details|account)|change(d)? (of )?(our|my|the) bank (details|account)|(bank|account|payment) details\b[^.\n]{0,40}\b(have|has) changed|(pay|transfer)\b[^.\n]{0,50}\bto (the|our) new account|update (our|the) (bank|payment) details|(iban|account number) has changed|pay (into|to) (this|the|our) new account)\b/,
       why: "Fake \"we've changed bank account\" messages are a common way to steal payments. Always confirm by phone on a number you already have." },
     { cat: "pretend", title: "Unexpected order or invoice", level: "medium",
       re: /\b(your order (has been|was|is) (placed|confirmed|processed)|invoice (attached|is attached|overdue)|overdue invoice|unpaid invoice|payment (overdue|failed|declined|unsuccessful)|subscription (has )?(expired|renewed|ended)|auto[- ]?renew(al|ed)?)\b/,
@@ -752,7 +775,7 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
       var raw = m[1].replace(/[.,;:!?]+$/, "");
       try {
         var u = new URL(/^www\./i.test(raw) ? "http://" + raw : raw);
-        out.push({ raw: raw, start: m.index, end: m.index + raw.length, host: u.hostname.toLowerCase(), https: u.protocol === "https:" });
+        out.push({ raw: raw, start: m.index, end: m.index + raw.length, host: u.hostname.toLowerCase(), https: u.protocol === "https:" || /^www\./i.test(raw) });
       } catch (e) {}
     }
     var bare = /(^|[^@\w.\/-])((?:[a-z0-9-]+\.)+(?:com|ie|net|org|co\.uk|co|uk|eu|info|live|top|xyz|click|online|site|shop|store|link|app|icu|cam|buzz|vip|win|loan|support|help|services|digital|cc|me|io|biz|cyou|sbs|cfd|bond|rest|world|life|tk|ml|ga|gq|cf)(?:\/[^\s<>"')\]]*)?)(?=$|[\s,;:!?)\]"']|\.(?:\s|$))/gi, bm;
@@ -877,6 +900,21 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
 
     var orgs = ORGS.filter(function (o) { return o.re.test(norm); });
 
+    /* only the company's own name counts: anpost.com yes, anpost-fee.top no */
+    function ownedBy(o, base) {
+      var lab = base.split(".")[0];
+      return o.k.some(function (k) { return k.indexOf(".") !== -1 ? base === k || base.slice(-k.length - 1) === "." + k : lab === k; });
+    }
+    function fakeOrg(base) {
+      var lab = base.split(".")[0];
+      for (var i = 0; i < ORGS.length; i++) {
+        var o = ORGS[i];
+        if (ownedBy(o, base)) continue;
+        if (o.k.some(function (k) { k = k.split(".")[0]; return k !== "gov" && lab !== k && (lab.split("-").indexOf(k) !== -1 || (k.length >= 5 && lab.indexOf(k) !== -1)); })) return o;
+      }
+      return null;
+    }
+
     /* ---- sender ---- */
     var s = parseFrom(text);
     var senderBase = s.domain ? baseDomain(s.domain) : "";
@@ -899,19 +937,37 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
       }
       if (!lookalike && /[a-z][0135][a-z]/.test(label)) add({ cat: "sender", level: "medium", title: "Numbers mixed into the address", ranges: sr,
         why: "Swapping letters for numbers is a common trick to fake a real company's address." });
-      if (!senderFree && BAIT.test(label)) add({ cat: "sender", level: "medium", title: "Suspicious address name", ranges: sr,
+      if (!senderFree && BAIT.test(label) && label.indexOf("-") !== -1) add({ cat: "sender", level: "medium", title: "Suspicious address name", ranges: sr,
         why: "Words like \"secure\", \"verify\" or \"payment\" in an address are often added to make a fake one look official." });
       if (BADTLD.indexOf(tldOf(d)) !== -1) add({ cat: "sender", level: "medium", title: "Risky address ending", ranges: sr,
         why: "Addresses ending in ." + tldOf(d) + " are cheap and often used for throwaway scam sites." });
+      var fakeFrom = senderFree ? null : fakeOrg(senderBase);
+      if (fakeFrom) add({ cat: "sender", level: "high", title: "Fake " + fakeFrom.n + " address", ranges: sr,
+        why: "The address has " + fakeFrom.n + " in it, but it is not " + fakeFrom.n + "'s real address. Scammers add extra words to a real name to fool you." });
+      else if (!senderFree && tldOf(d) !== "ie" && /(^|-)(ie|gov)(-|$)/.test(label)) add({ cat: "sender", level: "high", title: "Pretends to be an Irish or government address", ranges: sr,
+        why: "Irish organisations use addresses ending in .ie, and the government uses gov.ie. This one only puts it in the name." });
     }
 
     /* ---- links ---- */
     var brand = s.name.toLowerCase().split(/[^a-z0-9]+/).filter(function (w) { return w.length > 3 && GENERIC.indexOf(w) === -1; });
+    /* galway.ie and galwaycoco.ie belong together; paypal-verify.com and paypal.com don't */
+    var sameOwner = function (a, b) {
+      var x = a.split(".")[0], y = b.split(".")[0];
+      if (x === y) return true;
+      var short = x.length < y.length ? x : y, long = short === x ? y : x;
+      return short.length >= 4 && long.indexOf("-") === -1 && long.indexOf(short) === 0;
+    };
+    var orgLinks = [];
     links.forEach(function (L) {
+      /* directions on Google Maps are an everyday part of genuine messages */
+      if (/^maps\.(app\.goo\.gl|google\.[a-z.]+)$/.test(L.host) || (/^(www\.)?(google\.[a-z.]+|goo\.gl)$/.test(L.host) && /\/maps\b/.test(L.raw))) return;
       var lb = baseDomain(L.host), lr = [[L.start, L.end]], lab = lb.split(".")[0];
       var la = function (k, o) { o.dest = lb; addOnce(k, o); };
       var tracked = TRACKERS.some(function (t) { return L.host === t || L.host.slice(-t.length - 1) === "." + t; });
-      var orgOk = function (o) { return o.k.some(function (k) { return lb.indexOf(k) !== -1; }); };
+      var orgOk = function (o) { return ownedBy(o, lb); };
+      var faked = fakeOrg(lb);
+      if (faked) la("fk" + lb, { cat: "links", level: "high", title: "Fake " + faked.n + " website", ranges: lr,
+        why: "The address has " + faked.n + " in it, but it is not " + faked.n + "'s real website. Scammers add extra words to a real name to fool you." });
       if (/^\d{1,3}(\.\d{1,3}){3}$/.test(L.host)) la("ip" + L.host, { cat: "links", level: "high", title: "Link to a number, not a website", ranges: lr,
         why: "Genuine companies link to their own website name, not a string of numbers." });
       if (SHORT.indexOf(lb) !== -1 || SHORT.indexOf(L.host) !== -1) la("sh" + L.host, { cat: "links", level: "medium", title: "Shortened link", ranges: lr,
@@ -921,9 +977,8 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
       var wrongOrg = orgs.filter(function (o) { return !orgOk(o); });
       if (disguised) la("dg" + L.host, { cat: "links", level: "high", title: "Disguised link", ranges: lr,
         why: "It puts a familiar name at the front, but the real website is " + lb + "." });
-      else if (!tracked && orgs.length && wrongOrg.length === orgs.length) la("org" + lb, { cat: "links", level: "high", title: "Link doesn't go to " + orgs[0].n, ranges: lr,
-        why: "The message mentions " + orgs[0].n + ", but the link goes to " + lb + "." });
-      else if (!tracked && senderBase && !senderFree && lb !== senderBase) la("mm" + lb, { cat: "links", level: "high", title: "Link goes somewhere else", ranges: lr,
+      else if (!tracked && orgs.length && wrongOrg.length === orgs.length) orgLinks.push({ lb: lb, lr: lr });
+      else if (!tracked && senderBase && !senderFree && WELLKNOWN.indexOf(lb) === -1 && !sameOwner(lb, senderBase) && !orgs.some(orgOk)) la("mm", { cat: "links", level: "high", title: "Link goes somewhere else", ranges: lr,
         why: "The email came from " + senderBase + ", but the link goes to a different website: " + lb + "." });
       if (!L.https) la("http", { cat: "links", level: "medium", title: "Link without the padlock", ranges: lr,
         why: "The link starts with http:// instead of https://. Genuine login pages always use https." });
@@ -935,6 +990,10 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
         why: "Names like " + lb + " are made to sound official. Real companies use their own simple name." });
       if (/devicelogin|device-?code|\/device\b/i.test(L.raw)) addOnce("dc", { cat: "asks", level: "high", title: "Asks you to enter a code on a login page", ranges: [[L.start, L.end]],
         why: "Typing a code someone sends you into a login page can give them access to your account, even on a real website." });
+      if (tldOf(L.host) !== "ie" && /(^|-)ie(-|$)/.test(lab)) la("ie" + lb, { cat: "links", level: "high", title: "Pretends to be an Irish website", ranges: lr,
+        why: "Irish organisations use addresses ending in .ie. This one puts \"ie\" in the name, but it really ends in ." + tldOf(L.host) + "." });
+      if (/(^|-)gov(-|$)/.test(lab)) la("gv" + lb, { cat: "links", level: "high", title: "Pretends to be a government website", ranges: lr,
+        why: "Irish government websites end in gov.ie. " + lb + " only puts \"gov\" in the name to look official." });
       if (/[a-z][0135][a-z]/.test(lab)) la("lk" + lb, { cat: "links", level: "medium", title: "Look-alike website name", ranges: lr,
         why: "Numbers swapped in for letters is a trick to copy a real website name." });
     });
@@ -942,6 +1001,8 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
     /* ---- reply-to address in the body ---- */
     emails.forEach(function (E) {
       if (E.addr === s.addr) return;
+      /* only when it asks you to write to that address; a friend's address in a Google Drive share is fine */
+      if (!/\b(reply|respond|write|email|e-mail|contact|send|forward|message)\b[^\n]{0,50}$/i.test(text.slice(Math.max(0, E.start - 60), E.start))) return;
       if (hReg && E.start >= hReg.s && E.start < hReg.e) return;
       var ad = baseDomain(E.addr.split("@")[1]);
       var named = orgs.length ? orgs[0].n : (s.name && !senderFree ? s.name : "");
@@ -958,13 +1019,16 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
       var re = new RegExp(r.re.source, "gi"), m, hits = [];
       while ((m = re.exec(norm)) && hits.length < 8) {
         if (!m[0]) { re.lastIndex++; continue; }
-        if (r.cat !== "style" && /\b(never|not|no one|nobody|won't|don't|doesn't|didn't)\b[^.!?\n]{0,28}$/i.test(norm.slice(Math.max(0, m.index - 40), m.index))) continue;
+        /* "we will never ask for your PIN" and "if you'd like to update your details" are not requests */
+        var before = norm.slice(Math.max(0, m.index - 90), m.index);
+        if (r.cat !== "style" && (/\b(not|no one|nobody|won't|don't|doesn't|didn't)\b[^.!?\n]{0,28}$/i.test(before) ||
+          /\bnever\b[^.!?\n]{0,80}$/i.test(before) || /\bif you (would like|'d like|wish|want|need) to\b[^.!?\n]{0,40}$/i.test(before))) continue;
         hits.push(m);
       }
       if (!hits.length) return;
       var distinct = [];
       hits.forEach(function (h) { var t = h[0].toLowerCase(); if (distinct.indexOf(t) === -1) distinct.push(t); });
-      var level = typeof r.level === "function" ? r.level(distinct.length) : r.level;
+      var level = typeof r.level === "function" ? r.level(distinct.length, distinct) : r.level;
       add({ cat: r.cat, level: level, title: r.title, why: r.why,
         ranges: hits.map(function (h) { return orig(h.index, h[0].length); }) });
     });
@@ -1009,6 +1073,13 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
       add({ cat: "style", level: "low", title: "Lots of exclamation marks", ranges: [orig(e1.index, e1[0].length)],
         why: "Excited or alarmed punctuation is common in scams." });
     }
+
+    /* a company name plus a link elsewhere only matters when the message wants something or rushes you */
+    if (orgLinks.length && F.some(function (f) { return (f.cat === "asks" || f.cat === "pressure") && f.level !== "info"; }))
+      orgLinks.forEach(function (o) {
+        addOnce("org" + o.lb, { cat: "links", level: "high", title: "Link doesn't go to " + orgs[0].n, ranges: o.lr, dest: o.lb,
+          why: "The message mentions " + orgs[0].n + ", but the link goes to " + o.lb + "." });
+      });
 
     /* ---- hidden details ---- */
     if (hReg) headerChecks(text, hReg, add);
@@ -1384,6 +1455,8 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
     ocrLoading = new Promise(function (res, rej) {
       var sc = document.createElement("script");
       sc.src = "https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js";
+      sc.integrity = "sha384-GJqSu7vueQ9qN0E9yLPb3Wtpd7OrgK8KmYzC8T1IysG1bcvxvIO4qtYR/D3A991F";
+      sc.crossOrigin = "anonymous";
       sc.onload = res; sc.onerror = function () { ocrLoading = null; rej(new Error("load")); };
       document.head.appendChild(sc);
     });
@@ -1470,8 +1543,6 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
       var lvl0 = { high: 0, medium: 1, low: 2 };
       warn = warn.slice().sort(function (a, b) { return lvl0[a.level] - lvl0[b.level]; });
       var shown = maxFind ? warn.slice(0, maxFind) : warn;
-      var lv = { high: 0, medium: 1, low: 2 };
-      shown = shown.slice().sort(function (a, b) { return lv[a.level] - lv[b.level]; });
       shown.forEach(function (f, i) {
         var why = f.reasons ? f.reasons.map(function (r) { return r.title; }).join(", ") + "." : f.why;
         lines.push((i + 1) + ". " + f.title + " (" + CHIP[f.level] + "): " + why + (f.dest && why.indexOf(f.dest) === -1 ? " Real website: " + f.dest + "." : ""));
