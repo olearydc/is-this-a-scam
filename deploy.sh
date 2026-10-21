@@ -21,6 +21,11 @@ git show HEAD:tools/stats.py | $SSH $HOST "cat > $DIR/stats.py && chmod +x $DIR/
 git show HEAD:tools/scamlinks.py | $SSH $HOST "cat > $DIR/scamlinks.py && chmod +x $DIR/scamlinks.py \
   && (crontab -l 2>/dev/null | grep -v 'is-this-a-scam/scamlinks.py'; echo '17 */6 * * * /usr/bin/python3 /home/deploy/$DIR/scamlinks.py') | crontab - \
   && /usr/bin/python3 $DIR/scamlinks.py"
+# The api service (report a missed scam, AI second opinion) runs this file from a read-only mount;
+# its container is restarted so the new version is used.
+git show HEAD:tools/api.py | $SSH $HOST "mkdir -p $DIR/api $DIR/reports && chmod 777 $DIR/reports && cat > $DIR/api/api.py \
+  && A=\$(docker ps -q | xargs docker inspect --format '{{.Id}} {{range .Mounts}}{{.Source}} {{end}}' | grep /home/deploy/$DIR/api | cut -d' ' -f1); \
+  if [ -n \"\$A\" ]; then docker restart \$A >/dev/null && echo 'api restarted'; else echo 'api service not set up yet (see PROJECT-NOTES.md)'; fi"
 # nginx.conf is mounted as a single file, so overwrite it in place (a new file would not be seen).
 # The counter needs the counts folder mounted in the container; the old config is restored if the test fails,
 # so a bad config never reaches a restart.
