@@ -2512,7 +2512,7 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
     if (lvl === "high") { t = "This is very likely a scam"; s = "Your answers match how scammers work. Do not give them money, a code or any details."; act = "Don't pay, don't share anything and don't reply."; }
     else if (lvl === "mid") { t = "Be very careful"; s = "Your answers show some warning signs. Do nothing they ask until you have checked it another way."; act = "Check it yourself first, on a number you already have."; }
     else { t = "Fewer warning signs, but still check"; s = "Your answers show fewer warning signs. That does not prove it is genuine. Don't use any link or number from the message or caller. Contact the company using a number you already have, or their official website."; act = "Check it yourself first: use the company's own app or website, or a number you already have."; }
-    showVerdict(lvl === "high" ? 50 : lvl === "mid" ? 20 : 5);
+    showVerdict(lvl === "high" ? 85 : lvl === "mid" ? 35 : 5);
     applyTheme(0);
     qShow("resultView");
     $("verdictTitle").textContent = t; $("verdictSub").textContent = s;
