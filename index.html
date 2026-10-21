@@ -1889,9 +1889,13 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
     $("repBox").hidden = true; $("repPanel").hidden = true; $("repLink").hidden = false; $("repLink").setAttribute("aria-expanded", "false");
     $("repText").value = ""; $("repNote").value = ""; $("repStatus").textContent = ""; $("repSend").disabled = false;
   }
+  /* the report link only appears when the service answers, so it never offers something that cannot work */
+  var apiUp = false;
+  if (!window.claude && window.fetch) fetch("api/status", { credentials: "omit", cache: "no-store" })
+    .then(function (r) { return r.ok ? r.json() : null; }).then(function (j) { apiUp = !!j; }).catch(function () {});
   function repOffer(isExample) {
     repReset();
-    if (isExample || !window.fetch || !current || !current.msg) return;
+    if (isExample || !apiUp || !current || !current.msg) return;
     $("repLink").textContent = current.a.score >= 50 ? "Help us: send this scam to improve the checker" : "Think this is a scam we missed? Tell us";
     $("repBox").hidden = false;
   }

@@ -3,7 +3,7 @@
    A message shared from another app arrives in the address (?text=...).
    Those requests are answered from the saved copy and never go online,
    and no address with a message in it is ever saved. */
-var CACHE = "itas-v32";
+var CACHE = "itas-v33";
 var FILES = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./icon-180.png",
   "./fonts/atkinson-400-latin.woff2", "./fonts/atkinson-700-latin.woff2", "./fonts/sharetechmono-400-latin.woff2"];
 
@@ -35,6 +35,8 @@ self.addEventListener("fetch", function (e) {
   }
 
   if (url.search) return;
+  // The report and AI service is always asked live, never answered from the saved copy.
+  if (url.pathname.indexOf("/api/") !== -1) return;
 
   // On a weak connection, fall back to the saved copy after 4 seconds instead of hanging.
   // With nothing saved yet, keep waiting for the network.
