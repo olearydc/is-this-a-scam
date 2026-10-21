@@ -1871,8 +1871,9 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
   function splitTodo() {
     var all = Array.prototype.slice.call($("todo").querySelectorAll("li")).concat(Array.prototype.slice.call($("todoMore").querySelectorAll("li")));
     $("todo").innerHTML = ""; $("todoMore").innerHTML = "";
-    all.forEach(function (li, i) { $(i < 2 ? "todo" : "todoMore").appendChild(li); });
-    var more = all.length - 2;
+    var keep = all.length > 3 ? 2 : all.length; /* folding away a single tip is not worth the extra tap */
+    all.forEach(function (li, i) { $(i < keep ? "todo" : "todoMore").appendChild(li); });
+    var more = all.length - keep;
     $("moreAdvice").open = false;
     $("moreAdvice").hidden = more < 1;
     $("moreAdviceSum").textContent = "More advice (" + Math.max(more, 0) + ")";
@@ -1883,7 +1884,8 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
     var t = current.a.findings.filter(function (f) { return f.level in lv; })
       .sort(function (a, b) { return lv[a.level] - lv[b.level]; }).slice(0, 3).map(function (f, i) { return i && !/^[A-Z]{2}/.test(f.title) ? f.title.charAt(0).toLowerCase() + f.title.slice(1) : f.title; });
     $("mainSigns").hidden = !t.length;
-    $("mainSigns").textContent = t.length ? "Main warning signs: " + (t.length > 1 ? t.slice(0, -1).join(", ") + " and " + t[t.length - 1] : t[0]) : "";
+    $("mainSigns").innerHTML = "";
+    if (t.length) { var lb = document.createElement("b"); lb.textContent = "Main warning signs: "; $("mainSigns").appendChild(lb); $("mainSigns").appendChild(document.createTextNode(t.length > 1 ? t.slice(0, -1).join(", ") + " and " + t[t.length - 1] : t[0])); }
   }
   /* the findings fill in live during the scan; once the answer shows, tuck them behind a button */
   function foldFindings() {
