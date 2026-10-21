@@ -107,7 +107,7 @@ node tests/run-tests.js other.json # try a new batch of messages
 
 It loads the checking code straight out of `index.html`, so it always tests the real rules. Scams must score 20 or more, genuine messages under 20.
 
-The messages are in `tests/messages.json` (179 made-up messages) plus the 106 quiz messages: 287 in all, 150 scams and 137 genuine. Lowest scam score 24, highest genuine score 17.
+The messages are in `tests/messages.json` plus the 106 quiz messages: 366 in all, 189 scams and 177 genuine. Lowest scam score 24, highest genuine score 17.
 
 How they were built (21 October 2026):
 - Hand-made realistic messages, including the false alarms found in the review.
@@ -115,6 +115,8 @@ How they were built (21 October 2026):
   - First blind batch (60): 11 of 30 genuine messages wrongly flagged, 4 of 30 scams missed.
   - Second blind batch (80), after fixing the first: 2 of 40 genuine flagged, 12 of 40 scams missed.
   - Both were then fixed and added to the saved tests.
+  - Third blind batch (80), later on 21 October: 14 of 40 scams missed, 5 of 40 genuine flagged. Most misses had no link and asked you to reply or ring a number. The false alarms included real bugs: gov.ie treated as a fake government site, and Bord Gáis's real address flagged. Fixed with general rules (ring-a-number-about-a-problem, reply-to-activate-link, money-back "recovery" offers, money mules, crime accusations) and 79 added to the tests. One left out: a "wrong number" opener ("Hi Tom, are we still on for lunch?") looks exactly like a real message, so no rule can catch it without false alarms.
+  - Known trade-off: an email linking to 3 or more different websites is treated like a newsletter and doesn't get "Link goes somewhere else". Phishing emails built that way still scored 100 from other signs.
 - Lesson: a rule-based checker always misses some new scams. Every new blind batch finds a few. Keep doing a blind batch every so often, and keep the "never say safe" rule.
 
 Accessibility: the axe checker finds no problems on the start page, result page or quiz. Every text colour meets the WCAG AA contrast standard.
@@ -134,6 +136,22 @@ Found in a review on 20 October 2026. **All fixed on 21 October 2026:**
 2. False alarms fixed: social media links, "link goes somewhere else" counted once, company names only count with a request or pressure, bait words in sender addresses need a hyphen. Many more fixes came from the blind tests (see Testing).
 3. Test messages saved in `tests/`, run with one command.
 4. Screenshot reader loads with an integrity check; `summary()` sorts once. (Its worker files still load from the CDN without a check, which the library doesn't support.)
+
+Second review on 21 October 2026 (usability for older users, code and privacy, research). Fixed the same day:
+- "Check this message" now sits straight under the box; "How do I copy" help sits above it.
+- "No warning signs" results get a calmer to-do list instead of the scam one.
+- No more harsh black box around headings after they get focus.
+- Very long messages are cut to 20,000 characters. A 100 KB message used to freeze the page for about 4 seconds.
+- Phone-number links are bigger to tap. `<title>` moved into `<head>`, with a no-referrer setting.
+- `sw.js`: falls back to the saved copy after 4 seconds on a weak connection; only page loads with a message in the address are answered offline.
+
+Not done yet, from that review:
+- The screenshot reader's helper files (worker, core, language data) still load from the CDN at default versions without integrity checks. Pin or self-host them.
+- Google Fonts are loaded from Google on every visit. Self-hosting them would remove that.
+- The start page is long on a phone. Consider folding the examples and the "how it works" steps behind one row.
+- The Matrix button takes prime space in the top bar.
+- Some warning titles use jargon ("HTTPS", "Disguised link").
+- Never say a text without a "Likely SCAM" label is genuine: ComReg's label is live, but blocking unregistered senders was postponed.
 
 Original notes, kept for the record:
 
