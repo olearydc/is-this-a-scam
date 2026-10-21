@@ -12,7 +12,8 @@ It started as the course project for QQI Level 5 *Enhancing Productivity with AI
 
 | What | Where |
 | --- | --- |
-| Live page | https://olearydc.github.io/is-this-a-scam/ |
+| Live page | https://isthisascam.selfdestruct.online/ (own server, Coolify) |
+| Old live page | https://olearydc.github.io/is-this-a-scam/ (down while the GitHub account is flagged) |
 | Source code | https://github.com/olearydc/is-this-a-scam |
 | Course demo page (Phish Scan, with the V1/V2/V3 prompt builder) | In Claude, as a private artifact |
 | Course project file (plan, build log, notes per step) | In Claude, as a private doc |
@@ -128,8 +129,13 @@ After any change to the rules, run `node tests/run-tests.js` and check everythin
 ## How to update the live page
 
 1. Edit `index.html`.
-2. In `sw.js`, bump the cache name (for example `itas-v11` to `itas-v12`) so phones pick up the new version.
-3. Commit and push to `main`. GitHub Pages updates within a minute or two.
+2. In `sw.js`, bump the cache name (for example `itas-v16` to `itas-v17`) so phones pick up the new version.
+3. Commit, then run `sh deploy.sh`. It runs the tests, copies the site files to the server and reloads nginx. The change is live straight away.
+4. Push to GitHub as a backup (`git push`).
+
+**Hosting (21 October 2026):** the site runs on the netcup server at `159.195.243.30` under Coolify, as a Docker Compose service in the "Is This a Scam" project (one nginx container). The files live in `/home/deploy/sites/is-this-a-scam/` (`site/` plus `nginx.conf`); SSH as `deploy` with the `self_destruct_hetzner` key. Coolify handles the domain and the HTTPS certificate. `nginx.conf` sets strict security headers (nothing may load from other websites). `Dockerfile` also exists, for building an image from the repo once Coolify can read GitHub again.
+
+**GitHub account flagged (21 October 2026):** GitHub hid the `olearydc` account (profile, repos and Pages show 404 when logged out, Actions disabled), probably an automated anti-phishing match on the realistic fake scam messages. Support ticket #4886841. Pushing still works, so GitHub stays the backup. Deploy keys and the Coolify GitHub App can't read the repo while it's flagged.
 
 ## Known problems to fix
 
