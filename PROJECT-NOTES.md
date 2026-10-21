@@ -26,6 +26,8 @@ It started as the course project for QQI Level 5 *Enhancing Productivity with AI
 | `manifest.webmanifest` | Lets it be added to a phone's home screen, and makes Android's Share menu work |
 | `sw.js` | Small offline helper, so the page opens without a connection |
 | `icon-180.png`, `icon-192.png`, `icon-512.png` | App icons |
+| `fonts/` | The page's two fonts and their licences, so nothing loads from Google |
+| `ocr/` | The screenshot reader (tesseract.js 5.1.1) and its English data, so nothing loads from a CDN |
 | `tests/run-tests.js`, `tests/messages.json` | Runs every test message through the checker (see Testing) |
 | `README.md` | Public description for GitHub |
 | `PROJECT-NOTES.md` | This file |
@@ -145,13 +147,14 @@ Second review on 21 October 2026 (usability for older users, code and privacy, r
 - Phone-number links are bigger to tap. `<title>` moved into `<head>`, with a no-referrer setting.
 - `sw.js`: falls back to the saved copy after 4 seconds on a weak connection; only page loads with a message in the address are answered offline.
 
-Not done yet, from that review:
-- The screenshot reader's helper files (worker, core, language data) still load from the CDN at default versions without integrity checks. Pin or self-host them.
-- Google Fonts are loaded from Google on every visit. Self-hosting them would remove that.
-- The start page is long on a phone. Consider folding the examples and the "how it works" steps behind one row.
-- The Matrix button takes prime space in the top bar.
-- Some warning titles use jargon ("HTTPS", "Disguised link").
+Also done the same day:
+- The screenshot reader is served from this site (`ocr/`, about 11 MB, tesseract.js 5.1.1 with the smaller "best_int" English data). Fonts are served from `fonts/` (SIL Open Font Licence files included). The page now contacts no other website at all. Tested: OCR read a screenshot correctly, and the only host contacted was the site itself.
+- The Matrix button moved from the top bar to the footer. The "1, 2, 3 how it works" steps were removed from the start page.
+- Plainer wording for the "macros" and "padlock" warnings.
+
+Still to remember:
 - Never say a text without a "Likely SCAM" label is genuine: ComReg's label is live, but blocking unregistered senders was postponed.
+- The OCR files are not in the offline cache (too big), so reading screenshots needs a connection the first time.
 
 Original notes, kept for the record:
 
