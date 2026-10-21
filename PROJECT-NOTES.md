@@ -83,7 +83,9 @@ The rules live in the `RULES` list and the `analyse()` function in `index.html`.
 - A trusted helper saved on the phone only (`itas-helper` in local storage): one tap to WhatsApp, text or ring them
 - "How do I copy a message from my phone?" help for iPhone, Android, WhatsApp, email and screenshots
 - Second opinion from an AI: one click inside Claude, copy-and-paste for ChatGPT, Copilot or Claude elsewhere
-- Practise quiz: 8 random questions per round (5 scams, 3 genuine) from a bank of 106 made-up messages, tagged by type, topic and difficulty, remembering which have been seen
+- "A warning says you have a virus" page: don't ring, hold Esc, close the browser or switch off, what to do if you already rang them
+- Useful Irish numbers on the report section (checked 21 October 2026): 999/112, Garda Confidential 1800 666 111, CCPC 01 402 5555, Age Action 01 475 6989. Link to FraudSMART's ScamChecker (`fraudsmart.scamchecker.ie`; `www.scamchecker.ie` had a broken certificate) for checking a website address
+- Practise quiz: 8 random questions per round (5 scams, 3 genuine) from a bank of 106 made-up messages, tagged by type, topic and difficulty, remembering which have been seen. Kind wording on wrong answers ("This one is hard to spot"). A 3-message refresher is offered on the start page once a week has passed since the last round (`itas-last` in local storage)
 
 ## Decisions
 
@@ -105,7 +107,7 @@ node tests/run-tests.js other.json # try a new batch of messages
 
 It loads the checking code straight out of `index.html`, so it always tests the real rules. Scams must score 20 or more, genuine messages under 20.
 
-The messages are in `tests/messages.json` (179 made-up messages) plus the 106 quiz messages: 285 in all, 149 scams and 136 genuine. Lowest scam score 24, highest genuine score 17.
+The messages are in `tests/messages.json` (179 made-up messages) plus the 106 quiz messages: 287 in all, 150 scams and 137 genuine. Lowest scam score 24, highest genuine score 17.
 
 How they were built (21 October 2026):
 - Hand-made realistic messages, including the false alarms found in the review.

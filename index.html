@@ -258,9 +258,10 @@ body.alarm-mid .verdict-title { color: #7a5200; }
 .call-lead { font-size: 1.15rem; max-width: 62ch; }
 .call-steps { margin: 0; padding-left: 1.3em; display: grid; gap: 12px; font-size: 1.1rem; max-width: 62ch; }
 .call-steps li::marker { color: var(--accent); font-weight: 700; }
-#callView { display: grid; gap: 16px; }
-#callView[hidden] { display: none; }
-#callHelper { justify-self: start; }
+#callView, #popView { display: grid; gap: 16px; }
+#callView[hidden], #popView[hidden] { display: none; }
+.nums { margin: 0; padding-left: 1.2em; display: grid; gap: 6px; }
+#callHelper, #popHelper { justify-self: start; }
 .want { font-size: 1.02rem; max-width: 62ch; }
 .helper-form { display: grid; gap: 8px; max-width: 420px; }
 .helper-form label { font-weight: 700; }
@@ -355,6 +356,7 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
     <div class="call-box">
       <p><b>Is someone on the phone to you right now,</b> asking for money, a code or your details?</p>
       <button type="button" class="mid-btn" id="callStart">Yes, help me now</button>
+      <p>Or has a warning <b>popped up on your screen</b> saying you have a virus and to ring a number? <button type="button" class="linkish" id="popStart">Help with a pop-up</button></p>
     </div>
     <details id="installHelp" hidden>
       <summary>Put this on your phone's home screen</summary>
@@ -375,6 +377,7 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
     </div>
     <div class="examples">
       <p>New to this? <button type="button" class="linkish" id="quizStart">Practise spotting scams (8 quick questions)</button></p>
+      <p id="refreshLine" hidden><span id="refreshLead"></span> <button type="button" class="linkish" id="refreshStart">Quick refresher (3 messages)</button></p>
       <p>Or try a made-up example:</p>
       <div class="row" id="exRow">
         <button type="button" data-ex="bank">Bank email</button>
@@ -428,6 +431,15 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
           <li>Keep the message. Don't delete it. Take a screenshot, and note the dates, amounts and any reference numbers. Your bank and the Gardaí may need them.</li>
         </ol>
         <p><b>Remember:</b> Gardaí, banks and government departments will never ask for your PIN or password, or ask you to move your money.</p>
+        <p><b>Useful numbers:</b></p>
+        <ul class="nums">
+          <li>Someone at your door or in danger now: <a href="tel:112">999 or 112</a></li>
+          <li>Garda Confidential Line: <a href="tel:1800666111">1800 666 111</a></li>
+          <li>CCPC consumer helpline, for advice: <a href="tel:+35314025555">01 402 5555</a></li>
+          <li>Age Action, for older people and their families: <a href="tel:+35314756989">01 475 6989</a></li>
+          <li>Your bank: the number on the back of your card</li>
+        </ul>
+        <p><b>Just want to check a website address?</b> Try <a href="https://fraudsmart.scamchecker.ie/" target="_blank" rel="noopener">ScamChecker</a> from FraudSMART, run by Irish banks.</p>
         <p class="src">Advice from <a href="https://www.garda.ie/en/crime/fraud/" target="_blank" rel="noopener">An Garda Síochána</a>, the <a href="https://www.ccpc.ie/consumers/money/scams/scams-what-to-watch-out-for/" target="_blank" rel="noopener">CCPC</a> and <a href="https://www.gov.ie/en/department-of-public-expenditure-infrastructure-public-service-reform-and-digitalisation/publications/alert-on-scam-phone-calls-and-text-messages/" target="_blank" rel="noopener">gov.ie</a>.</p>
       </div>
     </details>
@@ -494,6 +506,29 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
     <p class="src">Advice from <a href="https://www.garda.ie/en/crime/fraud/" target="_blank" rel="noopener">An Garda Síochána</a>.</p>
     <div class="row">
       <button type="button" class="big-btn" id="callBack">Back</button>
+    </div>
+  </section>
+
+  <section class="panel" id="popView" hidden>
+    <h2 id="popTitle" tabindex="-1">A warning says you have a virus</h2>
+    <p class="call-lead">A page that says your computer or phone is infected and gives a number to ring <b>is a scam.</b> Your computer is almost certainly fine. Microsoft, Apple and your phone company never put a phone number in a warning like this.</p>
+    <ol class="call-steps">
+      <li><b>Don't ring the number</b> and don't click anything on the warning.</li>
+      <li><b>On a computer, hold down the Esc key</b> (top left of the keyboard) for a few seconds. That gets you out of full screen. Then close the browser.</li>
+      <li><b>If it won't close,</b> switch the computer off with its power button, wait a minute, and switch it on again. Don't reopen the page it was on.</li>
+      <li><b>On a phone or tablet,</b> close that tab, or close the browser app.</li>
+    </ol>
+    <h3>If you already rang them or let them in</h3>
+    <ul class="todo">
+      <li>Hang up. Disconnect the computer from the internet (switch off the Wi-Fi or unplug the cable).</li>
+      <li>If you paid or gave bank details, ring your bank straight away on the number on your card.</li>
+      <li>Ask someone you trust, or a local computer shop, to check the computer before you use it for banking.</li>
+      <li>Change your passwords using a different device, starting with email and banking.</li>
+      <li>Report it at your local Garda station. It's not your fault. These people are very good at what they do.</li>
+    </ul>
+    <a class="btn big-btn" id="popHelper" href="#" hidden>Ring my helper, <span class="hname"></span></a>
+    <div class="row">
+      <button type="button" class="big-btn" id="popBack">Back</button>
     </div>
   </section>
 
@@ -1521,7 +1556,7 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
   $("againBtn").addEventListener("click", function () {
     cancelAnimationFrame(rafScan); stopSpeaking(); if (aiCtl) aiCtl.abort();
     current = null;
-    $("scanView").hidden = true; $("resultView").hidden = true; $("aiView").hidden = true; $("vband").hidden = true; $("quizView").hidden = true; $("callView").hidden = true;
+    $("scanView").hidden = true; $("resultView").hidden = true; $("aiView").hidden = true; $("vband").hidden = true; $("quizView").hidden = true; $("callView").hidden = true; $("popView").hidden = true;
     $("inputView").hidden = false;
     document.body.classList.remove("alarm-high", "alarm-mid", "alarm-none");
     applyTheme(0);
@@ -1850,7 +1885,8 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
     try { var l = seenList(); if (l.indexOf(id) === -1) { l.push(id); localStorage.setItem("itas-seen", JSON.stringify(l)); } } catch (e) {}
   }
   function shuffle(a) { for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)), t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
-  function newRound() {
+  function newRound(n) {
+    ROUND = n || 8;
     var seen = seenList();
     if (QUIZ_BANK.every(function (q) { return seen.indexOf(q.id) !== -1; })) { seen = []; try { localStorage.removeItem("itas-seen"); } catch (e) {} }
     function pick(pool, n) {
@@ -1858,13 +1894,13 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
       var old = shuffle(pool.filter(function (q) { return seen.indexOf(q.id) !== -1; }));
       return fresh.concat(old).slice(0, n);
     }
-    var nScam = Math.min(5, ROUND - 3);
+    var nScam = Math.round(ROUND * 5 / 8);
     QUIZ = shuffle(pick(QUIZ_BANK.filter(function (q) { return q.scam; }), nScam).concat(pick(QUIZ_BANK.filter(function (q) { return !q.scam; }), ROUND - nScam)));
     qi = 0; qScore = 0;
   }
   function showQuiz() {
     cancelAnimationFrame(rafScan); current = null;
-    $("inputView").hidden = true; $("scanView").hidden = true; $("resultView").hidden = true; $("aiView").hidden = true; $("callView").hidden = true;
+    $("inputView").hidden = true; $("scanView").hidden = true; $("resultView").hidden = true; $("aiView").hidden = true; $("callView").hidden = true; $("popView").hidden = true;
     $("quizView").hidden = false;
     document.body.classList.remove("alarm-high", "alarm-mid", "alarm-none");
     applyTheme(0);
@@ -1895,7 +1931,8 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
     var btns = $("quizBody").querySelector(".quiz-btns");
     var fb = document.createElement("div");
     fb.className = "quiz-feedback " + (right ? "right" : "wrong");
-    fb.innerHTML = "<h3>" + (right ? "Well spotted. " : "Not quite. ") + (q.scam ? "This is a scam." : "This one is genuine.") + "</h3>" +
+    fb.innerHTML = "<h3>" + (right ? "Well spotted. " + (q.scam ? "This is a scam." : "This one is genuine.") :
+      q.scam ? "This one is hard to spot. It is a scam." : "Good to be careful. This one is actually genuine.") + "</h3>" +
       "<p>" + esc(q.lesson) + "</p>" +
       (q.scam && warn.length ? "<p><b>The signs:</b></p><ul>" + warn.slice(0, 5).map(function (f) { return "<li>" + esc(f.title) + "</li>"; }).join("") + "</ul>" : "") +
       '<div class="row"><button type="button" class="big-btn" id="quizNext">' + (qi < QUIZ.length - 1 ? "Next question" : "See how you did") + "</button></div>";
@@ -1904,18 +1941,31 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
   }
   function finishQuiz() {
     $("quizProgress").textContent = "";
-    var msg = qScore === QUIZ.length ? "Perfect. You know the signs well." : qScore >= QUIZ.length - 2 ? "Well done. You spotted most of them." : "That's a good start. Scams are designed to fool people, so it's normal to get caught out.";
+    try { localStorage.setItem("itas-last", String(Date.now())); } catch (e) {}
+    $("refreshLine").hidden = true;
+    var msg = qScore === QUIZ.length ? "Perfect. You know the signs well." : qScore >= QUIZ.length * 0.75 ? "Well done. You spotted most of them." : "That's a good start. Scams are designed to fool people, so it's normal to get caught out.";
     $("quizBody").innerHTML = '<div style="display:grid;gap:14px"><h3 style="font-size:1.4rem">You got ' + qScore + " out of " + QUIZ.length + "</h3><p>" + esc(msg) + "</p>" +
       "<p><b>The three things to remember:</b></p><ul class=\"todo\"><li>Be suspicious of anything urgent that asks you to click, pay or share details.</li><li>Check by contacting the company or person yourself, using a number you already have.</li><li>Never share a code, PIN or password, and never move money to a \"safe account\".</li></ul>" +
+      "<p><b>Come back next week</b> for a quick 3-message refresher. A little practice now and then helps the signs stick.</p>" +
       '<p class="muted">You have now seen ' + Math.min(seenList().length, QUIZ_BANK.length) + " of the " + QUIZ_BANK.length + " practice messages.</p>" +
       '<div class="row"><button type="button" class="big-btn" id="quizAgain">Play another round</button><button type="button" id="quizBack">Check a real message</button></div></div>';
   }
-  $("quizStart").addEventListener("click", function () { newRound(); showQuiz(); });
+  $("quizStart").addEventListener("click", function () { newRound(8); showQuiz(); });
+  $("refreshStart").addEventListener("click", function () { newRound(3); showQuiz(); });
+  (function () {
+    var last = 0;
+    try { last = +localStorage.getItem("itas-last") || 0; } catch (e) {}
+    var days = Math.floor((Date.now() - last) / 864e5);
+    if (last && days >= 7) {
+      $("refreshLead").textContent = "It's been " + (days < 14 ? "a week" : days < 60 ? Math.floor(days / 7) + " weeks" : "a while") + " since you practised.";
+      $("refreshLine").hidden = false;
+    }
+  })();
   $("quizBody").addEventListener("click", function (ev) {
     var b = ev.target.closest("button"); if (!b) return;
     if (b.dataset.a) answerQ(b.dataset.a === "scam");
     else if (b.id === "quizNext") { qi++; if (qi < QUIZ.length) { renderQ(); try { $("quizBody").querySelector("button").focus(); } catch (e) {} } else finishQuiz(); }
-    else if (b.id === "quizAgain") { newRound(); renderQ(); try { $("quizTitle").focus(); } catch (e) {} }
+    else if (b.id === "quizAgain") { newRound(8); renderQ(); try { $("quizTitle").focus(); } catch (e) {} }
     else if (b.id === "quizBack") { $("quizView").hidden = true; $("inputView").hidden = false; window.scrollTo({ top: 0 }); $("msg").focus(); }
   });
 
@@ -1961,6 +2011,19 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
     $("callStart").focus();
   });
 
+  /* a fake virus warning on screen */
+  $("popStart").addEventListener("click", function () {
+    $("inputView").hidden = true; $("popView").hidden = false;
+    updateHelper();
+    window.scrollTo({ top: 0 });
+    try { $("popTitle").focus({ preventScroll: true }); } catch (e) {}
+  });
+  $("popBack").addEventListener("click", function () {
+    $("popView").hidden = true; $("inputView").hidden = false;
+    window.scrollTo({ top: 0 });
+    $("popStart").focus();
+  });
+
   /* a trusted helper, saved on this phone only */
   function getHelper() {
     try { var h = JSON.parse(localStorage.getItem("itas-helper") || "null"); return h && h.name && h.num ? h : null; } catch (e) { return null; }
@@ -1978,8 +2041,8 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
     $("helperReady").hidden = !h || inClaude;
     $("helperSetup").hidden = inClaude || !$("helperForm").hidden;
     $("helperSetup").textContent = h ? "Change my helper" : "Set up a helper: someone you trust, so you can send them a result in one tap";
-    $("callHelper").hidden = !h;
-    if (h) $("callHelper").href = "tel:" + h.num;
+    $("callHelper").hidden = $("popHelper").hidden = !h;
+    if (h) $("callHelper").href = $("popHelper").href = "tel:" + h.num;
   }
   function helperText() {
     return "Hi " + getHelper().name + ", can you check this message for me?\n\n" + summary(400, 3, true);
