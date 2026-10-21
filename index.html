@@ -1643,9 +1643,7 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
     if (ocrLoading) return ocrLoading;
     ocrLoading = new Promise(function (res, rej) {
       var sc = document.createElement("script");
-      sc.src = "https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js";
-      sc.integrity = "sha384-GJqSu7vueQ9qN0E9yLPb3Wtpd7OrgK8KmYzC8T1IysG1bcvxvIO4qtYR/D3A991F";
-      sc.crossOrigin = "anonymous";
+      sc.src = "ocr/tesseract.min.js"; /* self-hosted (tesseract.js 5.1.1), same origin, so no SRI */
       sc.onload = res; sc.onerror = function () { ocrLoading = null; rej(new Error("load")); };
       document.head.appendChild(sc);
     });
@@ -1663,6 +1661,10 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
     quick("Reading the text from your picture. The first time can take up to a minute. Your picture stays on your device.");
     loadOcr().then(function () {
       return Tesseract.createWorker("eng", 1, {
+        workerPath: new URL("ocr/worker.min.js", location.href).href,
+        corePath: new URL("ocr/", location.href).href,
+        langPath: new URL("ocr/", location.href).href,
+        gzip: true,
         logger: function (m) { if (m.status === "recognizing text") quick("Reading the text from your picture: " + Math.round(m.progress * 100) + "%"); }
       });
     }).then(function (worker) {
