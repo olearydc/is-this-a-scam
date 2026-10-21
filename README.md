@@ -38,7 +38,7 @@ Paste the message in, watch it being checked, and get a clear answer with plain 
 
 ## Privacy
 
-The check runs entirely in your web browser. Nothing you paste is sent anywhere. The page loads nothing from other websites: its fonts and the screenshot reader are part of this site. If you choose to copy the question into an AI tool such as ChatGPT, Copilot or Claude, that tool will see what you paste, so remove your name, address and account numbers first.
+The check runs entirely in your web browser. Nothing you paste is sent anywhere. The page loads nothing from other websites: its fonts and the screenshot reader are part of this site. To show how much the tool is used, it counts each check and its result (scam, suspicious or no signs) on our own server. Only that count is kept: never the message, your address or anything about you. If you choose to copy the question into an AI tool such as ChatGPT, Copilot or Claude, that tool will see what you paste, so remove your name, address and account numbers first.
 
 ## Accessibility
 

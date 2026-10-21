@@ -104,7 +104,11 @@ h2 { margin: 0 0 12px; font-size: 26px; }
   </div>
 </main>
 <script>
-document.getElementById("printBtn").addEventListener("click", function () { window.print(); });
+document.getElementById("printBtn").addEventListener("click", function () {
+  /* usage counter: only "a leaflet was printed", nothing else */
+  try { if (!navigator.webdriver && navigator.sendBeacon) navigator.sendBeacon("count/leaflet"); } catch (e) {}
+  window.print();
+});
 </script>
 </body>
 </html>

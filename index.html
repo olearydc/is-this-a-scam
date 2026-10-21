@@ -676,7 +676,7 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
 
   </main>
 
-  <footer><p><a href="leaflet.html">Print a leaflet</a> to share with family, a club or a community centre.</p><p><button type="button" class="linkish" id="fxBtn" aria-pressed="false">Matrix effect for demonstrations: off</button></p>This checker looks for common scam signs. It cannot catch every scam, and it can never prove a message is safe. Scams written with AI often have perfect spelling, so what a message asks you to do matters more than how well it is written. It only checks messages written in English. If you are unsure, ask someone you trust, or contact the company directly using a number you already have.</footer>
+  <footer><p id="statsLine" hidden></p><p><a href="leaflet.html">Print a leaflet</a> to share with family, a club or a community centre.</p><p><button type="button" class="linkish" id="fxBtn" aria-pressed="false">Matrix effect for demonstrations: off</button></p>This checker looks for common scam signs. It cannot catch every scam, and it can never prove a message is safe. Scams written with AI often have perfect spelling, so what a message asks you to do matters more than how well it is written. It only checks messages written in English. We count how many checks are done, but never what you paste. If you are unsure, ask someone you trust, or contact the company directly using a number you already have.</footer>
 </div>
 
 <script>
@@ -1627,6 +1627,8 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
     regroup();
     if (!current.warn) { $("foundEmpty").hidden = false; $("foundEmpty").textContent = "No warning signs found in the text."; }
     showVerdict(current.a.score);
+    var isExample = Object.keys(EXAMPLES).some(function (k) { return EXAMPLES[k] === $("msg").value; });
+    if (!isExample) countEvent(current.a.score >= 50 ? "check-high" : current.a.score >= 20 ? "check-mid" : "check-none");
     $("liveStatus").textContent = "Check complete. " + (current.warn ? current.warn + (current.warn === 1 ? " warning sign" : " warning signs") + " found." : "No warning signs found.");
     var want = current.a.score >= 20 ? wantFor(current.a.findings) : "";
     $("wantText").textContent = want; $("want").hidden = !want;
@@ -2162,7 +2164,25 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
     /* focus the verdict heading so a screen reader reads the result and the lesson; Next is the following Tab stop */
     try { $("quizFbTitle").focus(); } catch (e) {}
   }
+  /* usage counter: sends only the kind of event (never the message) to this site; skipped for automated test browsers */
+  function countEvent(kind) {
+    try {
+      if (navigator.webdriver || inClaude) return;
+      if (navigator.sendBeacon) navigator.sendBeacon("count/" + kind);
+      else fetch("count/" + kind, { method: "POST", keepalive: true, credentials: "omit" });
+    } catch (e) {}
+  }
+  (function () {
+    if (inClaude || !window.fetch) return;
+    fetch("stats.json", { cache: "no-store", credentials: "omit" }).then(function (r) { return r.ok ? r.json() : null; }).then(function (s) {
+      if (!s || !(s.checks >= 25)) return;
+      var n = function (x) { return Number(x).toLocaleString("en-IE"); };
+      $("statsLine").textContent = n(s.checks) + " messages checked so far. " + n(s.warned) + " of them had warning signs.";
+      $("statsLine").hidden = false;
+    }).catch(function () {});
+  })();
   function finishQuiz() {
+    countEvent("quiz");
     $("quizProgress").textContent = "";
     try { localStorage.setItem("itas-last", String(Date.now())); } catch (e) {}
     $("refreshLine").hidden = true;
