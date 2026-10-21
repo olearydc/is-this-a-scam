@@ -71,7 +71,11 @@ The rules live in the `RULES` list and the `analyse()` function in `index.html`.
 
 ## Features
 
-- Calm, light page with large readable text and text-size buttons
+- Calm, light page with large readable text and text-size buttons (they scale from the size set on the phone or browser)
+- "What happened?" after a warning result: I only read it / I tapped a link or replied / I paid or gave a code. Each has its own Irish steps, "It's not your fault", and support lines. Numbers only from `research/review-2026-10-21/verified-numbers.md`
+- One bold "main action" line under the verdict; a short trust note on the start page ("This page never asks for your bank details, codes or passwords")
+- Printable A4 leaflet at `leaflet.html`, linked from the footer
+- Screen-reader friendly: skip link, quiz feedback announced, warning highlights shown by underline style as well as colour, works in high-contrast mode
 - Live scan: each warning lights up in the message as it is found
 - Page darkens during the scan, then returns to light with a soft red border (very likely a scam) or amber (suspicious)
 - Optional full "Matrix effect" for demos
@@ -110,7 +114,7 @@ node tests/run-tests.js other.json # try a new batch of messages
 
 It loads the checking code straight out of `index.html`, so it always tests the real rules. Scams must score 20 or more, genuine messages under 20.
 
-The messages are in `tests/messages.json` plus the 106 quiz messages: 366 in all, 189 scams and 177 genuine. Lowest scam score 24, highest genuine score 17.
+The messages are in `tests/messages.json` plus the 106 quiz messages: 454 in all, 232 scams and 222 genuine. Lowest scam score 24, highest genuine score 17.
 
 How they were built (21 October 2026):
 - Hand-made realistic messages, including the false alarms found in the review.
@@ -176,6 +180,16 @@ Original notes, kept for the record:
 4. **Smaller points.**
    - The screenshot reader (tesseract.js) loads from a CDN without an integrity check. Add one.
    - `summary()` sorts the findings twice.
+
+## Deep review, 21 October 2026 (afternoon)
+
+Six AI agents in parallel: competitor sites, research on older users and scam psychology, an Irish accuracy check, blind batch #4 (80 messages, partly from published real scams), a full functional test in Chrome, Firefox and WebKit, and an accessibility audit. Reports are in `research/review-2026-10-21/`.
+
+Fixed straight away: the page did not load at all on iPhones before iOS 16.4 (a regex lookbehind; the test runner now fails if one appears); shared messages could be written to the server log (nginx access log now off); shared results linked to the dead github.io address.
+
+Then built: rule fixes for blind batch #4 (10 missed scams, 3 false alarms; one loophole closed by hand), the accessibility fixes, and the help journeys above.
+
+Ideas kept for later: website-age and reputation checks for links (would need the server, sends only the domain); forward-an-email-to-check (breaks "nothing leaves your phone", needs a privacy notice; Singapore's version saw little use); a channel picker for letters and doorstep scams; real tests with two or three older people.
 
 ## Goal: passing a message on without copying and pasting
 
