@@ -273,7 +273,7 @@ summary { cursor: pointer; font-weight: 700; min-height: 44px; display: flex; al
 body.matrix .copy-msg { color: var(--accent); }
 
 .hdr summary { font-size: 1rem; }
-.alarm-frame { position: fixed; inset: 0; pointer-events: none; z-index: 5; border: 0 solid transparent; transition: border-color .8s ease, border-width .8s ease; }
+.alarm-frame { position: fixed; top: 0; right: 0; bottom: 0; left: 0; inset: 0; pointer-events: none; z-index: 5; border: 0 solid transparent; transition: border-color .8s ease, border-width .8s ease; }
 body.alarm-high .alarm-frame { border-width: 5px; border-color: #eea6ae; }
 body.alarm-mid .alarm-frame { border-width: 5px; border-color: #efd08f; }
 body.alarm-high #resultView { border: 2px solid #eea6ae; background: #fff6f7; }
@@ -319,7 +319,8 @@ body.alarm-mid .verdict-title { color: #7a5200; }
 .nums { margin: 0; padding-left: 1.2em; display: grid; gap: 6px; }
 #callHelper, #popHelper { justify-self: start; }
 .want { font-size: 1.02rem; max-width: 62ch; }
-.helper-form { display: grid; gap: 8px; max-width: 420px; }
+.helper-form { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; max-width: 420px; }
+.helper-form input { width: 100%; max-width: 100%; }
 .helper-form label { font-weight: 700; }
 .helper-form input { font: inherit; font-size: 1rem; min-height: 48px; box-sizing: border-box; padding: 8px 12px; color: var(--fg); background: var(--panel); border: 2px solid var(--panel-line); border-radius: 8px; }
 .helper-form input:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
@@ -1719,6 +1720,7 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
     });
   });
   $("happenedLink").addEventListener("click", function () {
+    $("happenedLink").setAttribute("aria-expanded", "true");
     $("happened").hidden = false;
     $("happenedLinkWrap").hidden = true;
     try { $("happenedTitle").setAttribute("tabindex", "-1"); $("happenedTitle").focus(); } catch (e) {}
@@ -1846,8 +1848,10 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
     if (inClaude) { quick("Reading screenshots works on the website version of this page. Here, please copy and paste the text of the message instead."); return; }
     $("shotBtn").disabled = true;
     quick("Reading the text from your picture. The first time can take up to a minute. Your picture stays on your device.");
-    loadOcr().then(function () {
+    /* never leave the person waiting: give up after 90 seconds, or on an error inside the reader */
+    var giveUp, failed = new Promise(function (res, rej) { giveUp = rej; setTimeout(function () { rej(new Error("slow")); }, 90000); });    Promise.race([failed, loadOcr().then(function () {
       return Tesseract.createWorker("eng", 1, {
+        errorHandler: function (e) { giveUp(e); },
         workerPath: new URL("ocr/worker.min.js", location.href).href,
         corePath: new URL("ocr/", location.href).href,
         langPath: new URL("ocr/", location.href).href,
@@ -1856,7 +1860,7 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
       });
     }).then(function (worker) {
       return worker.recognize(f).then(function (r) { worker.terminate(); return r.data.text; });
-    }).then(function (text) {
+    })]).then(function (text) {
       text = String(text || "").replace(/[ \t]+/g, " ").replace(/\n{3,}/g, "\n\n").trim();
       if (text.length < 10) { quick("We couldn't find any words in that picture. Try a clearer screenshot, or copy and paste the text instead."); return; }
       $("msg").value = text;
