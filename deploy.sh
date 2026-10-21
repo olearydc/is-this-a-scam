@@ -9,7 +9,7 @@ DIR="sites/is-this-a-scam"
 SSH="ssh -i $KEY -o IdentitiesOnly=yes -o BatchMode=yes"
 
 node tests/run-tests.js | tail -1
-git archive HEAD index.html sw.js manifest.webmanifest icon-180.png icon-192.png icon-512.png fonts ocr \
+git archive HEAD index.html sw.js manifest.webmanifest icon-180.png icon-192.png icon-512.png leaflet.html leaflet-qr.png fonts ocr \
   | $SSH $HOST "rm -rf $DIR/new && mkdir -p $DIR/new && tar -x -C $DIR/new && chmod -R a+rX $DIR/new \
       && cp -a $DIR/new/. $DIR/site/ && rm -rf $DIR/new"
 # nginx.conf is mounted as a single file, so overwrite it in place (a new file would not be seen).

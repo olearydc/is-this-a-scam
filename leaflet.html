@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en-IE">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<title>Is This a Scam? Printable leaflet</title>
+<link rel="icon" type="image/png" href="icon-192.png">
+<style>
+@font-face { font-family: 'Atkinson Hyperlegible'; font-weight: 400; font-display: swap; src: url(fonts/atkinson-400-latin.woff2) format('woff2'); }
+@font-face { font-family: 'Atkinson Hyperlegible'; font-weight: 700; font-display: swap; src: url(fonts/atkinson-700-latin.woff2) format('woff2'); }
+:root { --ink: #14222b; --muted: #475c68; --accent: #1b6886; --tint: #eef3f6; --warn: #b8233a; }
+* { box-sizing: border-box; }
+body { margin: 0; background: #d9e2e7; color: var(--ink); font-family: 'Atkinson Hyperlegible', Verdana, Tahoma, sans-serif; }
+.bar { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; align-items: center; padding: 16px; }
+.bar button, .bar a { font: inherit; font-size: 1.05rem; font-weight: 700; min-height: 48px; padding: 10px 20px; border-radius: 10px; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; }
+.bar button { background: var(--accent); color: #fff; border: 0; }
+.bar a { background: #fff; color: var(--accent); border: 2px solid #c3d0d8; }
+.bar button:focus-visible, .bar a:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
+.sheet { width: 794px; min-height: 1123px; margin: 0 auto 32px; background: #fff; padding: 52px 56px 44px; display: flex; flex-direction: column; justify-content: space-between; gap: 22px; box-shadow: 0 2px 14px rgba(20, 34, 43, 0.15); }
+.brand { display: flex; align-items: center; gap: 14px; }
+.brand img { width: 52px; height: 52px; border-radius: 12px; }
+.brand b { display: block; font-size: 24px; color: var(--accent); }
+.brand span { font-size: 16px; color: var(--muted); }
+h1 { margin: 0 0 14px; font-size: 64px; line-height: 1.05; letter-spacing: -0.01em; }
+.lead { margin: 0; font-size: 24px; line-height: 1.35; color: #2c3e48; }
+.scan { display: flex; gap: 36px; align-items: center; background: var(--tint); border-radius: 16px; padding: 28px; }
+.qr { display: flex; flex-direction: column; align-items: center; gap: 10px; flex: none; font-size: 16px; font-weight: 700; text-align: center; }
+.qr img { width: 230px; height: 230px; background: #fff; border-radius: 8px; }
+.steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 16px; font-size: 19px; line-height: 1.4; }
+.steps li { display: flex; gap: 14px; align-items: flex-start; }
+.steps i { flex: none; width: 36px; height: 36px; border-radius: 18px; background: var(--accent); color: #fff; font-style: normal; font-size: 18px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+.addr { font-size: 16px; color: var(--muted); line-height: 1.4; }
+.addr b { color: var(--ink); word-break: break-word; }
+h2 { margin: 0 0 12px; font-size: 26px; }
+.signs { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 28px; row-gap: 10px; font-size: 17px; line-height: 1.4; }
+.signs li { display: flex; gap: 10px; }
+.signs li::before { content: "!"; color: var(--warn); font-weight: 700; }
+.tip { background: #fff4e0; border: 2px solid #efd08f; border-radius: 14px; padding: 18px 22px; font-size: 20px; line-height: 1.4; }
+.foot { display: flex; justify-content: space-between; gap: 20px; font-size: 14px; line-height: 1.45; color: var(--muted); border-top: 1px solid #d3dde3; padding-top: 14px; }
+.foot div:last-child { text-align: right; }
+@media screen and (max-width: 840px) {
+  .sheet { width: auto; min-height: 0; margin: 0 16px 24px; padding: 28px 20px; }
+  h1 { font-size: 40px; }
+  .lead { font-size: 20px; }
+  .scan { flex-direction: column; padding: 20px; gap: 22px; }
+  .qr img { width: 200px; height: 200px; }
+  .signs { grid-template-columns: 1fr; }
+  .foot { flex-direction: column; }
+  .foot div:last-child { text-align: left; }
+}
+@page { size: A4; margin: 0; }
+@media print {
+  body { background: #fff; }
+  .bar { display: none; }
+  .sheet { width: 210mm; height: 297mm; min-height: 0; margin: 0; box-shadow: none; }
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
+</style>
+</head>
+<body>
+<nav class="bar" aria-label="Leaflet">
+  <button type="button" id="printBtn">Print this leaflet</button>
+  <a href="./">Back to the scam checker</a>
+</nav>
+<main class="sheet">
+  <div class="brand">
+    <img src="icon-192.png" alt="">
+    <div><b>Is This a Scam?</b><span>A free scam checker for emails and text messages</span></div>
+  </div>
+  <div>
+    <h1>Not sure about a message?</h1>
+    <p class="lead">Check it for free before you click, reply or pay.</p>
+  </div>
+  <div class="scan">
+    <div class="qr">
+      <img src="leaflet-qr.png" alt="QR code linking to isthisascam.selfdestruct.online">
+      Scan with your phone camera
+    </div>
+    <div>
+      <ol class="steps">
+        <li><i>1</i><span><b>Copy the message</b>, or take a screenshot of it</span></li>
+        <li><i>2</i><span><b>Paste it in</b> and watch each warning sign light up</span></li>
+        <li><i>3</i><span><b>Get a clear answer</b> and simple steps on what to do</span></li>
+      </ol>
+      <p class="addr">Or type <b>isthisascam.selfdestruct.online</b> into your web browser.</p>
+    </div>
+  </div>
+  <section>
+    <h2>Six signs of a scam</h2>
+    <ul class="signs">
+      <li>It rushes you, or threatens to close your account</li>
+      <li>It asks for a code, PIN, password or bank details</li>
+      <li>It wants payment by gift card, crypto or a "small fee"</li>
+      <li>The link doesn't go to the company's real website</li>
+      <li>"Hi Mum, I've a new number" and a request for money</li>
+      <li>It asks you to move money to a "safe account"</li>
+    </ul>
+  </section>
+  <div class="tip"><b>If in doubt, don't reply.</b> Contact the company or person yourself, using a phone number you already have.</div>
+  <div class="foot">
+    <div>Free to use. Nothing you paste is stored.</div>
+    <div>Lost money? Call your bank straight away, then your local Garda station.</div>
+  </div>
+</main>
+<script>
+document.getElementById("printBtn").addEventListener("click", function () { window.print(); });
+</script>
+</body>
+</html>
