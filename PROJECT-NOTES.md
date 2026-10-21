@@ -13,6 +13,7 @@ It started as the course project for QQI Level 5 *Enhancing Productivity with AI
 | What | Where |
 | --- | --- |
 | Live page | https://isthisascam.selfdestruct.online/ (own server, Coolify) |
+| Usage page (unlisted) | https://isthisascam.selfdestruct.online/stats.html |
 | Old live page | https://olearydc.github.io/is-this-a-scam/ (down while the GitHub account is flagged) |
 | Source code | https://github.com/olearydc/is-this-a-scam |
 | Course demo page (Phish Scan, with the V1/V2/V3 prompt builder) | In Claude, as a private artifact |
@@ -30,6 +31,12 @@ It started as the course project for QQI Level 5 *Enhancing Productivity with AI
 | `fonts/` | The page's two fonts and their licences, so nothing loads from Google |
 | `ocr/` | The screenshot reader (tesseract.js 5.1.1) and its English data, so nothing loads from a CDN |
 | `tests/run-tests.js`, `tests/messages.json` | Runs every test message through the checker (see Testing) |
+| `stats.html` | Unlisted usage page, fed by `stats.json` |
+| `tools/stats.py` | Builds `stats.json` from the usage log every 10 minutes |
+| `tools/scamlinks.py` | Builds the known scam websites list (`site/scamlinks/xx.json`) every 6 hours |
+| `tools/api.py` | Report-a-scam and AI second-opinion service (see the api service section) |
+| `deploy.sh` | Runs the tests, copies the site over SSH, installs the cron jobs and updates `nginx.conf` |
+| `nginx.conf` | Server settings and strict security headers |
 | `README.md` | Public description for GitHub |
 | `PROJECT-NOTES.md` | This file |
 
@@ -69,6 +76,10 @@ Everything runs in the browser. Nothing is sent anywhere unless the person choos
 
 The rules live in the `RULES` list and the `analyse()` function in `index.html`.
 
+**Safety net:** if a message with a link, payment, code or reply request would otherwise get "no warning signs", the result warns instead: don't use the link or number in it, and use the company's own app or a number you already have. A new rule catches an unknown link plus "confirm", "verify", "pay" or "claim". The booking.com and hotel scam family is caught too.
+
+**Known scam websites:** each link's site is checked against about 155,000 sites from OpenPhish, URLhaus and Phishing Army (`tools/scamlinks.py`, every 6 hours). The page hashes the site name and fetches one of 256 small files, so the server never learns which site was checked. It gives up after 1.5 seconds. A company's own official domain is never flagged. Sources are credited in the footer.
+
 ## Features
 
 - Calm, light page with large readable text and text-size buttons (they scale from the size set on the phone or browser)
@@ -93,6 +104,14 @@ The rules live in the `RULES` list and the `analyse()` function in `index.html`.
 - "A warning says you have a virus" page: don't ring, hold Esc, close the browser or switch off, what to do if you already rang them
 - Useful Irish numbers on the report section (checked 21 October 2026): 999/112, Garda Confidential 1800 666 111, CCPC 01 402 5555, Age Action 01 475 6989. Link to FraudSMART's ScamChecker (`fraudsmart.scamchecker.ie`; `www.scamchecker.ie` had a broken certificate) for checking a website address
 - Practise quiz: 8 random questions per round (5 scams, 3 genuine) from a bank of 106 made-up messages, tagged by type, topic and difficulty, remembering which have been seen. Kind wording on wrong answers ("This one is hard to spot"). A 3-message refresher is offered on the start page once a week has passed since the last round (`itas-last` in local storage)
+- Usage counter: the page sends a tiny ping (`check-high-<kind>`, `check-mid-<kind>`, `check-none`, `quiz`, `leaflet`). nginx logs only the time and the name. `tools/stats.py` builds `stats.json`, and the home page shows a bar chart once there are at least 25 checks. Example messages and automated browsers are not counted
+- Read aloud prefers Irish or British English and natural or neural voices, and reads in sentence chunks
+- Take a photo of a message (phones only): opens the camera, shrinks the photo to 2000px and reads it on the phone with tesseract.js (self-hosted in `ocr/`). Nothing is uploaded
+- Paste and check: one big button pastes from the clipboard and checks straight away
+- Android install help: the app is called "Scam check" with a teal shield icon, with steps for Chrome and Samsung Internet
+- "Can't copy it? Answer a few questions": yes/no questionnaire, one question per screen, covering texts, emails, phone calls and people at the door. Three result levels, never "safe". Answers stay on the phone; only the anonymous count is sent
+- "Report a scam we missed" (opt-in): the person sees and can edit the exact text before tapping Send. Stored for 30 days by the api service with no address and no logs. The link only appears when the service is running
+- Shorter results: a one-line "Main warning signs", the top 2 tips with "More advice (N)" folded when there are 4 or more, and all warning-sign cards behind "See all N warning signs and why"
 
 ## Decisions
 
@@ -100,6 +119,7 @@ The rules live in the `RULES` list and the `analyse()` function in `index.html`.
 - **No server for the course version.** Everything runs in the browser. Website-age and scam-list checks need a server, so they are a later option.
 - **Made-up examples only.** No real emails, names or work data in the project. Real scams used for testing had personal details removed first.
 - **Shared results are made safe.** Links and addresses are switched off so family members can't open them by mistake.
+- **Server kept small.** The page works without a server. The server only serves files, counts anonymous checks, keeps the known scam websites list and stores opt-in reports. Nothing about a person is logged.
 - **Calm design for older users.** The Matrix look is optional, not the default.
 
 ## Testing
@@ -114,7 +134,7 @@ node tests/run-tests.js other.json # try a new batch of messages
 
 It loads the checking code straight out of `index.html`, so it always tests the real rules. Scams must score 20 or more, genuine messages under 20.
 
-The messages are in `tests/messages.json` plus the 106 quiz messages: 454 in all, 232 scams and 222 genuine. Lowest scam score 24, highest genuine score 17.
+The messages are in `tests/messages.json` plus the 106 quiz messages: 488 in all, 248 scams and 240 genuine. Lowest scam score 24, highest genuine score 17. The run also fails if a regex lookbehind appears (it breaks older iPhones), and it runs the known scam website tests.
 
 How they were built (21 October 2026):
 - Hand-made realistic messages, including the false alarms found in the review.
@@ -134,10 +154,10 @@ After any change to the rules, run `node tests/run-tests.js` and check everythin
 
 1. Edit `index.html`.
 2. In `sw.js`, bump the cache name (for example `itas-v16` to `itas-v17`) so phones pick up the new version.
-3. Commit, then run `sh deploy.sh`. It runs the tests, copies the site files to the server and reloads nginx. The change is live straight away.
+3. Commit, then run `sh deploy.sh`. It runs the tests, copies the site files to the server over SSH, installs the cron jobs (usage stats every 10 minutes, known scam websites every 6 hours), updates `nginx.conf` in place and reloads nginx. The change is live straight away.
 4. Push to GitHub as a backup (`git push`).
 
-**Hosting (21 October 2026):** the site runs on the netcup server at `159.195.243.30` under Coolify, as a Docker Compose service in the "Is This a Scam" project (one nginx container). The files live in `/home/deploy/sites/is-this-a-scam/` (`site/` plus `nginx.conf`); SSH as `deploy` with the `self_destruct_hetzner` key. Coolify handles the domain and the HTTPS certificate. `nginx.conf` sets strict security headers (nothing may load from other websites). `Dockerfile` also exists, for building an image from the repo once Coolify can read GitHub again.
+**Hosting (21 October 2026):** the site runs on the netcup server at `159.195.243.30` under Coolify, as a Docker Compose service in the "Is This a Scam" project (one nginx:1.27-alpine container with bind mounts). The files live in `/home/deploy/sites/is-this-a-scam/` (`site/` plus `nginx.conf`); SSH as `deploy` with the `self_destruct_hetzner` key. Coolify handles the domain and the HTTPS certificate. `nginx.conf` sets strict security headers (nothing may load from other websites). `Dockerfile` also exists, for building an image from the repo once Coolify can read GitHub again.
 
 **GitHub account flagged (21 October 2026):** GitHub hid the `olearydc` account (profile, repos and Pages show 404 when logged out, Actions disabled), probably an automated anti-phishing match on the realistic fake scam messages. Support ticket #4886841. Pushing still works, so GitHub stays the backup. Deploy keys and the Coolify GitHub App can't read the repo while it's flagged.
 
@@ -222,9 +242,16 @@ Things to think about before building a forwarding service:
 - **Same checker everywhere.** The server should run the same rules as `index.html`, so answers match. Moving the rules into their own file would let both use them.
 - **Family helper.** The reply could include "Send this to someone you trust", so a family member sees it too.
 
+## To do next
+
+- The owner adds the api service in Coolify (see the api service section below).
+- Add the API key as a Coolify secret, then build the AI second-opinion button on the page. The button is not built yet, and the service stays off until the key is set.
+- Test photo reading on a real iPhone.
+- Dan tests Paste, Photo and Share on his Samsung Fold.
+
 ## Ideas for later
 
-- Website age and known scam-list checks, using a small server (for example on the netcup server)
+- Website age checks, using the server (the known scam-list check is done)
 - Forwarding by WhatsApp, email or text: see "Goal: passing a message on without copying and pasting" above
 - A proper domain name once real people use it (needed for an email forwarding address)
 - Watch two or three older people use it without help, and fix what confuses them
