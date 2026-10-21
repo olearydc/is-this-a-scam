@@ -294,6 +294,10 @@ body.alarm-mid .verdict-title { color: #7a5200; }
 .src { font-size: 0.85rem; color: var(--muted); }
 .src a { color: inherit; }
 .quiz-msg { white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.7; border: 2px solid var(--panel-line); border-radius: 8px; padding: 16px; }
+.q-entry { text-align: left; line-height: 1.4; padding: 8px 0; }
+#qTitle { font-size: 1.35rem; line-height: 1.4; overflow-wrap: anywhere; }
+.q-choices { display: grid; gap: 10px; }
+.q-choices button { width: 100%; min-height: 58px; font-size: 1.1rem; }
 .quiz-btns { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); gap: 10px; }
 .quiz-btns button { min-height: 58px; font-size: 1.05rem; }
 .quiz-feedback { display: grid; gap: 10px; border-radius: 8px; padding: 16px; border: 2px solid var(--panel-line); }
@@ -379,6 +383,7 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
     <p class="hint" id="quickMsg" role="status"></p>
     <p class="hint"><b>First copy the message:</b> press and hold it, then tap "Copy" (or "Copy text"). Then come back and tap "Paste and check".</p>
     <p class="trust">This page never asks for your bank details, codes or passwords. Nothing you paste leaves your phone.</p>
+    <p><button type="button" class="linkish q-entry" id="qStart">Can't copy it, or was it a phone call or someone at the door? Answer a few questions</button></p>
     <details class="hdr" id="copyHelp">
       <summary>How do I copy a message from my phone?</summary>
       <div class="other">
@@ -461,6 +466,17 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
       </div>
       <p class="hint">We only count checks, never what you paste.</p>
     </div>
+  </section>
+
+  <section class="panel" id="qView" hidden aria-labelledby="qTitle">
+    <p class="found-count" id="qProgress" aria-live="polite"></p>
+    <h2 id="qTitle" tabindex="-1"></h2>
+    <div class="q-choices" id="qChoices"></div>
+    <div class="row">
+      <button type="button" class="mid-btn" id="qBack">Back</button>
+      <button type="button" class="mid-btn" id="qRestart">Start again</button>
+    </div>
+    <p class="hint">Your answers stay on this phone. Nothing is sent anywhere.</p>
   </section>
 
   <section class="panel" id="quizView" hidden aria-labelledby="quizTitle">
@@ -557,6 +573,10 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
         <p class="src">Advice from <a href="https://www.garda.ie/en/crime/fraud/" target="_blank" rel="noopener">An Garda Síochána</a>, the <a href="https://www.ccpc.ie/manage-your-money/scams-and-frauds/protecting-yourself-from-scams" target="_blank" rel="noopener">CCPC</a> and <a href="https://www.gov.ie/en/department-of-public-expenditure-infrastructure-public-service-reform-and-digitalisation/publications/alert-on-scam-phone-calls-and-text-messages/" target="_blank" rel="noopener">gov.ie</a>.</p>
       </div>
     </details>
+    <div class="row" id="qResultRow" hidden>
+      <button type="button" class="big-btn" id="qAgain">Start again</button>
+      <button type="button" class="mid-btn" id="qToCheck">Check a message instead</button>
+    </div>
     <div class="row">
       <button type="button" class="big-btn" id="againBtn">Check another message</button>
       <button type="button" id="speakBtn">Read this aloud</button>
@@ -2404,6 +2424,108 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
     else if (b.id === "quizAgain") { newRound(8); renderQ(); try { $("quizTitle").focus(); } catch (e) {} }
     else if (b.id === "quizBack") { $("quizView").hidden = true; $("inputView").hidden = false; window.scrollTo({ top: 0 }); $("msg").focus(); }
   });
+
+  /* "Can't copy it?": a few yes/no questions, for calls, callers at the door and messages that can't be pasted.
+     Answers stay in memory on this phone; only the kind of result is counted, like a normal check. */
+  var Q_CHANNELS = [["text", "Text or email"], ["phone", "Phone call"], ["letter", "Letter"], ["door", "Someone at the door"], ["social", "Social media or WhatsApp"]];
+  /* [it-wording, they-wording]; "inv" means a No answer is the risk; "ch" lists the channels it is asked for */
+  var Q_LIST = [
+    { id: "exp", inv: true, t: ["Were you expecting it?", "Were you expecting them?"] },
+    { id: "co", t: ["Does it say it's from a bank, An Post, Revenue, the Gardaí, the HSE, a delivery company or another well-known company?", "Do they say they're from a bank, An Post, Revenue, the Gardaí, the HSE, a delivery company or another well-known company?"] },
+    { id: "act", ch: ["text", "phone", "letter", "social"], t: ["Does it ask you to tap a link, ring a number, reply, or download an app?", "Do they ask you to ring a number, tap a link, or download an app?"] },
+    { id: "pay", t: ["Does it ask for money, card or bank details, a code sent to your phone, or a password?", "Do they ask for money, card or bank details, a code sent to your phone, or a password?"] },
+    { id: "rush", t: ["Does it rush you or warn of trouble, such as an account blocked, a fine, a parcel returned or an arrest?", "Do they rush you or warn of trouble, such as an account blocked, a fine or an arrest?"] },
+    { id: "win", t: ["Does it say you've won something, or offer a refund, prize, investment or easy money?", "Do they say you've won something, or offer a refund, prize, investment or easy money?"] },
+    { id: "fam", ch: ["text", "phone", "social"], t: ["Is it someone saying they're family or a friend with a new number, or asking you to keep it secret?", "Is it someone saying they're family or a friend, or asking you to keep it secret?"] },
+    { id: "move", ch: ["phone", "door"], t: ["Are they asking you to move money to a \"safe account\", buy gift cards or vouchers, let them in, or pay for work today?", "Are they asking you to move money to a \"safe account\", buy gift cards or vouchers, let them in, or pay for work today?"] }
+  ];
+  var qCh = "", qList = [], qi2 = 0, qAns = {};
+  function qIsPerson() { return qCh === "phone" || qCh === "door"; }
+  function qShow(view) {
+    ["inputView", "scanView", "resultView", "aiView", "quizView", "callView", "popView", "qView"].forEach(function (id) { $(id).hidden = id !== view; });
+    window.scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" });
+  }
+  function qRender() {
+    var h = $("qChoices"), q;
+    if (!qCh) {
+      $("qProgress").textContent = "";
+      $("qTitle").textContent = "How did it reach you?";
+      h.innerHTML = Q_CHANNELS.map(function (c) { return '<button type="button" class="big-btn" data-ch="' + c[0] + '">' + esc(c[1]) + "</button>"; }).join("");
+    } else {
+      q = qList[qi2];
+      $("qProgress").textContent = "Question " + (qi2 + 1) + " of " + qList.length;
+      $("qTitle").textContent = q.t[qIsPerson() ? 1 : 0];
+      h.innerHTML = '<button type="button" class="big-btn" data-a="yes">Yes</button><button type="button" class="big-btn" data-a="no">No</button><button type="button" data-a="unsure">Not sure</button>';
+    }
+    try { $("qTitle").focus({ preventScroll: true }); } catch (e) {}
+  }
+  function qBegin() { qCh = ""; qList = []; qi2 = 0; qAns = {}; qShow("qView"); qRender(); }
+  function qOnly() { $("qResultRow").hidden = true; $("againBtn").hidden = false; }
+  $("qStart").addEventListener("click", qBegin);
+  $("qRestart").addEventListener("click", qBegin);
+  $("qAgain").addEventListener("click", function () { stopSpeaking(); qOnly(); document.body.classList.remove("alarm-high", "alarm-mid", "alarm-none"); applyTheme(0); $("vband").hidden = true; qBegin(); });
+  $("qToCheck").addEventListener("click", function () { qOnly(); $("againBtn").click(); });
+  $("qBack").addEventListener("click", function () {
+    if (!qCh) { qShow("inputView"); $("qStart").focus(); return; }
+    if (qi2 > 0) qi2--; else qCh = "";
+    qRender();
+  });
+  $("qChoices").addEventListener("click", function (ev) {
+    var b = ev.target.closest("button"); if (!b) return;
+    if (b.dataset.ch) {
+      qCh = b.dataset.ch; qi2 = 0; qAns = {};
+      qList = Q_LIST.filter(function (q) { return !q.ch || q.ch.indexOf(qCh) !== -1; });
+      qRender();
+    } else if (b.dataset.a) {
+      qAns[qList[qi2].id] = b.dataset.a;
+      qi2++;
+      if (qi2 < qList.length) qRender(); else qResult();
+    }
+  });
+  /* a Yes is 1 point and Not sure is half; for "Were you expecting it?" the No is the risk. */
+  function qPts(q) {
+    var a = qAns[q.id];
+    if (a === "unsure") return 0.5;
+    return (q.inv ? a === "no" : a === "yes") ? 1 : 0;
+  }
+  function qResult() {
+    var score = 0, money = 0, others = 0, kind = "other";
+    qList.forEach(function (q) {
+      var p = qPts(q); score += p;
+      if (q.id === "pay" || q.id === "move") { if (qAns[q.id] === "yes") money++; else others += p; } else others += p;
+    });
+    /* a Yes to the money, code or safe-account questions is at least "Be very careful"; with any other risk, the top level */
+    var lvl = (money && (money > 1 || others > 0)) || score >= 4 ? "high" : money || score >= 2 ? "mid" : "low";
+    if (qAns.fam === "yes") kind = "family"; else if (qAns.move === "yes" || qAns.win === "yes") kind = "money";
+    var lead = {
+      phone: "<li><b>Hang up.</b> A real bank or Garda will never ask you to move money. Ring back on a number you already have, from a different phone if you can, or wait 5 minutes.</li>",
+      door: '<li><b>Don\'t let them in.</b> If you are worried, ring the Gardaí: <a class="tap-link" href="tel:112">999 or 112</a>.</li>',
+      text: "<li>Do not reply, and do not tap any link or open any attachment.</li>",
+      social: "<li>Do not reply, and do not tap any link or open any attachment.</li>",
+      letter: "<li>Do not ring the number on the letter or type in its web address.</li>"
+    }[qCh];
+    var core = "<li>Don't use any link or number from the message or caller.</li>" +
+      "<li>Contact the company using a number you already have, or their official website.</li>";
+    var tail = "<li>Never share a code, password or PIN, even with someone who says they are from your bank or the Gardaí (the police).</li>" +
+      "<li>Ask someone you trust before you do anything.</li>";
+    var t, s, act;
+    if (lvl === "high") { t = "This is very likely a scam"; s = "Your answers match how scammers work. Do not give them money, a code or any details."; act = "Don't pay, don't share anything and don't reply."; }
+    else if (lvl === "mid") { t = "Be very careful"; s = "Your answers show some warning signs. Do nothing they ask until you have checked it another way."; act = "Check it yourself first, on a number you already have."; }
+    else { t = "Fewer warning signs, but still check"; s = "Your answers show fewer warning signs. That does not prove it is genuine. Don't use any link or number from the message or caller. Contact the company using a number you already have, or their official website."; act = "Check it yourself first: use the company's own app or website, or a number you already have."; }
+    showVerdict(lvl === "high" ? 50 : lvl === "mid" ? 20 : 5);
+    applyTheme(0);
+    qShow("resultView");
+    $("verdictTitle").textContent = t; $("verdictSub").textContent = s;
+    $("mainAction").hidden = false; $("mainAction").textContent = act;
+    $("want").hidden = true; $("vband").hidden = true;
+    $("todo").innerHTML = lead + core + (lvl === "low" ? "<li>If something still feels wrong, trust that feeling and ask someone you trust.</li>" : tail);
+    $("sendPanel").hidden = true; $("sendToggle").setAttribute("aria-expanded", "false"); $("reportBox").open = false;
+    $("qResultRow").hidden = false; $("againBtn").hidden = true;
+    document.body.classList.remove("alarm-high", "alarm-mid", "alarm-none");
+    document.body.classList.add(lvl === "high" ? "alarm-high" : lvl === "mid" ? "alarm-mid" : "alarm-none");
+    countEvent(lvl === "low" ? "check-none" : "check-" + (lvl === "high" ? "high" : "mid") + "-" + kind);
+    try { $("verdictTitle").focus({ preventScroll: true }); } catch (e) {}
+  }
 
   /* hidden-details help */
   var HSTEPS = {
