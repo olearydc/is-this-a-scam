@@ -356,7 +356,7 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
   <header class="top">
     <div class="top-text">
       <h1>Is This a Scam?</h1>
-      <p>Paste a message you're not sure about. We'll check it for the tricks scammers use and tell you what to do.</p>
+      <p>Got a text, email or letter you're not sure about? We'll check it for the tricks scammers use and tell you what to do.</p>
     </div>
     <div class="size">
       <span>Text size</span>
@@ -368,11 +368,13 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
 
   <main class="main-col">
   <section class="panel" id="inputView" aria-labelledby="inputTitle">
-    <h2 class="big-label" id="inputTitle" style="font-size:1.2rem;line-height:1.6;text-wrap:wrap"><label for="msg">Paste the email or text message here</label></h2>
+    <h2 class="big-label" id="inputTitle" style="font-size:1.2rem;line-height:1.6;text-wrap:wrap"><label for="msg">Check a message</label></h2>
     <div class="row" id="quickRow">
       <button type="button" class="big-btn" id="pasteBtn">Paste and check</button>
+      <button type="button" class="mid-btn" id="photoBtn" hidden>Take a photo of it</button>
       <button type="button" class="mid-btn" id="shotBtn">Check a screenshot</button>
       <input type="file" id="shotFile" accept="image/*" hidden>
+      <input type="file" id="photoFile" accept="image/*" capture="environment" hidden>
     </div>
     <p class="hint" id="quickMsg" role="status"></p>
     <p class="hint"><b>First copy the message:</b> press and hold it, then tap "Copy" (or "Copy text"). Then come back and tap "Paste and check".</p>
@@ -1918,6 +1920,28 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
     var f = $("shotFile").files && $("shotFile").files[0];
     if (f) ocrImage(f);
   });
+  /* "Take a photo of it": opens the camera on phones, for a message on another screen or a letter in the post */
+  if (!inClaude && window.matchMedia && matchMedia("(pointer: coarse)").matches) $("photoBtn").hidden = false;
+  $("photoBtn").addEventListener("click", function () {
+    quick("Hold the phone steady and fill the screen with the message, then take the photo.");
+    $("photoFile").value = ""; $("photoFile").click();
+  });
+  $("photoFile").addEventListener("change", function () {
+    var f = $("photoFile").files && $("photoFile").files[0];
+    if (f) ocrImage(f);
+  });
+  /* camera photos are huge; reading a smaller copy is several times faster on a phone */
+  function shrinkImage(f) {
+    if (!window.createImageBitmap) return Promise.resolve(f);
+    return createImageBitmap(f).then(function (bmp) {
+      var max = 2000, sc = Math.min(1, max / Math.max(bmp.width, bmp.height));
+      if (sc >= 1) return f;
+      var c = document.createElement("canvas");
+      c.width = Math.round(bmp.width * sc); c.height = Math.round(bmp.height * sc);
+      c.getContext("2d").drawImage(bmp, 0, 0, c.width, c.height);
+      return c;
+    }).catch(function () { return f; });
+  }
   function ocrImage(f) {
     if (!f) return;
     if (inClaude) { quick("Reading screenshots works on the website version of this page. Here, please copy and paste the text of the message instead."); return; }
@@ -1934,15 +1958,15 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
         logger: function (m) { if (m.status === "recognizing text") quick("Reading the text from your picture: " + Math.round(m.progress * 100) + "%"); }
       });
     }).then(function (worker) {
-      return worker.recognize(f).then(function (r) { worker.terminate(); return r.data.text; });
+      return shrinkImage(f).then(function (img) { return worker.recognize(img); }).then(function (r) { worker.terminate(); return r.data.text; });
     })]).then(function (text) {
       text = String(text || "").replace(/[ \t]+/g, " ").replace(/\n{3,}/g, "\n\n").trim();
-      if (text.length < 10) { quick("We couldn't find any words in that picture. Try a clearer screenshot, or copy and paste the text instead."); return; }
+      if (text.length < 10) { quick("We couldn't find any words in that picture. Try again with the message filling the screen, or copy and paste the text instead."); return; }
       $("msg").value = text;
       quick("We read this text from your picture. Checking it now."); check();
       $("msg").scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "center" });
     }).catch(function () {
-      quick("We couldn't read that picture. Check you're online, try a clearer screenshot, or copy and paste the text instead.");
+      quick("We couldn't read that picture. Check you're online, try again with a clearer picture, or copy and paste the text instead.");
     }).then(function () { $("shotBtn").disabled = false; });
   }
 

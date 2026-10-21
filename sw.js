@@ -3,7 +3,7 @@
    A message shared from another app arrives in the address (?text=...).
    Those requests are answered from the saved copy and never go online,
    and no address with a message in it is ever saved. */
-var CACHE = "itas-v28";
+var CACHE = "itas-v29";
 var FILES = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./icon-180.png",
   "./fonts/atkinson-400-latin.woff2", "./fonts/atkinson-700-latin.woff2", "./fonts/sharetechmono-400-latin.woff2"];
 
