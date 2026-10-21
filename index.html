@@ -133,6 +133,17 @@ button:focus-visible, .btn:focus-visible, textarea:focus-visible, summary:focus-
 .nums li { display: flex; flex-wrap: wrap; align-items: center; column-gap: 0.35em; min-height: 44px; }
 footer a, .src a { display: inline-block; padding: 12px 2px; line-height: 1.3; }
 footer a { color: var(--accent); font-weight: 700; text-underline-offset: 3px; }
+.stats-box { border-top: 1px solid var(--panel-line); padding-top: 18px; display: grid; gap: 10px; }
+.stats-box h3, .stats-box h4 { margin: 0; }
+.stats-box h4 { font-size: 1rem; margin-top: 8px; }
+.stats-total { margin: 0; font-size: 1.05rem; }
+.stats-total b { font-size: 1.6rem; }
+.bars { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.bars li { display: grid; gap: 4px; }
+.bar-text { display: flex; justify-content: space-between; gap: 12px; }
+.bar-track { display: block; height: 12px; border-radius: 4px; background: var(--hl-low); overflow: hidden; }
+.bar-fill { display: block; height: 100%; border-radius: 4px; }
+@media (forced-colors: active) { .bar-track { border: 1px solid CanvasText; } .bar-fill { background: CanvasText !important; } }
 button:disabled { opacity: .55; cursor: default; }
 .big-btn { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-size: 1.1rem; padding: 14px 26px; min-height: 58px; }
 .big-btn:hover { filter: brightness(1.08); }
@@ -436,6 +447,16 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
         </details>
       </div>
     </details>
+    <div class="stats-box" id="statsBox" hidden>
+      <h3>What people have checked</h3>
+      <p class="stats-total"><b id="stTotal"></b> messages checked so far</p>
+      <ul class="bars" id="stOutcomes"></ul>
+      <div id="stKindsWrap" hidden>
+        <h4>Most common scams in the last 30 days</h4>
+        <ul class="bars" id="stKinds"></ul>
+      </div>
+      <p class="hint">We only count checks, never what you paste.</p>
+    </div>
   </section>
 
   <section class="panel" id="quizView" hidden aria-labelledby="quizTitle">
@@ -676,7 +697,7 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
 
   </main>
 
-  <footer><p id="statsLine" hidden></p><p><a href="leaflet.html">Print a leaflet</a> to share with family, a club or a community centre.</p><p><button type="button" class="linkish" id="fxBtn" aria-pressed="false">Matrix effect for demonstrations: off</button></p>This checker looks for common scam signs. It cannot catch every scam, and it can never prove a message is safe. Scams written with AI often have perfect spelling, so what a message asks you to do matters more than how well it is written. It only checks messages written in English. We count how many checks are done, but never what you paste. If you are unsure, ask someone you trust, or contact the company directly using a number you already have.</footer>
+  <footer><p><a href="leaflet.html">Print a leaflet</a> to share with family, a club or a community centre.</p><p><button type="button" class="linkish" id="fxBtn" aria-pressed="false">Matrix effect for demonstrations: off</button></p>This checker looks for common scam signs. It cannot catch every scam, and it can never prove a message is safe. Scams written with AI often have perfect spelling, so what a message asks you to do matters more than how well it is written. It only checks messages written in English. We count how many checks are done, but never what you paste. If you are unsure, ask someone you trust, or contact the company directly using a number you already have.</footer>
 </div>
 
 <script>
@@ -1628,7 +1649,7 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
     if (!current.warn) { $("foundEmpty").hidden = false; $("foundEmpty").textContent = "No warning signs found in the text."; }
     showVerdict(current.a.score);
     var isExample = Object.keys(EXAMPLES).some(function (k) { return EXAMPLES[k] === $("msg").value; });
-    if (!isExample) countEvent(current.a.score >= 50 ? "check-high" : current.a.score >= 20 ? "check-mid" : "check-none");
+    if (!isExample) countEvent(current.a.score >= 20 ? (current.a.score >= 50 ? "check-high-" : "check-mid-") + scamKind(current.a, $("msg").value) : "check-none");
     $("liveStatus").textContent = "Check complete. " + (current.warn ? current.warn + (current.warn === 1 ? " warning sign" : " warning signs") + " found." : "No warning signs found.");
     var want = current.a.score >= 20 ? wantFor(current.a.findings) : "";
     $("wantText").textContent = want; $("want").hidden = !want;
@@ -2172,13 +2193,46 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
       else fetch("count/" + kind, { method: "POST", keepalive: true, credentials: "omit" });
     } catch (e) {}
   }
+  /* a rough kind of scam, for the counter only (one word, never the message) */
+  var KIND_NAME = { parcel: "Parcel and delivery", bank: "Fake bank messages", gov: "Pretending to be Revenue, Gardaí or the HSE",
+    family: "\"Hi Mum\" and family emergencies", money: "Prizes, refunds and investments", job: "Job offers",
+    tech: "Fake computer support", bills: "Tolls, fines and bills", shopping: "Orders, invoices and buying or selling",
+    romance: "Romance", other: "Other" };
+  function scamKind(a, text) {
+    var t = a.findings.map(function (f) { return f.title; }).join(" | "), s = String(text || "").toLowerCase();
+    if (/Family-style greeting|Messaging from a new number|Emergency story/.test(t)) return "family";
+    if (/Fake tech support|Asks to control your device/.test(t)) return "tech";
+    if (/romance/i.test(t)) return "romance";
+    if (/Easy job offer|Offer to use your bank account/.test(t)) return "job";
+    if (/Parcel problem/.test(t) || /\b(parcel|package|delivery|courier|customs|an post|dpd|dhl|fedex|ups)\b/.test(s)) return "parcel";
+    if (/Toll or fine notice|Charge that is about to go up/.test(t) || /\b(toll|m50|parking|penalty)\b/.test(s)) return "bills";
+    if (/Says it's from the Garda|Accuses you of a crime|government/i.test(t) || /\b(revenue|garda|gardaí|hse|social protection|welfare|mygovid|gov\.ie)\b/.test(s)) return "gov";
+    if (/Too-good|Free money|Unrealistic returns|Refund offer|Loan or funding|lost money back|crypto|huge sum/i.test(t)) return "money";
+    if (/Unexpected order or invoice|Buyer or seller|Call to cancel/.test(t)) return "shopping";
+    if (/Says your account is locked|Unusual activity|Asks to change bank details/.test(t) || /\b(bank|aib|ptsb|revolut|credit union)\b/.test(s)) return "bank";
+    return "other";
+  }
+  /* "What people have checked": shown on the start page once there are enough checks */
   (function () {
     if (inClaude || !window.fetch) return;
     fetch("stats.json", { cache: "no-store", credentials: "omit" }).then(function (r) { return r.ok ? r.json() : null; }).then(function (s) {
       if (!s || !(s.checks >= 25)) return;
-      var n = function (x) { return Number(x).toLocaleString("en-IE"); };
-      $("statsLine").textContent = n(s.checks) + " messages checked so far. " + n(s.warned) + " of them had warning signs.";
-      $("statsLine").hidden = false;
+      var n = function (x) { return Number(x || 0).toLocaleString("en-IE"); };
+      function bars(list, rows) {
+        var max = Math.max.apply(null, rows.map(function (r) { return r[1]; })) || 1;
+        list.innerHTML = rows.map(function (r) {
+          var pct = Math.round(r[1] / max * 100);
+          return '<li title="' + esc(r[0] + ": " + n(r[1])) + '"><span class="bar-text"><span>' + esc(r[0]) + '</span><b>' + n(r[1]) + '</b></span>' +
+            '<span class="bar-track" aria-hidden="true"><span class="bar-fill" style="width:' + Math.max(pct, 2) + '%;background:' + (r[2] || "var(--accent)") + '"></span></span></li>';
+        }).join("");
+      }
+      $("stTotal").textContent = n(s.checks);
+      bars($("stOutcomes"), [["Very likely a scam", s.likelyScam, "#a3184a"], ["Looked suspicious", s.suspicious, "#c07f00"], ["No obvious warning signs", s.noSigns, "#1f74b0"]]);
+      var kinds = Object.keys(s.kinds30 || {}).filter(function (k) { return KIND_NAME[k] && s.kinds30[k] > 0; })
+        .sort(function (a, b) { return s.kinds30[b] - s.kinds30[a]; }).slice(0, 5);
+      var kindTotal = kinds.reduce(function (t, k) { return t + s.kinds30[k]; }, 0);
+      if (kindTotal >= 10) { bars($("stKinds"), kinds.map(function (k) { return [KIND_NAME[k], s.kinds30[k]]; })); $("stKindsWrap").hidden = false; }
+      $("statsBox").hidden = false;
     }).catch(function () {});
   })();
   function finishQuiz() {

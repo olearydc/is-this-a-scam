@@ -22,7 +22,7 @@ h1 { font-size: 1.8rem; margin: 0 0 4px; }
 .tile span { color: var(--muted); }
 table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 12px; overflow: hidden; }
 th, td { padding: 8px 10px; text-align: right; border-bottom: 1px solid #dfe7ec; }
-th:first-child, td:first-child { text-align: left; }
+th:first-child, td:first-child { text-align: left; white-space: nowrap; }
 .wrap { overflow-x: auto; }
 a { color: var(--accent); font-weight: 700; }
 </style>
@@ -53,7 +53,7 @@ fetch("stats.json", { cache: "no-store" }).then(function (r) { return r.json(); 
   });
   s.days.slice().reverse().forEach(function (d) {
     var tr = document.createElement("tr");
-    [d.date, n(d["check-high"] + d["check-mid"] + d["check-none"]), n(d["check-high"]), n(d["check-mid"]), n(d["check-none"]), n(d.quiz), n(d.leaflet)].forEach(function (v) { tr.appendChild(cell(v)); });
+    [new Date(d.date + "T12:00:00Z").toLocaleDateString("en-IE", { day: "numeric", month: "short" }), n(d["check-high"] + d["check-mid"] + d["check-none"]), n(d["check-high"]), n(d["check-mid"]), n(d["check-none"]), n(d.quiz), n(d.leaflet)].forEach(function (v) { tr.appendChild(cell(v)); });
     document.getElementById("days").appendChild(tr);
   });
 }).catch(function () { document.getElementById("updated").textContent = "No numbers yet."; });
