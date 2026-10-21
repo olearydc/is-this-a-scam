@@ -815,7 +815,34 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
     { n: "SSE Airtricity", re: /\b(sse )?airtricity\b/i, k: ["sseairtricity.com", "airtricity.com"] },
     { n: "Energia", re: /\benergia\b/i, k: ["energia.ie"] },
     { n: "Uisce Éireann", re: /\buisce [eé]ireann\b|\birish water\b/i, k: ["water.ie", "uisce.ie"] },
-    { n: "WhatsApp", re: /\bwhatsapp\b/i, k: ["whatsapp"] }
+    { n: "WhatsApp", re: /\bwhatsapp\b/i, k: ["whatsapp"] },
+    { n: "Booking.com", re: /\bbooking\.com\b/i, k: ["booking.com"] },
+    { n: "Airbnb", re: /\bairbnb\b/i, k: ["airbnb"] }
+  ];
+  /* well-known names scammers use as a sub-domain or hyphenated word of an unrelated site; "real" ends in .* when any ending is fine */
+  var BRANDS = [
+    { n: "Booking.com", t: ["booking", "bookingcom"], real: ["booking.com"] },
+    { n: "Airbnb", t: ["airbnb"], real: ["airbnb.*"] },
+    { n: "PayPal", t: ["paypal"], real: ["paypal.com", "paypal.me", "paypal.ie", "paypal.co.uk"] },
+    { n: "Amazon", t: ["amazon", "amzn"], real: ["amazon.*", "amzn.to", "amzn.eu"] },
+    { n: "Netflix", t: ["netflix"], real: ["netflix.com"] },
+    { n: "Apple", t: ["apple", "icloud", "appleid"], real: ["apple.com", "icloud.com"] },
+    { n: "Microsoft", t: ["microsoft", "office365"], real: ["microsoft.com", "office.com", "live.com", "microsoftonline.com", "outlook.com", "office365.com"] },
+    { n: "DHL", t: ["dhl"], real: ["dhl.*"] },
+    { n: "DPD", t: ["dpd"], real: ["dpd.ie", "dpd.com", "dpd.co.uk"] },
+    { n: "An Post", t: ["anpost"], real: ["anpost.ie", "anpost.com"] },
+    { n: "AIB", t: ["aib"], real: ["aib.ie"] },
+    { n: "Bank of Ireland", t: ["boi", "bankofireland"], real: ["bankofireland.com", "boi.com"] },
+    { n: "PTSB", t: ["ptsb"], real: ["ptsb.ie"] },
+    { n: "Revolut", t: ["revolut"], real: ["revolut.com"] },
+    { n: "Revenue", t: ["revenue"], real: ["revenue.ie"] },
+    { n: "the HSE", t: ["hse"], real: ["hse.ie"] },
+    { n: "Eir", t: ["eir"], real: ["eir.ie"] },
+    { n: "Vodafone", t: ["vodafone"], real: ["vodafone.ie", "vodafone.com", "vodafone.co.uk"] },
+    { n: "Three", t: ["three"], real: ["three.ie", "three.co.uk"] },
+    { n: "Ticketmaster", t: ["ticketmaster"], real: ["ticketmaster.ie", "ticketmaster.com", "ticketmaster.co.uk"] },
+    { n: "Ryanair", t: ["ryanair"], real: ["ryanair.com"] },
+    { n: "Aer Lingus", t: ["aerlingus"], real: ["aerlingus.com"] }
   ];
 
   /* word rules: matched against the message with links and email addresses blanked out */
@@ -827,7 +854,7 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
       re: /\b(suspended|suspension|will be (closed|blocked|locked|deleted|cancell?ed|terminated|disabled|frozen|returned to sender)|permanent(ly)? (clos\w*|delet\w*)|permanent closure|legal action|arrest(ed)?|warrant|court action|bailiffs?|fined|penalty|penalties|locked out|deactivat\w+|frozen)\b/,
       why: "Frightening you is a common trick to stop you thinking clearly." },
     { cat: "asks", title: "Asks for passwords or bank details", level: "high",
-      re: /\b(verify your (account|identity|details|information)|confirm your (account|identity|details|password|information)|(enter|confirm|verify|provide|send|give|tell|update|share|submit|supply|reply with|text us) (us |me )?(your )?(full )?(password|pin|card number|card details|(debit |credit |bank )?card|bank (details|account( number| details)?)|account (details|number)|iban)|(debit|credit) card (number|details)|log ?in details|sign ?in details|security code|card (number|details)|cvv|update your (details|information|payment|billing)|log ?in to (restore|verify|confirm|unlock|reactivate|update)|(enter|entering|type|typing|provide|providing|confirm|confirming) (in )?your (online banking |internet banking |mobile banking |banking |bank |account )?(password|pin|passcode)|restore (your )?access|(need|needs|require|requires|want|wants|asking for|ask for) (us |me )?(your|the) (\d[- ]?digit |four[- ]digit )?(card |bank |debit |credit |atm )?(pin|passcode)\b)\b/,
+      re: /\b(verify your (account|identity|details|information)|confirm your (account|identity|details|password|information)|(enter|confirm|verify|provide|send|give|tell|update|share|submit|supply|reply with|text us) (us |me )?(your )?(full )?(password|pin|card number|card details|(debit |credit |bank )?card|bank (details|account( number| details)?)|account (details|number)|iban)|(debit|credit) card (number|details)|log ?in details|sign ?in details|security code|card (number|details)|cvv|update your (details|information|payment|billing)|log ?in to (restore|verify|confirm|unlock|reactivate|update)|(enter|entering|type|typing|provide|providing|confirm|confirming) (in )?your (online banking |internet banking |mobile banking |banking |bank |account )?(password|pin|passcode)|restore (your )?access|(cardholder|card|payment) verification|verify (the|your) (payment|card)|confirm your (card|payment)|re-?enter your card|update your card|(need|needs|require|requires|want|wants|asking for|ask for) (us |me )?(your|the) (\d[- ]?digit |four[- ]digit )?(card |bank |debit |credit |atm )?(pin|passcode)\b)\b/,
       why: "Real banks and companies never ask for these by email or text." },
     { cat: "pressure", title: "Password expiry warning", level: "medium",
       re: /\b(passwords? (will )?(expire|expires|expired|expiring)|reset your password|password reset)\b/,
@@ -931,6 +958,12 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
     { cat: "offer", title: "Easy job offer", level: function (n) { return n >= 2 ? "high" : "medium"; },
       re: /\b(work from home|working from home|earn (€|\$|£|eur |euros? )?\s?\d+(\s?[-–]\s?(€|\$|£)?\d+)? (a|per) (day|hour|week)|(earn|make) [^.\n]{0,40}from home|easy money|no experience (needed|required)|part[- ]time job offer|like videos and earn|liking (instagram |facebook |tiktok |youtube )?(posts|videos)|selected for a (part[- ]time )?job|earn (€|\$|£|eur |euros? )?\s?\d+ to (€|\$|£|eur |euros? )?\d+ (a|per) (day|hour|week)|(hiring|recruiting)[^.\n]{0,30}(part[- ]time|online|remote)|reply yes for (training|details|more info)|(rate|rating|review|reviewing|boost|boosting) (products|apps|hotels|restaurants|ratings|rankings|reviews)|\d+ minutes (a|per) day|flexible remote (role|job|work)|we found your (cv|profile|resume|details) online|complete (simple |easy |daily )?tasks)\b/,
       why: "Jobs offering easy money for little work are often scams that end with you paying them." },
+    { cat: "pretend", title: "Says there's a problem with a payment", level: "medium",
+      re: /\b(unable to (automatically )?(verify|process|confirm|authori[sz]e|complete|charge) (the|your|this) (payment|card|transaction)|payment (could not|couldn'?t|cannot|can'?t|was not|wasn'?t|has not been|hasn'?t been|failed to be) (be )?(verified|processed|confirmed|completed|authori[sz]ed)|(booking|reservation) (is |is currently |currently )?(awaiting (your )?confirmation|on hold|pending (confirmation|payment|verification))|(booking|reservation) (will|may) be (automatically )?cancell?ed)\b/,
+      why: "An invented payment problem is a way to get you to type in your card details on a fake page. Check the booking in the company's own app or website, typed in yourself." },
+    { cat: "offer", title: "Over-reassuring", level: "low",
+      re: /\b(no worries|everything is under control|completely (secure|safe)|100% (secure|safe)|(takes?|taking) (less than|under|just|only) (a |one |two |\d+ )?(minutes?|mins?|seconds?)|(just )?a quick (step|verification|check))\b/,
+      why: "Scammers go out of their way to calm you and make it sound easy and safe, so you lower your guard." },
     { cat: "offer", title: "Trying too hard to seem real", level: "medium",
       re: /\b(no need to respond|this is not a scam|not a scam|this is legit|100% (legit|genuine|safe|real)|not to ignore)\b/,
       why: "Genuine messages rarely need to tell you they are not a scam." },
@@ -1185,7 +1218,7 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
       for (var i = 0; i < ORGS.length; i++) {
         var o = ORGS[i];
         if (ownedBy(o, base)) continue;
-        if (o.k.some(function (k) { k = k.split(".")[0]; return k !== "gov" && lab !== k && (lab.split("-").indexOf(k) !== -1 || (k.length >= 5 && lab.indexOf(k) !== -1)); })) return o;
+        if (o.k.some(function (k) { k = k.split(".")[0]; return k !== "gov" && k !== "booking" && lab !== k && (lab.split("-").indexOf(k) !== -1 || (k.length >= 5 && lab.indexOf(k) !== -1)); })) return o;
       }
       return null;
     }
@@ -1270,6 +1303,17 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
         why: "The link goes to a free website service that anyone can set up in minutes." });
       if (!orgs.some(orgOk) && BAIT.test(lab) && lab.indexOf("-") !== -1) la("bt" + lb, { cat: "links", level: "medium", title: "Suspicious website name", ranges: lr,
         why: "Names like " + lb + " are made to sound official. Real companies use their own simple name." });
+      var bsub = L.host.slice(0, Math.max(0, L.host.length - lb.length)).split(".").filter(Boolean);
+      var bwords = [];
+      bsub.forEach(function (x) { x.split("-").forEach(function (y) { bwords.push(y); }); bwords.push(x.replace(/-/g, "")); });
+      if (!faked && !disguised && !tracked) {
+        var bhit = BRANDS.filter(function (B) {
+          return B.t.some(function (t) { return bwords.indexOf(t) !== -1; }) &&
+            !B.real.some(function (k) { return k.slice(-2) === ".*" ? lab === k.slice(0, -2) : lb === k; });
+        })[0];
+        if (bhit) la("bd" + L.host, { cat: "links", level: "high", title: "Disguised link", ranges: lr,
+          why: "It starts with the name " + bhit.n + ", but the real website is " + lb + ". Only the last part of an address shows who owns it." });
+      }
       if (/devicelogin|device-?code|\/device\b/i.test(L.raw)) addOnce("dc", { cat: "asks", level: "high", title: "Asks you to enter a code on a login page", ranges: [[L.start, L.end]],
         why: "Typing a code someone sends you into a login page can give them access to your account, even on a real website." });
       if (tldOf(L.host) !== "ie" && /(^|-)ie(-|$)/.test(lab)) la("ie" + lb, { cat: "links", level: "high", title: "Pretends to be an Irish website", ranges: lr,
@@ -1317,6 +1361,8 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
           /\bnever\b[^.!?\n]{0,80}$/i.test(before) || /\bif you (would like|'d like|wish|want|need) to\b[^.!?\n]{0,40}$/i.test(before))) continue;
         /* a library or loyalty card number is not a bank card (no lookbehind in the pattern: older iPhones can't run it) */
         if (/^card /i.test(m[0]) && /\b(library|loyalty|clubcard|membership|leap|travel) $/i.test(before)) continue;
+        /* "unable to verify the payment" is a claimed problem, not a request (the payment-problem rule covers it) */
+        if (r.title === "Asks for passwords or bank details" && /^verify /i.test(m[0]) && /\bunable to (automatically )?$/i.test(before)) continue;
         /* an overdue library book is not an unpaid debt */
         if (r.title === "Asks you to ring a number about a problem" && /^overdue/i.test(m[0]) && /\b(library|books?|borrowed|dvd)\b/.test(norm)) continue;
         /* a bank alert that tells you to use the number on your own card, with no link, is how real banks write */
@@ -1677,6 +1723,7 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
     [/control your device|Fake tech support/, "control of your computer or phone, so they can get into your bank."],
     [/change bank details|Bank account number/, "you to pay a real bill into their bank account instead."],
     [/Blackmail/, "money, using a frightening threat. Don't pay and don't reply."],
+    [/problem with a payment/, "your card details, by inventing a problem with a booking or payment."],
     [/passwords or bank details|Fake .*(website|address)|Disguised link|Look-alike|Password expiry|account is locked|Unusual activity|Fake shared document/, "your login or card details, through a fake website or form."],
     [/investment|Unrealistic returns/i, "money you \"invest\" with them. You would never get it back."],
     [/Offer to use your bank account/, "to use your bank account to pass on stolen money. You could be prosecuted."],
