@@ -21,6 +21,18 @@ var box = { URL: URL };
 vm.createContext(box);
 vm.runInContext(code + "\nthis.analyse = analyse; this.inlineHeaderRegion = inlineHeaderRegion; this.QUIZ_BANK = QUIZ_BANK;", box);
 
+// Known scam websites: a host passed in knownBad is flagged (alone or among a link's reasons); without it nothing changes.
+(function () {
+  var msg = "Your parcel is held, pay the fee at http://bad-example.top/x";
+  function has(a) {
+    return a.findings.some(function (f) {
+      return (f.title === "Known scam website" && f.level === "high") ||
+        (f.reasons || []).some(function (r) { return r.title === "Known scam website"; });
+    });
+  }
+  if (!has(box.analyse(msg, null, ["bad-example.top"])) || has(box.analyse(msg, null))) { console.log("FAIL  known scam website check"); process.exit(1); }
+})();
+
 var file = process.argv.slice(2).filter(function (a) { return a[0] !== "-"; })[0];
 var cases = JSON.parse(fs.readFileSync(file || path.join(__dirname, "messages.json"), "utf8"));
 if (!file) box.QUIZ_BANK.forEach(function (q) { cases.push({ id: "quiz-" + q.id, scam: q.scam, msg: q.msg }); });
