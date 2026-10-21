@@ -10,6 +10,9 @@
 <link rel="apple-touch-icon" href="icon-180.png">
 <meta name="apple-mobile-web-app-title" content="Is This a Scam?">
 <meta name="mobile-web-app-capable" content="yes">
+<meta name="referrer" content="no-referrer">
+<title>Is This a Scam?</title>
+<meta name="claude:viewport-fit-sides" content="cover">
 <style>
 :root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 body{margin:0}
@@ -18,8 +21,6 @@ img{max-width:100%}
 </style>
 </head>
 <body>
-<title>Is This a Scam?</title>
-<meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Share+Tech+Mono&display=swap">
@@ -118,6 +119,8 @@ button, .btn {
 }
 button:hover, .btn:hover { border-color: var(--accent); }
 button:focus-visible, .btn:focus-visible, textarea:focus-visible, summary:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+[tabindex="-1"]:focus { outline: none; }
+.nums a { display: inline-block; padding: 10px 2px; }
 button:disabled { opacity: .55; cursor: default; }
 .big-btn { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-size: 1.1rem; padding: 14px 26px; min-height: 58px; }
 .big-btn:hover { filter: brightness(1.08); }
@@ -318,7 +321,6 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
     </div>
     <p class="hint" id="quickMsg" role="status"></p>
     <p class="hint">Before you paste, remove your name, address, phone number and any account numbers. This page checks the message on your own device. Nothing is sent anywhere unless you choose to ask Claude.</p>
-    <textarea id="msg" spellcheck="false" placeholder="Copy the whole message and paste it here, or paste a screenshot of it. For emails, include the line that says who it is from."></textarea>
     <details class="hdr" id="copyHelp">
       <summary>How do I copy a message from my phone?</summary>
       <div class="other">
@@ -333,6 +335,12 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
         <ol class="steps" id="copySteps"></ol>
       </div>
     </details>
+    <textarea id="msg" spellcheck="false" maxlength="20000" placeholder="Copy the whole message and paste it here, or paste a screenshot of it. For emails, include the line that says who it is from."></textarea>
+    <div class="row">
+      <button type="button" class="big-btn" id="checkBtn">Check this message</button>
+      <button type="button" id="clearBtn">Clear</button>
+      <span class="error" id="inputError" role="alert"></span>
+    </div>
     <details class="hdr" id="hdrDetails">
       <summary>Optional: also check the email's hidden details</summary>
       <div class="other">
@@ -348,11 +356,6 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
         <textarea id="hdr" class="hdr-box" spellcheck="false" placeholder="Paste the hidden details (also called the original message or headers) here."></textarea>
       </div>
     </details>
-    <div class="row">
-      <button type="button" class="big-btn" id="checkBtn">Check this message</button>
-      <button type="button" id="clearBtn">Clear</button>
-      <span class="error" id="inputError" role="alert"></span>
-    </div>
     <div class="call-box">
       <p><b>Is someone on the phone to you right now,</b> asking for money, a code or your details?</p>
       <button type="button" class="mid-btn" id="callStart">Yes, help me now</button>
@@ -1497,11 +1500,16 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
     for (var i = 0; i < WANTS.length; i++) if (titles.some(function (t) { return WANTS[i][0].test(t); })) return WANTS[i][1];
     return "";
   }
+  var TODO_WARN = $("todo").innerHTML;
+  var TODO_CALM = "<li>If it asks for money, a code or your details, check first: contact the company or person on a number you already have.</li>" +
+    "<li>If something still feels wrong, trust that feeling and ask someone you trust.</li>" +
+    "<li>Never share a code, password or PIN, even with someone who says they are from your bank or the Gardaí (the police).</li>";
   function showVerdict(score) {
     var t, s, cls;
     if (score >= 50) { t = "This is very likely a scam"; s = "We found several warning signs. Do not click any links, reply, or send money or details."; cls = "high"; }
     else if (score >= 20) { t = "This looks suspicious"; s = "We found some warning signs. Do not click links. Check with the company or person another way, using a number you already have."; cls = "mid"; }
     else { t = "No obvious warning signs found"; s = "That does not prove it is safe. If it asks for money, codes or personal details, check with the company using a number you already have."; cls = ""; }
+    $("todo").innerHTML = cls ? TODO_WARN : TODO_CALM;
     var icons = {
       high: '<path fill="currentColor" d="M12 2 1 21h22L12 2zm0 5.5 7.5 12.5h-15L12 7.5zM11 10v5h2v-5h-2zm0 6v2h2v-2h-2z"/>',
       mid: '<path fill="currentColor" d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-1 3v7h2V7h-2zm0 9v2h2v-2h-2z"/>',
@@ -1523,6 +1531,7 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
   function check() {
     var text = $("msg").value.replace(/\r\n/g, "\n");
     if (!text.trim()) { $("inputError").textContent = "Paste a message first, or try one of the examples below."; $("msg").focus(); return; }
+    if (text.length > 20000) { text = text.slice(0, 20000); $("msg").value = text; quick("That message is very long, so we checked the first part of it."); }
     $("inputError").textContent = "";
     var raw = $("hdr").value.trim(), hReg = null;
     if (raw) {
