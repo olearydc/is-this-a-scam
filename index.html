@@ -197,6 +197,7 @@ mark.flag.on.low { background: var(--hl-low); text-decoration: underline dotted 
   .verdict-icon { forced-color-adjust: none; color: CanvasText !important; }
   .verdict-title { forced-color-adjust: none; color: CanvasText !important; text-shadow: none !important; }
   .chip { border-color: CanvasText; }
+  .more-advice summary { border-color: CanvasText; }
 }
 sup.tag { font-size: 0.7rem; font-weight: 700; margin-left: 2px; color: var(--muted); }
 
@@ -242,6 +243,13 @@ body.matrix .meter-fill.high { background: var(--accent); box-shadow: 0 0 12px v
 .todo { margin: 0; padding-left: 1.3em; display: grid; gap: 8px; font-size: 1.02rem; max-width: 62ch; }
 .todo li::marker { color: var(--accent); font-weight: 700; }
 .main-action { font-size: 1.2rem; font-weight: 700; max-width: 58ch; }
+.main-signs { font-size: 1.02rem; max-width: 58ch; }
+.more-advice { border-top: 0; padding-top: 0; max-width: 62ch; }
+.more-advice summary { border: 2px solid var(--panel-line); border-radius: 8px; padding: 8px 14px; min-height: 54px; box-sizing: border-box; font-size: 1.02rem; }
+.more-advice[open] summary { margin-bottom: 10px; }
+.see-all { width: 100%; box-sizing: border-box; margin-bottom: 14px; }
+.found[hidden] { display: none; }
+.scan-grid.solo { grid-template-columns: minmax(0, 1fr); }
 .trust { font-size: 0.95rem; color: var(--fg); border-left: 5px solid var(--accent); background: var(--hl-low); border-radius: 8px; padding: 10px 14px; max-width: 62ch; }
 .check-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 16px; }
 .check-row .linkish { margin-left: auto; padding: 0 6px; }
@@ -506,6 +514,7 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
     </div>
     <p class="verdict-sub" id="verdictSub"></p>
     <p class="main-action" id="mainAction" hidden></p>
+    <p class="main-signs" id="mainSigns" hidden></p>
     <p class="want" id="want" hidden><b>What they're probably after:</b> <span id="wantText"></span></p>
     <div class="meter" aria-hidden="true">
       <div class="meter-track"><div class="meter-fill" id="meterFill"></div></div>
@@ -518,6 +527,10 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
       <li>Never share a code, password or PIN, even with someone who says they are from your bank or the Gardaí (the police).</li>
       <li>Ask someone you trust before you do anything.</li>
     </ul>
+    <details class="more-advice" id="moreAdvice" hidden>
+      <summary id="moreAdviceSum">More advice</summary>
+      <ul class="todo" id="todoMore"></ul>
+    </details>
     <p id="happenedLinkWrap" hidden><button type="button" class="linkish" id="happenedLink" aria-expanded="false" aria-controls="happened">Already replied, clicked or paid? Get help</button></p>
     <div class="happened" id="happened" hidden>
       <h3 id="happenedTitle">What happened?</h3>
@@ -700,14 +713,15 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
         <span class="found-count" id="foundCount">0 warning signs so far</span>        <button type="button" id="skipBtn">Skip to the answer</button>
       </div>
     </div>
-    <div class="scan-grid">
+    <button type="button" class="mid-btn see-all" id="seeAllBtn" aria-expanded="false" aria-controls="foundPanel" hidden>See all warning signs and why</button>
+    <div class="scan-grid" id="scanGrid">
       <div class="scan-box" id="scanBox" tabindex="0" role="region" aria-label="The message being checked">
         <div class="scan-inner" id="scanInner">
           <div class="scan-text" id="scanText"></div>
           <div class="scan-line" id="scanLine"></div>
         </div>
       </div>
-      <div class="found">
+      <div class="found" id="foundPanel">
         <h2 id="foundTitle">What we found</h2>
         <p class="found-summary" id="foundSummary" hidden></p>
         <ol class="found-list" id="foundList"></ol>
@@ -1641,6 +1655,7 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
     var b = buildMarks(text, a.findings);
     $("scanText").innerHTML = b.html;
     $("foundList").innerHTML = "";
+    $("foundPanel").hidden = false; $("scanGrid").classList.remove("solo"); $("seeAllBtn").hidden = true;
     $("foundSummary").hidden = true;
     $("sendPanel").hidden = true; $("sendToggle").setAttribute("aria-expanded", "false"); $("passMsg").textContent = "";
     $("reportBox").open = false;
@@ -1760,6 +1775,8 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
     regroup();
     if (!current.warn) { $("foundEmpty").hidden = false; $("foundEmpty").textContent = "No warning signs found in the text."; }
     showVerdict(current.a.score);
+    showMainSigns();
+    foldFindings();
     var isExample = Object.keys(EXAMPLES).some(function (k) { return EXAMPLES[k] === $("msg").value; });
     repOffer(isExample);
     if (!isExample) countEvent(current.a.score >= 20 ? (current.a.score >= 50 ? "check-high-" : "check-mid-") + scamKind(current.a, $("msg").value) : "check-none");
@@ -1850,6 +1867,38 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
   function asksFor(text) {
     return ACTIONS.filter(function (a) { return a[0].test(text); }).map(function (a) { return a[1]; }).slice(0, 2);
   }
+  /* progressive disclosure: only the first 2 bits of advice show; the rest sit in "More advice" (still read aloud and sent) */
+  function splitTodo() {
+    var all = Array.prototype.slice.call($("todo").querySelectorAll("li")).concat(Array.prototype.slice.call($("todoMore").querySelectorAll("li")));
+    $("todo").innerHTML = ""; $("todoMore").innerHTML = "";
+    all.forEach(function (li, i) { $(i < 2 ? "todo" : "todoMore").appendChild(li); });
+    var more = all.length - 2;
+    $("moreAdvice").open = false;
+    $("moreAdvice").hidden = more < 1;
+    $("moreAdviceSum").textContent = "More advice (" + Math.max(more, 0) + ")";
+  }
+  /* one line naming the 2 or 3 biggest warning signs, high level first */
+  function showMainSigns() {
+    var lv = { high: 0, medium: 1 };
+    var t = current.a.findings.filter(function (f) { return f.level in lv; })
+      .sort(function (a, b) { return lv[a.level] - lv[b.level]; }).slice(0, 3).map(function (f, i) { return i && !/^[A-Z]{2}/.test(f.title) ? f.title.charAt(0).toLowerCase() + f.title.slice(1) : f.title; });
+    $("mainSigns").hidden = !t.length;
+    $("mainSigns").textContent = t.length ? "Main warning signs: " + (t.length > 1 ? t.slice(0, -1).join(", ") + " and " + t[t.length - 1] : t[0]) : "";
+  }
+  /* the findings fill in live during the scan; once the answer shows, tuck them behind a button */
+  function foldFindings() {
+    var n = current.warn;
+    if (!n) return;
+    $("foundPanel").hidden = true; $("scanGrid").classList.add("solo");
+    $("seeAllBtn").hidden = false; $("seeAllBtn").setAttribute("aria-expanded", "false");
+    $("seeAllBtn").textContent = n === 1 ? "See the warning sign and why" : "See all " + n + " warning signs and why";
+  }
+  $("seeAllBtn").addEventListener("click", function () {
+    var open = $("seeAllBtn").getAttribute("aria-expanded") !== "true";
+    $("foundPanel").hidden = !open; $("scanGrid").classList.toggle("solo", !open);
+    $("seeAllBtn").setAttribute("aria-expanded", open ? "true" : "false");
+    $("seeAllBtn").textContent = open ? "Hide the warning signs" : current.warn === 1 ? "See the warning sign and why" : "See all " + current.warn + " warning signs and why";
+  });
   function showVerdict(score) {
     var t, s, cls, asks = [];
     if (score >= 50) { t = "This is very likely a scam"; s = "We found several warning signs. Do not click any links, reply, or send money or details."; cls = "high"; }
@@ -1860,7 +1909,9 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
       s = asks.length ? "But it " + asks.join(" and ") + ". Even if it looks real, don't use the link or number in it. Go to the company's own app or website, or ring a number you already have."
         : "That does not prove it is safe. If it asks for money, codes or personal details, check with the company using a number you already have.";
     }
-    $("todo").innerHTML = cls ? TODO_WARN : TODO_CALM;
+    $("todo").innerHTML = cls ? TODO_WARN : TODO_CALM; $("todoMore").innerHTML = "";
+    splitTodo();
+    $("mainSigns").hidden = true;
     resetHappened();
     $("happened").hidden = !cls;
     $("happenedLinkWrap").hidden = !!cls;
@@ -2162,7 +2213,7 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
     }
     lines.push(""); lines.push("What to do now:");
     if (short) lines.push("Don't click links or reply. Check with the company or person using a phone number you already know.");
-    else Array.prototype.forEach.call($("todo").querySelectorAll("li"), function (li) { lines.push("- " + li.textContent); });
+    else Array.prototype.forEach.call($("resultView").querySelectorAll("#todo li, #todoMore li"), function (li) { lines.push("- " + li.textContent); });
     if (!short) ["hp1", "hp2", "hp3"].forEach(function (id) {
       if ($(id).getAttribute("aria-expanded") !== "true") return;
       lines.push(""); lines.push("What happened: " + $(id).textContent);
@@ -2593,6 +2644,7 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
     $("mainAction").hidden = false; $("mainAction").textContent = act;
     $("want").hidden = true; $("vband").hidden = true;
     $("todo").innerHTML = lead + core + (lvl === "low" ? "<li>If something still feels wrong, trust that feeling and ask someone you trust.</li>" : tail);
+    $("todoMore").innerHTML = ""; splitTodo();
     $("sendPanel").hidden = true; $("sendToggle").setAttribute("aria-expanded", "false"); $("reportBox").open = false; repReset();
     $("qResultRow").hidden = false; $("againBtn").hidden = true;
     document.body.classList.remove("alarm-high", "alarm-mid", "alarm-none");
@@ -2775,7 +2827,7 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
     try {
       if (window.speechSynthesis.speaking) { stopSpeaking(); return; }
       if (!bestVoice) pickVoice();
-      var items = Array.prototype.map.call($("todo").querySelectorAll("li"), function (li) { return li.textContent; });
+      var items = Array.prototype.map.call($("resultView").querySelectorAll("#todo li, #todoMore li"), function (li) { return li.textContent; });
       var text = $("verdictTitle").textContent + ". " + $("verdictSub").textContent + ($("want").hidden ? "" : " What they're probably after: " + $("wantText").textContent) + " What to do now. " + items.join(" ");
       /* one sentence at a time: sounds more natural, and Chrome stops long speech after about 15 seconds */
       var parts = (text.match(/[^.!?]+[.!?]*/g) || [text]).map(function (p) { return p.trim(); }).filter(Boolean);
