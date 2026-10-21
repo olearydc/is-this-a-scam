@@ -701,7 +701,7 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
 
   </main>
 
-  <footer><p><a href="leaflet.html">Print a leaflet</a> to share with family, a club or a community centre.</p><p><button type="button" class="linkish" id="fxBtn" aria-pressed="false">Matrix effect for demonstrations: off</button></p>This checker looks for common scam signs. It cannot catch every scam, and it can never prove a message is safe. Scams written with AI often have perfect spelling, so what a message asks you to do matters more than how well it is written. It only checks messages written in English. We count how many checks are done, but never what you paste. If you are unsure, ask someone you trust, or contact the company directly using a number you already have.</footer>
+  <footer><p><a href="leaflet.html">Print a leaflet</a> to share with family, a club or a community centre.</p><p><button type="button" class="linkish" id="fxBtn" aria-pressed="false">Matrix effect for demonstrations: off</button></p>This checker looks for common scam signs. It cannot catch every scam, and it can never prove a message is safe. Scams written with AI often have perfect spelling, so what a message asks you to do matters more than how well it is written. It only checks messages written in English. We count how many checks are done, but never what you paste. Known scam websites from <a href="https://openphish.com/" rel="noopener noreferrer">OpenPhish</a>, <a href="https://urlhaus.abuse.ch/" rel="noopener noreferrer">URLhaus (abuse.ch)</a> and <a href="https://phishing.army/" rel="noopener noreferrer">Phishing Army</a>. If you are unsure, ask someone you trust, or contact the company directly using a number you already have.</footer>
 </div>
 
 <script>
@@ -1169,7 +1169,7 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
   }
 
   /* ================= analysis ================= */
-  function analyse(text, hReg) {
+  function analyse(text, hReg, knownBad) {
     var F = [];
     function add(o) { F.push(o); }
     var keys = {};
@@ -1284,6 +1284,8 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
       if (/^maps\.(app\.goo\.gl|google\.[a-z.]+)$/.test(L.host) || (/^(www\.)?(google\.[a-z.]+|goo\.gl)$/.test(L.host) && /\/maps\b/.test(L.raw))) return;
       var lb = baseDomain(L.host), lr = [[L.start, L.end]], lab = lb.split(".")[0];
       var la = function (k, o) { o.dest = lb; addOnce(k, o); };
+      if (knownBad && Array.prototype.indexOf.call(Array.from(knownBad), L.host.replace(/^www\./, "")) !== -1) la("kb" + L.host, { cat: "links", level: "high", title: "Known scam website", ranges: lr,
+        why: "This website is on public lists of scam and phishing sites. Don't open it." });
       var tracked = TRACKERS.some(function (t) { return L.host === t || L.host.slice(-t.length - 1) === "." + t; });
       var orgOk = function (o) { return ownedBy(o, lb); };
       var faked = fakeOrg(lb);
@@ -1586,9 +1588,9 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
     return { html: html, marks: marks };
   }
 
-  function startScan(text, hReg) {
+  function startScan(text, hReg, knownBad) {
     cancelAnimationFrame(rafScan);
-    var a = analyse(text, hReg);
+    var a = analyse(text, hReg, knownBad);
     var b = buildMarks(text, a.findings);
     $("scanText").innerHTML = b.html;
     $("foundList").innerHTML = "";
@@ -1852,7 +1854,38 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
     } else {
       hReg = inlineHeaderRegion(text);
     }
-    startScan(text, hReg);
+    var T = text, H = hReg;
+    lookupBad(T, H).then(function (bad) { startScan(T, H, bad); });
+  }
+  /* Known scam websites: the page hashes each link's host and fetches only the small shared file
+     for the first two hex characters, so the server never learns which website was checked. */
+  function lookupBad(text, hReg) {
+    var none = Promise.resolve(null);
+    try {
+      if (!(window.crypto && crypto.subtle && window.fetch)) return none;
+      var hosts = [];
+      parseLinks(text).forEach(function (L) {
+        if (hReg && L.start >= hReg.s && L.start < hReg.e) return;
+        var h = L.host.replace(/^www\./, "").replace(/\.$/, "");
+        if (h && hosts.indexOf(h) === -1) hosts.push(h);
+      });
+      hosts = hosts.slice(0, 20);
+      if (!hosts.length) return none;
+      var ctl = window.AbortController ? new AbortController() : null;
+      var cache = {};
+      var work = Promise.all(hosts.map(function (h) {
+        return crypto.subtle.digest("SHA-256", new TextEncoder().encode(h)).then(function (buf) {
+          var hex = Array.prototype.map.call(new Uint8Array(buf), function (b) { return ("0" + b.toString(16)).slice(-2); }).join("").slice(0, 16);
+          var bk = hex.slice(0, 2);
+          if (!cache[bk]) cache[bk] = fetch("scamlinks/" + bk + ".json", { credentials: "omit", signal: ctl ? ctl.signal : undefined })
+            .then(function (r) { return r.ok ? r.json() : []; });
+          return cache[bk].then(function (list) { return Array.isArray(list) && list.indexOf(hex) !== -1 ? h : null; });
+        });
+      })).then(function (r) { return r.filter(Boolean); });
+      var timer, limit = new Promise(function (res) { timer = setTimeout(function () { if (ctl) ctl.abort(); res(null); }, 1500); });
+      var done = function (r) { clearTimeout(timer); return r && r.length ? r : null; };
+      return Promise.race([work, limit]).then(done, function () { return done(null); });
+    } catch (e) { return none; }
   }
   $("checkBtn").addEventListener("click", check);
   $("clearBtn").addEventListener("click", function () { $("msg").value = ""; $("hdr").value = ""; $("inputError").textContent = ""; $("msg").focus(); });

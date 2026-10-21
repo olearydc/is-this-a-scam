@@ -16,6 +16,11 @@ git archive HEAD index.html sw.js manifest.webmanifest icon-180.png icon-192.png
 git show HEAD:tools/stats.py | $SSH $HOST "cat > $DIR/stats.py && chmod +x $DIR/stats.py && mkdir -p $DIR/counts && chmod 777 $DIR/counts \
   && (crontab -l 2>/dev/null | grep -v 'is-this-a-scam/stats.py'; echo '*/10 * * * * /usr/bin/python3 /home/deploy/$DIR/stats.py') | crontab - \
   && /usr/bin/python3 $DIR/stats.py"
+# Known scam websites: the script that builds site/scamlinks/ (generated on the server, never committed;
+# the copy step above only adds files to site/, so it is not deleted) and its 6-hour schedule.
+git show HEAD:tools/scamlinks.py | $SSH $HOST "cat > $DIR/scamlinks.py && chmod +x $DIR/scamlinks.py \
+  && (crontab -l 2>/dev/null | grep -v 'is-this-a-scam/scamlinks.py'; echo '17 */6 * * * /usr/bin/python3 /home/deploy/$DIR/scamlinks.py') | crontab - \
+  && /usr/bin/python3 $DIR/scamlinks.py"
 # nginx.conf is mounted as a single file, so overwrite it in place (a new file would not be seen).
 # The counter needs the counts folder mounted in the container; the old config is restored if the test fails,
 # so a bad config never reaches a restart.

@@ -38,7 +38,7 @@ Paste the message in, watch it being checked, and get a clear answer with plain 
 
 ## Privacy
 
-The check runs entirely in your web browser. Nothing you paste is sent anywhere. The page loads nothing from other websites: its fonts and the screenshot reader are part of this site. To show how much the tool is used, it counts each check and its result (scam, suspicious or no signs) on our own server. Only that count is kept: never the message, your address or anything about you. If you choose to copy the question into an AI tool such as ChatGPT, Copilot or Claude, that tool will see what you paste, so remove your name, address and account numbers first.
+The check runs entirely in your web browser. Nothing you paste is sent anywhere. The page loads nothing from other websites: its fonts and the screenshot reader are part of this site. To show how much the tool is used, it counts each check and its result (scam, suspicious or no signs) on our own server. Only that count is kept: never the message, your address or anything about you. When your message has a link, the page also checks the website against a list of known scam websites. It does this without telling us which website it checked: the page turns the website name into a scrambled code (a hash), then fetches only a small shared piece of the list chosen by the first two characters of that code, and compares the rest in your browser. The server never learns which website was checked. If the list can't be loaded within a second and a half, the check carries on without it. If you choose to copy the question into an AI tool such as ChatGPT, Copilot or Claude, that tool will see what you paste, so remove your name, address and account numbers first.
 
 ## Accessibility
 
@@ -54,6 +54,10 @@ Checked with the axe accessibility checker (no problems found), and every text c
 ## If you have been scammed
 
 Call your bank straight away, then report it at your local Garda station.
+
+## Sources
+
+Known scam websites come from [OpenPhish](https://openphish.com/) (free feed), [URLhaus](https://urlhaus.abuse.ch/) by abuse.ch (CC0) and [Phishing Army](https://phishing.army/) (CC BY-NC 4.0, non-commercial use with credit). `tools/scamlinks.py` rebuilds the list every 6 hours on the server, leaving out shared platforms such as Google, Microsoft and GitHub so genuine sites are not wrongly flagged.
 
 ## About
 
