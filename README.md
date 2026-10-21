@@ -25,7 +25,7 @@ Paste the message in, watch it being checked, and get a clear answer with plain 
 
 ## Using it on a phone
 
-- **Paste in one tap:** copy the message, open the page, and tap "Paste what I copied".
+- **Paste in one tap:** copy the message, open the page, and tap "Paste and check".
 - **Screenshots:** paste a screenshot straight into the box, or tap "Choose a screenshot" and pick the picture. The text is read on your phone; the picture is not uploaded anywhere.
 - **Home screen:** add it to your home screen and it opens like an app, even without a connection.
 - **Send the result to someone:** share it, email it, copy it, save it as a file, or print it, so a family member or friend can take a look too. Any links and email addresses in the shared copy are switched off, with the reason, so nobody opens them by mistake.

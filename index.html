@@ -369,12 +369,12 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
   <section class="panel" id="inputView" aria-labelledby="inputTitle">
     <h2 class="big-label" id="inputTitle" style="font-size:1.2rem;line-height:1.6;text-wrap:wrap"><label for="msg">Paste the email or text message here</label></h2>
     <div class="row" id="quickRow">
-      <button type="button" class="mid-btn" id="pasteBtn">Paste what I copied</button>
-      <button type="button" class="mid-btn" id="shotBtn">Choose a screenshot</button>
+      <button type="button" class="big-btn" id="pasteBtn">Paste and check</button>
+      <button type="button" class="mid-btn" id="shotBtn">Check a screenshot</button>
       <input type="file" id="shotFile" accept="image/*" hidden>
     </div>
     <p class="hint" id="quickMsg" role="status"></p>
-    <p class="hint">Remove your name, address and account numbers first. You can also paste a screenshot straight into the box.</p>
+    <p class="hint"><b>First copy the message:</b> press and hold it, then tap "Copy" (or "Copy text"). Then come back and tap "Paste and check".</p>
     <p class="trust">This page never asks for your bank details, codes or passwords. Nothing you paste leaves your phone.</p>
     <details class="hdr" id="copyHelp">
       <summary>How do I copy a message from my phone?</summary>
@@ -1808,8 +1808,8 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
     navigator.clipboard.readText().then(function (t) {
       if (!t || !t.trim()) { quick("There's nothing copied yet. Press and hold the message, tap Copy, then come back and tap Paste."); return; }
       $("msg").value = t;
-      quick("Pasted. Now press \"Check this message\".");
-      $("checkBtn").focus();
+      quick("Pasted. Checking it now.");
+      check();
     }, function () {
       quick("Your phone didn't let us paste. Press and hold inside the box below, then choose Paste.");
     });
@@ -1860,7 +1860,7 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
       text = String(text || "").replace(/[ \t]+/g, " ").replace(/\n{3,}/g, "\n\n").trim();
       if (text.length < 10) { quick("We couldn't find any words in that picture. Try a clearer screenshot, or copy and paste the text instead."); return; }
       $("msg").value = text;
-      quick("We read this text from your picture. Check it looks right, then press \"Check this message\".");
+      quick("We read this text from your picture. Checking it now."); check();
       $("msg").scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "center" });
     }).catch(function () {
       quick("We couldn't read that picture. Check you're online, try a clearer screenshot, or copy and paste the text instead.");
@@ -2283,10 +2283,10 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
 
   /* how to copy a message */
   var CSTEPS = {
-    iphone: ["Open the text message.", "Press and hold your finger on the message until a menu appears.", "Tap \"Copy\".", "Come back to this page and tap \"Paste what I copied\"."],
-    android: ["Open the text message.", "Press and hold your finger on the message until it is highlighted.", "Tap the Copy button at the top (it looks like two squares), or \"Copy text\" on Samsung phones, or tap the three dots and then \"Copy\".", "Come back to this page and tap \"Paste what I copied\"."],
-    whatsapp: ["Open the chat.", "Press and hold your finger on the message.", "iPhone: tap \"Copy\" in the menu. Android: tap the Copy button at the top (two squares).", "Come back to this page and tap \"Paste what I copied\".", "On Android, once this page is on your home screen, you can instead tap the three dots, then \"Share\", and choose \"Is This a Scam?\"."],
-    email: ["Open the email.", "Press and hold on the words until they are highlighted, then drag the handles to cover the whole email.", "Tap \"Copy\".", "Also copy the sender's address: tap their name at the top to see it.", "Come back to this page and tap \"Paste what I copied\"."],
+    iphone: ["Open the text message.", "Press and hold your finger on the message until a menu appears.", "Tap \"Copy\".", "Come back to this page and tap \"Paste and check\"."],
+    android: ["Open the text message.", "Press and hold your finger on the message until it is highlighted.", "Tap the Copy button at the top (it looks like two squares), or \"Copy text\" on Samsung phones, or tap the three dots and then \"Copy\".", "Come back to this page and tap \"Paste and check\"."],
+    whatsapp: ["Open the chat.", "Press and hold your finger on the message.", "iPhone: tap \"Copy\" in the menu. Android: tap the Copy button at the top (two squares).", "Come back to this page and tap \"Paste and check\".", "On Android, once this page is on your home screen, you can instead tap the three dots, then \"Share\", and choose \"Is This a Scam?\"."],
+    email: ["Open the email.", "Press and hold on the words until they are highlighted, then drag the handles to cover the whole email.", "Tap \"Copy\".", "Also copy the sender's address: tap their name at the top to see it.", "Come back to this page and tap \"Paste and check\"."],
     shot: ["iPhone with Face ID: press the side button and the volume up button together.", "iPhone with a Home button: press the Home button and the side button together.", "Android: press the power button (the side button on Samsung phones) and the volume down button together, then let go straight away.", "Come back to this page, tap \"Choose a screenshot\" and pick the picture. It is read on your phone and not uploaded."]
   };
   function showCopy(k) {
