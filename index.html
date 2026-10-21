@@ -713,7 +713,7 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
       re: /\b(suspended|suspension|will be (closed|blocked|locked|deleted|cancell?ed|terminated|disabled|frozen|returned to sender)|permanent(ly)? (clos\w*|delet\w*)|permanent closure|legal action|arrest(ed)?|warrant|court action|bailiffs?|fined|penalty|penalties|locked out|deactivat\w+|frozen)\b/,
       why: "Frightening you is a common trick to stop you thinking clearly." },
     { cat: "asks", title: "Asks for passwords or bank details", level: "high",
-      re: /\b(verify your (account|identity|details|information)|confirm your (account|identity|details|password|information)|(enter|confirm|verify|provide|send|give|tell|update|share|reply with|text us) (us |me )?(your )?(full )?(password|pin|card number|card details|(debit |credit |bank )?card|bank (details|account( number| details)?)|account (details|number)|iban)|(debit|credit) card (number|details)|log ?in details|sign ?in details|security code|(?<!(library|loyalty|clubcard|membership|leap|travel) )card (number|details)|cvv|update your (details|information|payment|billing)|log ?in to (restore|verify|confirm|unlock|reactivate|update)|(enter|entering|type|typing|provide|providing|confirm|confirming) (in )?your (online banking |internet banking |mobile banking |banking |bank |account )?(password|pin|passcode)|restore (your )?access)\b/,
+      re: /\b(verify your (account|identity|details|information)|confirm your (account|identity|details|password|information)|(enter|confirm|verify|provide|send|give|tell|update|share|reply with|text us) (us |me )?(your )?(full )?(password|pin|card number|card details|(debit |credit |bank )?card|bank (details|account( number| details)?)|account (details|number)|iban)|(debit|credit) card (number|details)|log ?in details|sign ?in details|security code|card (number|details)|cvv|update your (details|information|payment|billing)|log ?in to (restore|verify|confirm|unlock|reactivate|update)|(enter|entering|type|typing|provide|providing|confirm|confirming) (in )?your (online banking |internet banking |mobile banking |banking |bank |account )?(password|pin|passcode)|restore (your )?access)\b/,
       why: "Real banks and companies never ask for these by email or text." },
     { cat: "pressure", title: "Password expiry warning", level: "medium",
       re: /\b(passwords? (will )?(expire|expires|expired|expiring)|reset your password|password reset)\b/,
@@ -1169,6 +1169,8 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
         var before = norm.slice(Math.max(0, m.index - 90), m.index);
         if (r.cat !== "style" && (/\b(not|no one|nobody|won't|don't|doesn't|didn't)\b[^.!?\n]{0,28}$/i.test(before) ||
           /\bnever\b[^.!?\n]{0,80}$/i.test(before) || /\bif you (would like|'d like|wish|want|need) to\b[^.!?\n]{0,40}$/i.test(before))) continue;
+        /* a library or loyalty card number is not a bank card (no lookbehind in the pattern: older iPhones can't run it) */
+        if (/^card /i.test(m[0]) && /\b(library|loyalty|clubcard|membership|leap|travel) $/i.test(before)) continue;
         if (selfReset && (r.title === "Password expiry warning" || r.title === "Rushing you") &&
           /^(reset your password|password reset|within (an?|one|1|\d+) ?(hour|hours|hrs|minutes|mins))$/i.test(m[0])) continue;
         hits.push(m);

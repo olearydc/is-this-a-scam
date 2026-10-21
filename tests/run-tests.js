@@ -7,6 +7,8 @@
 var fs = require("fs"), path = require("path"), vm = require("vm");
 
 var html = fs.readFileSync(path.join(__dirname, "..", "index.html"), "utf8");
+// iPhones before iOS 16.4 can't parse a regex lookbehind, and one breaks the whole page there.
+if (/\(\?<[!=]/.test(html)) { console.log("FAIL  index.html uses a regex lookbehind (?<! or (?<= : older iPhones can't run the page"); process.exitCode = 1; }
 function between(a, b) {
   var i = html.indexOf(a), j = html.indexOf(b, i);
   if (i < 0 || j < 0) throw new Error("Could not find section: " + a);
