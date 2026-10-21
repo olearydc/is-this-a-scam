@@ -21,9 +21,14 @@ img{max-width:100%}
 </style>
 </head>
 <body>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Share+Tech+Mono&display=swap">
+<style>
+/* Fonts are served from this site (SIL Open Font Licence, see fonts/), so no visit reaches Google */
+@font-face { font-family: 'Atkinson Hyperlegible'; font-weight: 400; font-display: swap; src: url(fonts/atkinson-400-latin-ext.woff2) format('woff2'); unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF; }
+@font-face { font-family: 'Atkinson Hyperlegible'; font-weight: 400; font-display: swap; src: url(fonts/atkinson-400-latin.woff2) format('woff2'); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: 'Atkinson Hyperlegible'; font-weight: 700; font-display: swap; src: url(fonts/atkinson-700-latin-ext.woff2) format('woff2'); unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF; }
+@font-face { font-family: 'Atkinson Hyperlegible'; font-weight: 700; font-display: swap; src: url(fonts/atkinson-700-latin.woff2) format('woff2'); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: 'Share Tech Mono'; font-weight: 400; font-display: swap; src: url(fonts/sharetechmono-400-latin.woff2) format('woff2'); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+</style>
 <style>
 /* Layout: one calm column for older readers (paste, scan, answer, second opinion); the page darkens into code rain as warning signs are found. Single dynamic theme by design: light at rest, dark only when the score is high. */
 :root {
@@ -306,7 +311,6 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
       <span>Text size</span>
       <button type="button" class="small-btn" id="sizeDown" aria-label="Smaller text">A&minus;</button>
       <button type="button" class="small-btn" id="sizeUp" aria-label="Bigger text">A+</button>
-      <button type="button" class="small-btn" id="fxBtn" aria-pressed="false">Matrix effect: off</button>
       <button type="button" class="small-btn" id="resetBtn">Start again</button>
     </div>
   </header>
@@ -373,11 +377,6 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
         </ul>
       </div>
     </details>
-    <div class="how" aria-label="How it works">
-      <div><i>1</i><b>Paste</b><span>Copy the email or text and paste it in the box.</span></div>
-      <div><i>2</i><b>Watch it check</b><span>Each warning sign lights up as it is found.</span></div>
-      <div><i>3</i><b>Get a clear answer</b><span>Plus simple steps on what to do next.</span></div>
-    </div>
     <div class="examples">
       <p>New to this? <button type="button" class="linkish" id="quizStart">Practise spotting scams (8 quick questions)</button></p>
       <p id="refreshLine" hidden><span id="refreshLead"></span> <button type="button" class="linkish" id="refreshStart">Quick refresher (3 messages)</button></p>
@@ -589,7 +588,7 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
 
   </main>
 
-  <footer>This checker looks for common scam signs. It cannot catch every scam, and it can never prove a message is safe. Scams written with AI often have perfect spelling, so what a message asks you to do matters more than how well it is written. It only checks messages written in English. If you are unsure, ask someone you trust, or contact the company directly using a number you already have.</footer>
+  <footer><p><button type="button" class="linkish" id="fxBtn" aria-pressed="false">Matrix effect for demonstrations: off</button></p>This checker looks for common scam signs. It cannot catch every scam, and it can never prove a message is safe. Scams written with AI often have perfect spelling, so what a message asks you to do matters more than how well it is written. It only checks messages written in English. If you are unsure, ask someone you trust, or contact the company directly using a number you already have.</footer>
 </div>
 
 <script>
@@ -833,9 +832,9 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
     { cat: "files", title: "Risky attachment", level: "high",
       re: /\b[\w-]+\.(zip|exe|scr|iso|rar|vbs|bat|js|htm|html|img)\b/,
       why: "These file types can install viruses. Do not open them." },
-    { cat: "files", title: "Asks you to switch on macros", level: "high",
+    { cat: "files", title: "Asks you to switch on something in a document", level: "high",
       re: /\benable (macros|content|editing)\b/,
-      why: "Turning on macros or content in a document is how many viruses get in." },
+      why: "Pressing \"Enable content\" or \"Enable macros\" in a document lets hidden programs run. It is how many viruses get onto computers." },
     { cat: "files", title: "QR code", level: "medium",
       re: /\bqr ?codes?\b/,
       why: "A QR code can hide a fake website. Go to the company's website yourself instead." },
@@ -1120,7 +1119,7 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
       else if (!tracked && senderBase && !senderFree && WELLKNOWN.indexOf(lb) === -1 && !sameOwner(lb, senderBase) && !orgs.some(orgOk) && !newsletterLike && !(STATE.indexOf(senderBase) !== -1 && STATE.indexOf(lb) !== -1)) la("mm", { cat: "links", level: "high", title: "Link goes somewhere else", ranges: lr,
         why: "The email came from " + senderBase + ", but the link goes to a different website: " + lb + "." });
       if (!L.https) la("http", { cat: "links", level: "medium", title: "Link without the padlock", ranges: lr,
-        why: "The link starts with http:// instead of https://. Genuine login pages always use https." });
+        why: "The address starts with http:// instead of https:// (the padlock), so anything you type can be read on the way. Genuine login pages always use https." });
       if (BADTLD.indexOf(tldOf(L.host)) !== -1) la("tld" + lb, { cat: "links", level: "medium", title: "Risky website ending", ranges: lr,
         why: "Websites ending in ." + tldOf(L.host) + " are cheap and often used for scams." });
       if (FREEHOST.some(function (h) { return L.host === h || L.host.slice(-h.length - 1) === "." + h; })) la("fh" + lb, { cat: "links", level: "medium", title: "Free website service", ranges: lr,
@@ -1314,7 +1313,7 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
   if (reduce) fx = false;
   function setFx() {
     canvas.hidden = !fx;
-    $("fxBtn").textContent = "Matrix effect: " + (fx ? "on" : "off");
+    $("fxBtn").textContent = "Matrix effect for demonstrations: " + (fx ? "on" : "off");
     $("fxBtn").setAttribute("aria-pressed", fx ? "true" : "false");
   }
   $("fxBtn").addEventListener("click", function () {
