@@ -407,7 +407,8 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
         <p class="hint">It then opens like an app, with its own icon, so you don't need to remember the web address.</p>
         <button type="button" class="mid-btn" id="installBtn" hidden>Add to home screen</button>
         <ul class="steps">
-          <li><b>Android:</b> in Chrome, tap the three dots at the top right, then "Add to Home screen" or "Install app".</li>
+          <li><b>Android, in Chrome:</b> tap the three dots at the top right. <b>Scroll down the menu</b> to "Add to home screen" (it may say "Install app"), tap it, then tap "Install".</li>
+          <li><b>Samsung Internet:</b> tap the three lines at the bottom right, then "Add page to", then "Home screen".</li>
           <li><b>iPhone or iPad:</b> in Safari, tap the Share button (the square with an arrow), then "Add to Home Screen".</li>
           <li><b>Checking WhatsApp and text messages on Android:</b> once it's on your home screen, press and hold the message, tap Share, and choose "Is This a Scam?". It opens and checks the message straight away.</li>
         </ul>
@@ -2283,10 +2284,10 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
   /* how to copy a message */
   var CSTEPS = {
     iphone: ["Open the text message.", "Press and hold your finger on the message until a menu appears.", "Tap \"Copy\".", "Come back to this page and tap \"Paste what I copied\"."],
-    android: ["Open the text message.", "Press and hold your finger on the message until it is highlighted.", "Tap the Copy button at the top (it looks like two squares), or tap the three dots and then \"Copy\".", "Come back to this page and tap \"Paste what I copied\"."],
+    android: ["Open the text message.", "Press and hold your finger on the message until it is highlighted.", "Tap the Copy button at the top (it looks like two squares), or \"Copy text\" on Samsung phones, or tap the three dots and then \"Copy\".", "Come back to this page and tap \"Paste what I copied\"."],
     whatsapp: ["Open the chat.", "Press and hold your finger on the message.", "iPhone: tap \"Copy\" in the menu. Android: tap the Copy button at the top (two squares).", "Come back to this page and tap \"Paste what I copied\".", "On Android, once this page is on your home screen, you can instead tap the three dots, then \"Share\", and choose \"Is This a Scam?\"."],
     email: ["Open the email.", "Press and hold on the words until they are highlighted, then drag the handles to cover the whole email.", "Tap \"Copy\".", "Also copy the sender's address: tap their name at the top to see it.", "Come back to this page and tap \"Paste what I copied\"."],
-    shot: ["iPhone with Face ID: press the side button and the volume up button together.", "iPhone with a Home button: press the Home button and the side button together.", "Android: press the power button and the volume down button together.", "Come back to this page, tap \"Choose a screenshot\" and pick the picture. It is read on your phone and not uploaded."]
+    shot: ["iPhone with Face ID: press the side button and the volume up button together.", "iPhone with a Home button: press the Home button and the side button together.", "Android: press the power button (the side button on Samsung phones) and the volume down button together, then let go straight away.", "Come back to this page, tap \"Choose a screenshot\" and pick the picture. It is read on your phone and not uploaded."]
   };
   function showCopy(k) {
     $("copySteps").innerHTML = CSTEPS[k].map(function (x) { return "<li>" + esc(x) + "</li>"; }).join("");
