@@ -1332,6 +1332,15 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
         why: "Numbers swapped in for letters is a trick to copy a real website name." });
     });
 
+    /* a link to a website we don't recognise, plus "confirm / verify / pay now": the most common shape of a scam */
+    var strange = links.filter(function (L) {
+      var b = baseDomain(L.host);
+      return WELLKNOWN.indexOf(b) === -1 && STATE.indexOf(b) === -1 && !(senderBase && sameOwner(b, senderBase)) && !ORGS.some(function (o) { return ownedBy(o, b); });
+    });
+    if (strange.length && !newsletterLike && /\b(confirm|verify|update|pay|claim|activate|unlock|reactivate|validate|reschedule|release)\b/i.test(norm))
+      addOnce("actlink", { cat: "links", level: "medium", title: "Asks you to act through a link", ranges: [[strange[0].start, strange[0].end]],
+        why: "It wants you to confirm, pay or update something through a link to a website we don't recognise. Go to the company's own app or website yourself instead." });
+
     /* ---- reply-to address in the body ---- */
     emails.forEach(function (E) {
       if (E.addr === s.addr) return;
@@ -1778,17 +1787,33 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
   var TODO_CALM = "<li>If it asks for money, a code or your details, check first: contact the company or person on a number you already have.</li>" +
     "<li>If something still feels wrong, trust that feeling and ask someone you trust.</li>" +
     "<li>Never share a code, password or PIN, even with someone who says they are from your bank or the Gardaí (the police).</li>";
+  /* safety net: what a message asks the person to do, so a missed scam still gets safe advice */
+  var ACTIONS = [
+    [/\bhttps?:\/\/|\bwww\.|\b[a-z0-9-]+\.(com|ie|net|org|info|top|xyz|site|online|live|shop|co|uk|eu|link|click|app)\b/i, "has a link"],
+    [/\b(pay|payment|fee|transfer|send (me |us )?money|bank details|card (number|details)|iban|gift ?cards?|crypto)\b/i, "mentions a payment or bank details"],
+    [/\b(code|pin|password|passcode)\b/i, "mentions a code or password"],
+    [/\b(reply|text back|ring|call|phone)\b/i, "asks you to reply or ring"]
+  ];
+  function asksFor(text) {
+    return ACTIONS.filter(function (a) { return a[0].test(text); }).map(function (a) { return a[1]; }).slice(0, 2);
+  }
   function showVerdict(score) {
-    var t, s, cls;
+    var t, s, cls, asks = [];
     if (score >= 50) { t = "This is very likely a scam"; s = "We found several warning signs. Do not click any links, reply, or send money or details."; cls = "high"; }
     else if (score >= 20) { t = "This looks suspicious"; s = "We found some warning signs. Do not click links. Check with the company or person another way, using a number you already have."; cls = "mid"; }
-    else { t = "No obvious warning signs found"; s = "That does not prove it is safe. If it asks for money, codes or personal details, check with the company using a number you already have."; cls = ""; }
+    else {
+      t = "No obvious warning signs found"; cls = "";
+      asks = asksFor($("msg").value);
+      s = asks.length ? "But it " + asks.join(" and ") + ". Even if it looks real, don't use the link or number in it. Go to the company's own app or website, or ring a number you already have."
+        : "That does not prove it is safe. If it asks for money, codes or personal details, check with the company using a number you already have.";
+    }
     $("todo").innerHTML = cls ? TODO_WARN : TODO_CALM;
     resetHappened();
     $("happened").hidden = !cls;
     $("happenedLinkWrap").hidden = !!cls;
-    $("mainAction").hidden = !cls;
-    $("mainAction").textContent = cls === "high" ? "Don't click, reply or pay. Delete it, or keep it to report." : cls ? "Don't click or reply. Check with the company on a number you already have." : "";
+    $("mainAction").hidden = !cls && !asks.length;
+    $("mainAction").textContent = cls === "high" ? "Don't click, reply or pay. Delete it, or keep it to report." : cls ? "Don't click or reply. Check with the company on a number you already have." :
+      asks.length ? "Check it yourself first: open the company's own app or website, not the message." : "";
     var icons = {
       high: '<path fill="currentColor" d="M12 2 1 21h22L12 2zm0 5.5 7.5 12.5h-15L12 7.5zM11 10v5h2v-5h-2zm0 6v2h2v-2h-2z"/>',
       mid: '<path fill="currentColor" d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 2a8 8 0 1 1 0 16 8 8 0 0 1 0-16zm-1 3v7h2V7h-2zm0 9v2h2v-2h-2z"/>',
