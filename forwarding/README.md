@@ -69,7 +69,7 @@ Run `node forwarding/try-reply.js "<message>"` to see the real output. Example f
 
 If you have already paid or given details, ring your bank straight away, then report it to your local Garda station.
 
-We never message first and we never ask for money or details. More help: https://olearydc.github.io/is-this-a-scam/
+We never message first and we never ask for money or details. More help: https://isthisascam.selfdestruct.online/
 ```
 
 ## Before going live (checklist)

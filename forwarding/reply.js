@@ -1,7 +1,7 @@
 /* Turns a check result into a short, plain WhatsApp reply.
    Rules: never say "safe", never repeat the message back, never send a working link
    except our own website, keep it short enough to read on a phone. */
-var SITE = process.env.SITE_URL || "https://olearydc.github.io/is-this-a-scam/";
+var SITE = process.env.SITE_URL || "https://isthisascam.selfdestruct.online/";
 
 /* "anpost-fee.top/pay" becomes "anpost-fee[.]top/pay" so WhatsApp can't make it tappable */
 function defuse(s) {

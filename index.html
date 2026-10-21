@@ -442,7 +442,7 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
           <li>Your bank: the number on the back of your card</li>
         </ul>
         <p><b>Just want to check a website address?</b> Try <a href="https://fraudsmart.scamchecker.ie/" target="_blank" rel="noopener">ScamChecker</a> from FraudSMART, run by Irish banks.</p>
-        <p class="src">Advice from <a href="https://www.garda.ie/en/crime/fraud/" target="_blank" rel="noopener">An Garda Síochána</a>, the <a href="https://www.ccpc.ie/consumers/money/scams/scams-what-to-watch-out-for/" target="_blank" rel="noopener">CCPC</a> and <a href="https://www.gov.ie/en/department-of-public-expenditure-infrastructure-public-service-reform-and-digitalisation/publications/alert-on-scam-phone-calls-and-text-messages/" target="_blank" rel="noopener">gov.ie</a>.</p>
+        <p class="src">Advice from <a href="https://www.garda.ie/en/crime/fraud/" target="_blank" rel="noopener">An Garda Síochána</a>, the <a href="https://www.ccpc.ie/manage-your-money/scams-and-frauds/protecting-yourself-from-scams" target="_blank" rel="noopener">CCPC</a> and <a href="https://www.gov.ie/en/department-of-public-expenditure-infrastructure-public-service-reform-and-digitalisation/publications/alert-on-scam-phone-calls-and-text-messages/" target="_blank" rel="noopener">gov.ie</a>.</p>
       </div>
     </details>
     <div class="row">
@@ -780,7 +780,7 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
       why: "Claims that someone has hacked or filmed you are almost always a bluff to scare you into paying." },
     { cat: "pretend", title: "Parcel problem", level: "medium",
       re: /\b(could not be delivered|couldn'?t be delivered|unable to deliver|delivery (failed|attempt|was unsuccessful)|failed delivery|(parcel|package|shipment)( from \w+)? (is )?(on hold|held|waiting|pending|stuck)|held at (the )?(depot|customs)|(held|stuck|detained) (at|in) [^.\n]{0,25}(airport|customs|depot|warehouse|sorting)|address (on (the|your) (label|parcel|package) )?(is |was )?(incomplete|unclear|invalid|incorrect|missing)|(we have|we've got|we are holding) (a |your )?(parcel|package) for you|reschedule (your )?delivery|missed (your )?(delivery|parcel))\b/,
-      why: "Fake delivery and customs-fee messages are the most common scam in Ireland. An Post never texts a payment link, and Revenue does not text customs charges. Check on the courier's own website or app instead." },
+      why: "Fake delivery and customs-fee messages are one of the most common scams in Ireland. An Post never texts a payment link, and Revenue does not text customs charges. Check on the courier's own website or app instead." },
     { cat: "offer", title: "Free money out of the blue", level: function (n, words) {
         /* "no jackpot winner" in a club lotto result is not a prize scam */
         var strong = words.filter(function (w) { return !/^(jackpot|winner|lottery|prize|donation|grant|awarded|congratulations)$/.test(w); });
@@ -1718,7 +1718,7 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
   }
 
   /* ---------- send the result to someone ---------- */
-  var SITE = "https://olearydc.github.io/is-this-a-scam/";
+  var SITE = "https://isthisascam.selfdestruct.online/";
   function summary(maxMsg, maxFind, short) {
     if (!current) return "";
     var lines = [], d = new Date();
