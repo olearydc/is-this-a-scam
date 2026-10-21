@@ -31,6 +31,8 @@ vm.runInContext(code + "\nthis.analyse = analyse; this.inlineHeaderRegion = inli
     });
   }
   if (!has(box.analyse(msg, null, ["bad-example.top"])) || has(box.analyse(msg, null))) { console.log("FAIL  known scam website check"); process.exit(1); }
+  // a company's own domain is never called a scam site, even if a list wrongly includes it
+  if (has(box.analyse("Your tax refund: see https://www.revenue.ie/en/home.aspx", null, ["revenue.ie"]))) { console.log("FAIL  official domain flagged as known scam"); process.exit(1); }
 })();
 
 var file = process.argv.slice(2).filter(function (a) { return a[0] !== "-"; })[0];

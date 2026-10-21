@@ -1284,7 +1284,9 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
       if (/^maps\.(app\.goo\.gl|google\.[a-z.]+)$/.test(L.host) || (/^(www\.)?(google\.[a-z.]+|goo\.gl)$/.test(L.host) && /\/maps\b/.test(L.raw))) return;
       var lb = baseDomain(L.host), lr = [[L.start, L.end]], lab = lb.split(".")[0];
       var la = function (k, o) { o.dest = lb; addOnce(k, o); };
-      if (knownBad && Array.prototype.indexOf.call(Array.from(knownBad), L.host.replace(/^www\./, "")) !== -1) la("kb" + L.host, { cat: "links", level: "high", title: "Known scam website", ranges: lr,
+      /* a company's own full domain is never called a scam site, even if a public list gets it wrong */
+      var official = ORGS.some(function (o) { return o.k.some(function (k) { return k.indexOf(".") !== -1 && (lb === k || lb.slice(-k.length - 1) === "." + k); }); });
+      if (knownBad && !official && Array.prototype.indexOf.call(Array.from(knownBad), L.host.replace(/^www\./, "")) !== -1) la("kb" + L.host, { cat: "links", level: "high", title: "Known scam website", ranges: lr,
         why: "This website is on public lists of scam and phishing sites. Don't open it." });
       var tracked = TRACKERS.some(function (t) { return L.host === t || L.host.slice(-t.length - 1) === "." + t; });
       var orgOk = function (o) { return ownedBy(o, lb); };
