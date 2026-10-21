@@ -78,6 +78,10 @@ The rules live in the `RULES` list and the `analyse()` function in `index.html`.
 - Paste in one tap, paste or drop a screenshot (text read on the device)
 - Add to home screen, works offline, Android "Share to" from WhatsApp and Messages
 - Send the result to someone: share, email, copy, save, print. Links and addresses in the shared copy are switched off, with the reason.
+- "Someone is on the phone to you" page: hang up, wait or use another phone, ring back on a number you find yourself, the never-do list (Garda advice)
+- "What they're probably after" line on warning results (`WANTS` list in `index.html`)
+- A trusted helper saved on the phone only (`itas-helper` in local storage): one tap to WhatsApp, text or ring them
+- "How do I copy a message from my phone?" help for iPhone, Android, WhatsApp, email and screenshots
 - Second opinion from an AI: one click inside Claude, copy-and-paste for ChatGPT, Copilot or Claude elsewhere
 - Practise quiz: 8 random questions per round (5 scams, 3 genuine) from a bank of 106 made-up messages, tagged by type, topic and difficulty, remembering which have been seen
 

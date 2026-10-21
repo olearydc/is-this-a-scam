@@ -15,6 +15,13 @@ Paste the message in, watch it being checked, and get a clear answer with plain 
 - **An email's hidden details (optional):** paste them in and it checks whether the email really came from the company it names, with simple steps for Gmail and Outlook
 - **Common Irish scams:** parcel and customs fees, M50 toll texts, fake Gardaí, "Hi Mum" texts
 
+## Help beyond checking a message
+
+- **Someone on the phone to you right now?** Tap "Yes, help me now" for a short checklist: hang up, ring back on a number you find yourself, and the things never to do for anyone.
+- **What they're probably after:** each warning result says in one line what the scammer wants, for example "a code sent to your phone".
+- **A helper you trust:** save a family member's name and number once (kept on your phone only), then send them a result on WhatsApp or by text in one tap.
+- **How do I copy a message?** Step-by-step help for iPhone, Android, WhatsApp, email and screenshots.
+
 ## Using it on a phone
 
 - **Paste in one tap:** copy the message, open the page, and tap "Paste what I copied".

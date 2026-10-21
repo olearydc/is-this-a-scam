@@ -3,7 +3,7 @@
    A message shared from another app arrives in the address (?text=...).
    Those requests are answered from the saved copy and never go online,
    and no address with a message in it is ever saved. */
-var CACHE = "itas-v12";
+var CACHE = "itas-v13";
 var FILES = ["./", "./index.html", "./manifest.webmanifest", "./icon-192.png", "./icon-512.png", "./icon-180.png"];
 
 self.addEventListener("install", function (e) {

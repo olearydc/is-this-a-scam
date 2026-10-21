@@ -253,6 +253,19 @@ body.alarm-mid .verdict-title { color: #7a5200; }
 .pass-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 190px), 1fr)); gap: 10px; }
 .pass-grid > * { box-sizing: border-box; width: 100%; height: 54px; min-height: 54px; margin: 0; padding: 0 14px; font-size: 1rem; line-height: 1.2; text-align: center; }
 .pass-grid > [hidden] { display: none !important; }
+.call-box { display: grid; gap: 10px; justify-items: start; border-left: 5px solid var(--accent); background: var(--hl-low); border-radius: 8px; padding: 14px 16px; }
+.call-box p { max-width: 62ch; }
+.call-lead { font-size: 1.15rem; max-width: 62ch; }
+.call-steps { margin: 0; padding-left: 1.3em; display: grid; gap: 12px; font-size: 1.1rem; max-width: 62ch; }
+.call-steps li::marker { color: var(--accent); font-weight: 700; }
+#callView { display: grid; gap: 16px; }
+#callView[hidden] { display: none; }
+#callHelper { justify-self: start; }
+.want { font-size: 1.02rem; max-width: 62ch; }
+.helper-form { display: grid; gap: 8px; max-width: 420px; }
+.helper-form label { font-weight: 700; }
+.helper-form input { font: inherit; font-size: 1rem; min-height: 48px; box-sizing: border-box; padding: 8px 12px; color: var(--fg); background: var(--panel); border: 2px solid var(--panel-line); border-radius: 8px; }
+.helper-form input:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
 .check-line { display: flex; align-items: center; gap: 10px; font-size: 0.98rem; cursor: pointer; }
 .check-line input { width: 1.3rem; height: 1.3rem; accent-color: var(--accent); }
 #printArea { display: none; }
@@ -305,6 +318,20 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
     <p class="hint" id="quickMsg" role="status"></p>
     <p class="hint">Before you paste, remove your name, address, phone number and any account numbers. This page checks the message on your own device. Nothing is sent anywhere unless you choose to ask Claude.</p>
     <textarea id="msg" spellcheck="false" placeholder="Copy the whole message and paste it here, or paste a screenshot of it. For emails, include the line that says who it is from."></textarea>
+    <details class="hdr" id="copyHelp">
+      <summary>How do I copy a message from my phone?</summary>
+      <div class="other">
+        <p class="hint">Be careful not to tap any links in the message while you do this. Choose where the message is:</p>
+        <div class="row seg" id="copyTabs">
+          <button type="button" data-c="iphone" aria-pressed="true">Text on iPhone</button>
+          <button type="button" data-c="android" aria-pressed="false">Text on Android</button>
+          <button type="button" data-c="whatsapp" aria-pressed="false">WhatsApp</button>
+          <button type="button" data-c="email" aria-pressed="false">Email</button>
+          <button type="button" data-c="shot" aria-pressed="false">Take a screenshot</button>
+        </div>
+        <ol class="steps" id="copySteps"></ol>
+      </div>
+    </details>
     <details class="hdr" id="hdrDetails">
       <summary>Optional: also check the email's hidden details</summary>
       <div class="other">
@@ -324,6 +351,10 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
       <button type="button" class="big-btn" id="checkBtn">Check this message</button>
       <button type="button" id="clearBtn">Clear</button>
       <span class="error" id="inputError" role="alert"></span>
+    </div>
+    <div class="call-box">
+      <p><b>Is someone on the phone to you right now,</b> asking for money, a code or your details?</p>
+      <button type="button" class="mid-btn" id="callStart">Yes, help me now</button>
     </div>
     <details id="installHelp" hidden>
       <summary>Put this on your phone's home screen</summary>
@@ -373,6 +404,7 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
       <h2 class="verdict-title" id="verdictTitle" tabindex="-1">Our answer</h2>
     </div>
     <p class="verdict-sub" id="verdictSub"></p>
+    <p class="want" id="want" hidden><b>What they're probably after:</b> <span id="wantText"></span></p>
     <div class="meter" aria-hidden="true">
       <div class="meter-track"><div class="meter-fill" id="meterFill"></div></div>
       <div class="meter-labels"><span>Few signs</span><span>Some signs</span><span>Many signs</span></div>
@@ -407,6 +439,24 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
       <button type="button" class="mid-btn" id="sendToggle" aria-expanded="false" aria-controls="sendPanel">Send the result to someone</button>
       <div id="sendPanel" class="passon-panel" hidden>
       <p class="hint">If you're not sure, ask a family member or friend to have a look too.</p>
+      <div id="helperReady" class="pass-grid" hidden>
+        <a class="btn" id="helperWa" href="#" target="_blank" rel="noopener">Send to <span class="hname"></span> on WhatsApp</a>
+        <a class="btn" id="helperSms" href="#">Text it to <span class="hname"></span></a>
+      </div>
+      <button type="button" class="linkish" id="helperSetup">Set up a helper: someone you trust, so you can send them a result in one tap</button>
+      <form id="helperForm" class="helper-form" hidden>
+        <label for="helperName">Their name</label>
+        <input id="helperName" autocomplete="off" maxlength="40">
+        <label for="helperNum">Their mobile number</label>
+        <input id="helperNum" type="tel" autocomplete="off" maxlength="20" placeholder="For example 087 123 4567">
+        <p class="hint">Saved on this phone only. It is never sent anywhere.</p>
+        <div class="row">
+          <button type="submit" class="mid-btn">Save</button>
+          <button type="button" id="helperCancel">Cancel</button>
+          <button type="button" id="helperRemove" hidden>Remove helper</button>
+        </div>
+        <p class="error" id="helperError" role="alert"></p>
+      </form>
       <label class="check-line"><input type="checkbox" id="incMsg" checked> Include the message itself</label>
       <div class="pass-grid">
         <button type="button" id="shareBtn">Share</button>
@@ -417,6 +467,33 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
       </div>
       <p class="hint" id="passMsg" role="status"></p>
       </div>
+    </div>
+  </section>
+
+  <section class="panel" id="callView" hidden>
+    <h2 id="callTitle" tabindex="-1">Someone is on the phone to you</h2>
+    <p class="call-lead">If they are asking for money, a code, your PIN or to install an app, <b>it is very likely a scam.</b></p>
+    <ol class="call-steps">
+      <li><b>Hang up now.</b> It's not rude. A real bank, Garda or company will understand.</li>
+      <li><b>Wait 5 minutes, or use a different phone.</b> Some scammers stay on the line and pretend to be the bank when you ring back.</li>
+      <li><b>Ring back on a number you find yourself:</b> on the back of your bank card, on a bill, or on the official website. Never the number they gave you.</li>
+      <li><b>Talk to someone you trust</b> before you do anything.</li>
+    </ol>
+    <a class="btn big-btn" id="callHelper" href="#" hidden>Ring my helper, <span class="hname"></span></a>
+    <h3>Never do these for anyone who contacts you</h3>
+    <ul class="todo">
+      <li>Read out or pass on a code sent to your phone.</li>
+      <li>Give your PIN or password.</li>
+      <li>Move your money to a "safe account".</li>
+      <li>Hand cash, cards or your cheque book to someone who calls to your door.</li>
+      <li>Pay with gift cards, vouchers or cryptocurrency.</li>
+      <li>Install an app they tell you to, or let them "fix" your computer.</li>
+    </ul>
+    <p><b>Banks, the Gardaí and government departments will never ask you to do any of these.</b></p>
+    <p><b>If you have already given details or money:</b> ring your bank straight away on the number on your card, then report it at your local Garda station. It's not your fault. These people are very good at what they do.</p>
+    <p class="src">Advice from <a href="https://www.garda.ie/en/crime/fraud/" target="_blank" rel="noopener">An Garda Síochána</a>.</p>
+    <div class="row">
+      <button type="button" class="big-btn" id="callBack">Back</button>
     </div>
   </section>
 
@@ -624,7 +701,7 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
       re: /\b(full name|residential address|home address|date of birth|nationality|occupation|marital status|passport|pps number|copy of your id|photo id|driving licen[cs]e|mother'?s maiden name|eircode|revenue myaccount|phone number)\b/,
       why: "Personal details can be used to steal your identity or open accounts in your name." },
     { cat: "asks", title: "Asks for money in an unusual way", level: "high",
-      re: /\b(gift ?cards?|itunes cards?|google play cards?|steam cards?|amazon vouchers?|codes on the back|wire transfer|western union|moneygram|bitcoin|crypto(currency)?|usdt|transfer the money|send (me |us )?(the )?money|pay (a|the) (small )?(fee|charge)|(release|processing|handling|customs|delivery|redelivery|admin|clearing|activation|insurance|shipping|registration|verification) (fee|charge|payment)|security deposit|refundable deposit|training fee|starter (fee|kit)|equipment fee|courier (and training )?fee|by bank transfer|(transfer|send) [\u20ac$\u00a3]\d[\d,.]*|friend's account|(send|transfer|pay)\b[^.\n]{0,30}\b(by|via|with|on|through) (revolut|apple pay|google pay|paysafe\w*))\b/,
+      re: /\b(gift ?cards?|itunes cards?|google play cards?|steam cards?|amazon vouchers?|codes on the back|wire transfer|western union|moneygram|bitcoin|crypto(currency)?|usdt|transfer the money|send (me |us )?(the )?money|pay (a|the) (small )?(fee|charge)|(release|processing|handling|customs|delivery|redelivery|admin|clearing|activation|insurance|shipping|registration|verification) (fee|charge|payment)|security deposit|refundable deposit|training fee|starter (fee|kit)|equipment fee|courier (and training )?fee|by bank transfer|(transfer|send) (me |us )?([\u20ac$\u00a3]\s?\d[\d,.]*|\d[\d,.]* ?(euros?|eur|quid|pounds?|grand))|friend's account|(send|transfer|pay)\b[^.\n]{0,30}\b(by|via|with|on|through) (revolut|apple pay|google pay|paysafe\w*))\b/,
       why: "Gift cards, crypto and small \"fees\" are favourite scam payments, because they are hard to trace or get back." },
     { cat: "asks", title: "Asks you to keep it secret", level: "medium",
       re: /\b(keep (this|it) (between us|to yourself|confidential|private|quiet)|don'?t tell|do not tell|do not discuss|don'?t discuss|stop all communication|it'?s a surprise|don'?t call|do not call|can'?t talk|cannot talk|can'?t take calls)\b/,
@@ -1340,6 +1417,8 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
     regroup();
     if (!current.warn) { $("foundEmpty").hidden = false; $("foundEmpty").textContent = "No warning signs found in the text."; }
     showVerdict(current.a.score);
+    var want = current.a.score >= 20 ? wantFor(current.a.findings) : "";
+    $("wantText").textContent = want; $("want").hidden = !want;
     if (current.a.score >= 50) burstBanner(); else $("vband").hidden = true;
     if (!fx) {
       var sc = current.a.score, me = current;
@@ -1353,6 +1432,35 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
     renderPrompt();
     $("resultView").scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
     try { $("verdictTitle").focus({ preventScroll: true }); } catch (e) {}
+  }
+  /* one plain sentence on what the scammer wants, from the strongest kind of sign found */
+  var WANTS = [
+    [/pass on a code|Asks for a code|enter a code/, "a code sent to your phone. With it, they can get into your bank or WhatsApp account."],
+    [/collect the money/, "cash or cards handed over at your door."],
+    [/Safe account/, "you to move your money into an account they control."],
+    [/control your device|Fake tech support/, "control of your computer or phone, so they can get into your bank."],
+    [/change bank details|Bank account number/, "you to pay a real bill into their bank account instead."],
+    [/Blackmail/, "money, using a frightening threat. Don't pay and don't reply."],
+    [/passwords or bank details|Fake .*(website|address)|Disguised link|Look-alike|Password expiry|account is locked|Unusual activity|Fake shared document/, "your login or card details, through a fake website or form."],
+    [/investment|Unrealistic returns/i, "money you \"invest\" with them. You would never get it back."],
+    [/Call to cancel|Asks you to call a number/, "you to ring them, so they can talk you into paying or giving details."],
+    [/Emergency story|Messaging from a new number|Family-style/, "money, by pretending to be someone you love who is in trouble."],
+    [/romance/i, "your trust first, and then your money."],
+    [/Easy job offer/, "a \"fee\" for a job that doesn't exist, or the use of your bank account."],
+    [/Free money|Refund offer|huge sum|Loan or funding/, "a \"fee\" to release money that doesn't exist, or your bank details."],
+    [/Parcel problem|Toll or fine|QR code|money in an unusual way|heartstrings|Unexpected order/, "a payment, through a fake website or in a way that is hard to get back."],
+    [/personal details/, "your personal details, to steal your identity."],
+    [/link/i, "you to tap the link, which may lead to a fake website."]
+  ];
+  function wantFor(findings) {
+    var titles = [];
+    findings.forEach(function (f) {
+      if (f.level === "info") return;
+      titles.push(f.title);
+      (f.reasons || []).forEach(function (r) { titles.push(r.title); });   // signs inside a "Risky link" card
+    });
+    for (var i = 0; i < WANTS.length; i++) if (titles.some(function (t) { return WANTS[i][0].test(t); })) return WANTS[i][1];
+    return "";
   }
   function showVerdict(score) {
     var t, s, cls;
@@ -1413,7 +1521,7 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
   $("againBtn").addEventListener("click", function () {
     cancelAnimationFrame(rafScan); stopSpeaking(); if (aiCtl) aiCtl.abort();
     current = null;
-    $("scanView").hidden = true; $("resultView").hidden = true; $("aiView").hidden = true; $("vband").hidden = true; $("quizView").hidden = true;
+    $("scanView").hidden = true; $("resultView").hidden = true; $("aiView").hidden = true; $("vband").hidden = true; $("quizView").hidden = true; $("callView").hidden = true;
     $("inputView").hidden = false;
     document.body.classList.remove("alarm-high", "alarm-mid", "alarm-none");
     applyTheme(0);
@@ -1537,6 +1645,7 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
     lines.push("");
     lines.push("Answer: " + $("verdictTitle").textContent);
     lines.push($("verdictSub").textContent);
+    if (!$("want").hidden) lines.push("What they're probably after: " + $("wantText").textContent);
     var warn = current.order.map(function (fi) { return current.a.findings[fi]; }).filter(function (f) { return f.level !== "info"; });
     if (warn.length) {
       lines.push(""); lines.push("What we found:");
@@ -1755,7 +1864,7 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
   }
   function showQuiz() {
     cancelAnimationFrame(rafScan); current = null;
-    $("inputView").hidden = true; $("scanView").hidden = true; $("resultView").hidden = true; $("aiView").hidden = true;
+    $("inputView").hidden = true; $("scanView").hidden = true; $("resultView").hidden = true; $("aiView").hidden = true; $("callView").hidden = true;
     $("quizView").hidden = false;
     document.body.classList.remove("alarm-high", "alarm-mid", "alarm-none");
     applyTheme(0);
@@ -1824,6 +1933,89 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
   $("hdrTabs").addEventListener("click", function (ev) { var b = ev.target.closest("button"); if (b) showSteps(b.dataset.h); });
   showSteps("gmail");
 
+  /* how to copy a message */
+  var CSTEPS = {
+    iphone: ["Open the text message.", "Press and hold your finger on the message until a menu appears.", "Tap \"Copy\".", "Come back to this page and tap \"Paste what I copied\"."],
+    android: ["Open the text message.", "Press and hold your finger on the message until it is highlighted.", "Tap the Copy button at the top (it looks like two squares), or tap the three dots and then \"Copy\".", "Come back to this page and tap \"Paste what I copied\"."],
+    whatsapp: ["Open the chat.", "Press and hold your finger on the message.", "iPhone: tap \"Copy\" in the menu. Android: tap the Copy button at the top (two squares).", "Come back to this page and tap \"Paste what I copied\".", "On Android, once this page is on your home screen, you can instead tap the three dots, then \"Share\", and choose \"Is This a Scam?\"."],
+    email: ["Open the email.", "Press and hold on the words until they are highlighted, then drag the handles to cover the whole email.", "Tap \"Copy\".", "Also copy the sender's address: tap their name at the top to see it.", "Come back to this page and tap \"Paste what I copied\"."],
+    shot: ["iPhone with Face ID: press the side button and the volume up button together.", "iPhone with a Home button: press the Home button and the side button together.", "Android: press the power button and the volume down button together.", "Come back to this page, tap \"Choose a screenshot\" and pick the picture. It is read on your phone and not uploaded."]
+  };
+  function showCopy(k) {
+    $("copySteps").innerHTML = CSTEPS[k].map(function (x) { return "<li>" + esc(x) + "</li>"; }).join("");
+    Array.prototype.forEach.call($("copyTabs").querySelectorAll("button"), function (b) { b.setAttribute("aria-pressed", b.dataset.c === k ? "true" : "false"); });
+  }
+  $("copyTabs").addEventListener("click", function (ev) { var b = ev.target.closest("button"); if (b) showCopy(b.dataset.c); });
+  showCopy(/android/i.test(navigator.userAgent) ? "android" : "iphone");
+
+  /* someone is on the phone now */
+  $("callStart").addEventListener("click", function () {
+    $("inputView").hidden = true; $("callView").hidden = false;
+    updateHelper();
+    window.scrollTo({ top: 0 });
+    try { $("callTitle").focus({ preventScroll: true }); } catch (e) {}
+  });
+  $("callBack").addEventListener("click", function () {
+    $("callView").hidden = true; $("inputView").hidden = false;
+    window.scrollTo({ top: 0 });
+    $("callStart").focus();
+  });
+
+  /* a trusted helper, saved on this phone only */
+  function getHelper() {
+    try { var h = JSON.parse(localStorage.getItem("itas-helper") || "null"); return h && h.name && h.num ? h : null; } catch (e) { return null; }
+  }
+  function intlNum(raw) {
+    var n = String(raw).replace(/[^\d+]/g, "");
+    if (n.indexOf("00") === 0) n = "+" + n.slice(2);
+    else if (n.charAt(0) === "0") n = "+353" + n.slice(1);
+    else if (n.charAt(0) !== "+") n = "+" + n;
+    return /^\+\d{9,15}$/.test(n) ? n : "";
+  }
+  function updateHelper() {
+    var h = getHelper();
+    Array.prototype.forEach.call(document.querySelectorAll(".hname"), function (s) { s.textContent = h ? h.name : ""; });
+    $("helperReady").hidden = !h || inClaude;
+    $("helperSetup").hidden = inClaude || !$("helperForm").hidden;
+    $("helperSetup").textContent = h ? "Change my helper" : "Set up a helper: someone you trust, so you can send them a result in one tap";
+    $("callHelper").hidden = !h;
+    if (h) $("callHelper").href = "tel:" + h.num;
+  }
+  function helperText() {
+    return "Hi " + getHelper().name + ", can you check this message for me?\n\n" + summary(400, 3, true);
+  }
+  $("helperWa").addEventListener("click", function () {
+    var h = getHelper(); if (!h) return;
+    $("helperWa").href = "https://wa.me/" + h.num.slice(1) + "?text=" + encodeURIComponent(helperText());
+  });
+  $("helperSms").addEventListener("click", function () {
+    var h = getHelper(); if (!h) return;
+    $("helperSms").href = "sms:" + h.num + "?&body=" + encodeURIComponent(helperText());
+  });
+  $("helperSetup").addEventListener("click", function () {
+    var h = getHelper();
+    $("helperName").value = h ? h.name : ""; $("helperNum").value = h ? h.num : "";
+    $("helperError").textContent = ""; $("helperRemove").hidden = !h;
+    $("helperForm").hidden = false; $("helperSetup").hidden = true;
+    $("helperName").focus();
+  });
+  function closeHelperForm() { $("helperForm").hidden = true; updateHelper(); $("helperSetup").focus(); }
+  $("helperCancel").addEventListener("click", closeHelperForm);
+  $("helperRemove").addEventListener("click", function () {
+    try { localStorage.removeItem("itas-helper"); } catch (e) {}
+    closeHelperForm();
+  });
+  $("helperForm").addEventListener("submit", function (ev) {
+    ev.preventDefault();
+    var name = $("helperName").value.trim(), num = intlNum($("helperNum").value);
+    if (!name) { $("helperError").textContent = "Please type their name."; $("helperName").focus(); return; }
+    if (!num) { $("helperError").textContent = "Please check the mobile number, for example 087 123 4567."; $("helperNum").focus(); return; }
+    try { localStorage.setItem("itas-helper", JSON.stringify({ name: name, num: num })); }
+    catch (e) { $("helperError").textContent = "This browser won't let us save it. You can still use the other buttons."; return; }
+    closeHelperForm();
+  });
+  updateHelper();
+
   /* text size */
   var SIZES = [14, 16, 17, 19, 22, 25], sizeI = 1;
   try { var saved = parseInt(localStorage.getItem("itas-size3"), 10); if (SIZES.indexOf(saved) !== -1) sizeI = SIZES.indexOf(saved); } catch (e) {}
@@ -1844,7 +2036,7 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
     try {
       if (window.speechSynthesis.speaking) { stopSpeaking(); return; }
       var items = Array.prototype.map.call($("todo").querySelectorAll("li"), function (li) { return li.textContent; });
-      var u = new SpeechSynthesisUtterance($("verdictTitle").textContent + ". " + $("verdictSub").textContent + " What to do now. " + items.join(" "));
+      var u = new SpeechSynthesisUtterance($("verdictTitle").textContent + ". " + $("verdictSub").textContent + ($("want").hidden ? "" : " What they're probably after: " + $("wantText").textContent) + " What to do now. " + items.join(" "));
       u.rate = 0.92;
       u.onend = function () { $("speakBtn").textContent = "Read this aloud"; };
       u.onerror = function () { $("speakBtn").textContent = "Read this aloud"; };

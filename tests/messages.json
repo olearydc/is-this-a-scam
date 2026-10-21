@@ -177,5 +177,7 @@
   {"id":"b-s-crypto-whatsapp","scam":true,"msg":"Hi, this is James from the Irish Investors Club. Our trading bot made 22 percent this week. Want to try with €250? Download the app here: irishinvestorclub-app.com"},
   {"id":"b-s-hse-results-fee","scam":true,"msg":"From: HSE Results <results@hse-results-portal.ie>\nSubject: Your screening results are ready\n\nYour screening results are ready to view. A €35 processing fee applies before your results can be released. Pay and view your results at hse-results-portal.ie"},
   {"id":"b-s-sky-restore","scam":true,"msg":"Sky: Your Sky TV subscription has been suspended due to a failed payment. Pay €16.50 to restore your service today: sky-tv-restore.ie/pay"},
-  {"id":"b-s-dsp-bonus-claim","scam":true,"msg":"From: Department of Social Protection <bonus@dsp-bonus-claim.ie>\nSubject: Fuel Allowance bonus approved\n\nYour Fuel Allowance Christmas bonus of €325.00 has been approved. Please confirm your PPSN and bank account to receive payment: dsp-bonus-claim.ie/confirm"}
+  {"id":"b-s-dsp-bonus-claim","scam":true,"msg":"From: Department of Social Protection <bonus@dsp-bonus-claim.ie>\nSubject: Fuel Allowance bonus approved\n\nYour Fuel Allowance Christmas bonus of €325.00 has been approved. Please confirm your PPSN and bank account to receive payment: dsp-bonus-claim.ie/confirm"},
+  {"id":"s-hi-mum-euro-word","scam":true,"msg":"Hi Mum this is my new number can you send me 400 euro today"},
+  {"id":"g-lend-me-book","scam":false,"msg":"Hi Mary, could you lend me that book you were talking about? I can collect it Saturday. Thanks, Ann"}
 ]
