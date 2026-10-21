@@ -664,6 +664,8 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
   var BADTLD = ["xyz","top","click","loan","work","zip","mov","icu","cam","rest","country","gq","tk","ml","cf","ga","buzz","cyou","sbs","cfd","bond","live"];
   var SHORT = ["bit.ly","tinyurl.com","t.co","goo.gl","ow.ly","is.gd","rb.gy","cutt.ly","buff.ly","shorturl.at","tiny.cc","t.ly"];
   var FREEHOST = ["weebly.com","wixsite.com","firebaseapp.com","web.app","pages.dev","vercel.app","netlify.app","github.io","blogspot.com","000webhostapp.com","ngrok.io","ngrok-free.app","glitch.me","godaddysites.com","square.site","sites.google.com","forms.gle","r2.dev","workers.dev"];
+  /* genuine Irish State websites; they link to each other all the time */
+  var STATE = ["gov.ie","citizensinformation.ie","revenue.ie","hse.ie","welfare.ie","mywelfare.ie","mygovid.ie","garda.ie","oireachtas.ie","courts.ie","ncts.ie","rsa.ie","seai.ie","cso.ie","irishrail.ie","mabs.ie","fsai.ie","tusla.ie","education.ie","sfi.ie","revenue.gov.ie"];
   var BAIT = /(secure|verify|verif|login|signin|update|account|refund|redeliver|delivery|track|parcel|support|billing|payment|pay|confirm|unlock|claim|reward|wallet|auth|help|donate|now|fee|prize|bonus|grant|promo)/;
   var ORGS = [
     { n: "An Post", re: /\ban post\b/i, k: ["anpost"] },
@@ -674,7 +676,7 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
     { n: "PTSB", re: /\bptsb\b|\bpermanent tsb\b/i, k: ["ptsb"] },
     { n: "Revolut", re: /\brevolut\b/i, k: ["revolut"] },
     { n: "Electric Ireland", re: /\belectric ireland\b/i, k: ["electricireland"] },
-    { n: "Bord Gáis", re: /\bbord g[aá]is\b/i, k: ["bordgais"] },
+    { n: "Bord Gáis", re: /\bbord g[aá]is\b/i, k: ["bordgais", "bordgaisenergy"] },
     { n: "DHL", re: /\bdhl\b/i, k: ["dhl"] },
     { n: "FedEx", re: /\bfedex\b/i, k: ["fedex"] },
     { n: "DPD", re: /\bdpd\b/i, k: ["dpd"] },
@@ -733,22 +735,22 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
       re: /\b(an garda s[ií]och[aá]na|garda[ií]?)\b/,
       why: "Real Gardaí (police) will never contact you out of the blue asking for bank details. Hang up and ring your local Garda station." },
     { cat: "asks", title: "Asks for a code", level: "high",
-      re: /\b((send|share|tell|forward|give|read)( out| back)? (me |us )?(the |your |that |this )?(\d[- ]digit )?(code|otp|passcode)|code\b[^.!?\n]{0,60}\b(send|forward|give|read|share|screenshot) (it|that|them)|code[^.\n]{0,40}by (mistake|accident))\b/,
+      re: /\b((send|share|tell|forward|give|read)( out| back)? (me |us )?(the |your |that |this )?(\d[- ]digit )?(code|otp|passcode)|code\b[^.!?\n]{0,60}\b(send|forward|give|read|share|screenshot) (it|that|them)|code[^.\n]{0,40}by (mistake|accident)|read (it|them|that|the (number|digits)) (back|out)|(send|tell|give|forward|screenshot) (it|them|that|the (number|digits)) back|(just|after|about to) (sent|sending|send) you (a |an )?([\w-]+ ){0,2}code)\b/,
       why: "Never share a code sent to your phone. It lets scammers into your accounts." },
     { cat: "asks", title: "Asks for personal details", level: function (n) { return n >= 3 ? "high" : "medium"; },
       re: /\b(full name|residential address|home address|date of birth|nationality|occupation|marital status|passport|pps number|copy of your id|photo id|driving licen[cs]e|mother'?s maiden name|eircode|revenue myaccount|phone number)\b/,
       why: "Personal details can be used to steal your identity or open accounts in your name." },
     { cat: "asks", title: "Asks for money in an unusual way", level: "high",
-      re: /\b(gift ?cards?|itunes cards?|google play cards?|steam cards?|amazon vouchers?|codes on the back|wire transfer|western union|moneygram|bitcoin|crypto(currency)?|usdt|transfer the money|send (me |us )?(the )?money|pay (a|the) (small )?(fee|charge)|(release|processing|handling|customs|delivery|redelivery|admin|clearing|activation|insurance|shipping|registration|verification) (fee|charge|payment)|security deposit|refundable deposit|training fee|starter (fee|kit)|equipment fee|courier (and training )?fee|by bank transfer|(transfer|send) (me |us )?([\u20ac$\u00a3]\s?\d[\d,.]*|\d[\d,.]* ?(euros?|eur|quid|pounds?|grand))|friend's account|(send|transfer|pay)\b[^.\n]{0,30}\b(by|via|with|on|through) (revolut|apple pay|google pay|paysafe\w*))\b/,
+      re: /\b(gift ?cards?|itunes cards?|google play cards?|steam cards?|amazon vouchers?|codes on the back|wire transfer|western union|moneygram|bitcoin|crypto(currency)?|usdt|transfer the money|send (me |us )?(the )?money|pay (a|the) (small )?(fee|charge)|(release|processing|handling|customs|import|delivery|redelivery|admin|clearing|activation|insurance|shipping|registration|verification) (fee|charge|payment)|(customs|import) (duty|duties|tax|vat)|(fee|charge|duty|payment|pay|redelivery)\b(?: of| is| for| due| owed| applies| required)?[^.\n]{0,15}[€$£]\s?\d[.,]\d\d\b|btc|security deposit|refundable deposit|(verification|recovery|activation|processing) deposit|training fee|starter (fee|kit)|equipment fee|courier (and training )?fee|by bank transfer|(transfer|send) (me |us )?([\u20ac$\u00a3]\s?\d[\d,.]*|\d[\d,.]* ?(euros?|eur|quid|pounds?|grand))|friend's account|(send|transfer|pay)\b[^.\n]{0,30}\b(by|via|with|on|through) (revolut|apple pay|google pay|paysafe\w*))\b/,
       why: "Gift cards, crypto and small \"fees\" are favourite scam payments, because they are hard to trace or get back." },
     { cat: "asks", title: "Asks you to keep it secret", level: "medium",
-      re: /\b(keep (this|it) (between us|to yourself|confidential|private|quiet)|don'?t tell|do not tell|do not discuss|don'?t discuss|stop all communication|it'?s a surprise|don'?t call|do not call|can'?t talk|cannot talk|can'?t take calls)\b/,
+      re: /\b(keep (this|it) (between us|to yourself|confidential|private|quiet)|don'?t tell|do not tell|do not discuss|don'?t discuss|stop all communication|it'?s a surprise|don'?t call|do not call|can'?t talk|cannot talk|can'?t take calls|(don'?t|do not) want [^.\n]{0,25} to know)\b/,
       why: "Scammers want to stop you checking with family, friends or the company." },
     { cat: "asks", title: "Vague favour request", level: "low",
       re: /\b(are you (at your desk|available|free|around)|quick favou?r|need a favou?r|do me a favou?r)\b/,
       why: "Scammers pretending to be a boss, friend or relative often start with a vague favour." },
     { cat: "asks", title: "Asks you to call a number", level: "low",
-      re: /\b(call|ring|phone) (us|this number|the number below|now|immediately)\b/,
+      re: /\b(call|ring|phone) (us|this number|the number below|now|immediately|(our|the) ([a-z]+ ){0,2}(team|helpline|department|desk|line))\b/,
       why: "Call the company on a number you already trust, not one given in the message." },
     { cat: "pretend", title: "\"Lost my phone\" story", level: "high",
       re: /\b(lost my phone|broke my phone|broken phone|dropped my phone|phone (is |was )?(broken|stolen)|my (old )?(phone|one) (is |was )?(broke|broken|dead|lost|stolen)|lost all my contacts)\b/,
@@ -757,16 +759,16 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
       re: /\b(new number|this is my new)\b/,
       why: "Fine if you can confirm who it is. Before sending money or details, call them on the number you already have." },
     { cat: "pretend", title: "Emergency story", level: "medium",
-      re: /\b((i'?m|i am) in (trouble|hospital|jail|prison|a cell|a police station)|(car|road) (accident|crash)|been (arrested|in an accident)|(guards|police|gardai|gardaí) (have )?(taken|arrested|kept)|need (bail|a solicitor|a lawyer)|for (a |the )?(solicitor|lawyer|bail))\b/,
+      re: /\b((i'?m|i am) in (a bit of |some |big |serious |a lot of )?(trouble|hospital|jail|prison|a cell|a police station)|(car|road) (accident|crash)|been (arrested|in an accident)|(guards|police|gardai|gardaí) (have )?(taken|arrested|kept)|(guards|police|gardai|gardaí) (have|has) (me|him|her)|ring the (solicitor|lawyer)|need (bail|a solicitor|a lawyer)|for (a |the )?(solicitor|lawyer|bail))\b/,
       why: "A sudden emergency is used to panic you into sending money. Voices can now be copied by computer, so ring the person back on the number you already have." },
     { cat: "asks", title: "Someone will collect the money", level: "high",
       re: /\b(man|woman|courier|driver|friend|colleague|someone|somebody|officer|garda)\b[^.\n]{0,20}\b(will|is going to|can) (come|call)( to your (house|home|door))? (to )?(collect|pick up)\b/,
       why: "Sending someone to your door to collect cash or cards is a common scam on older people. No bank, Garda or solicitor does this." },
     { cat: "pressure", title: "Pulling at your heartstrings", level: "medium",
-      re: /\b(donate now|save a (life|child)|needs your help (today|now)|every second counts|before it'?s too late)\b/,
+      re: /\b(donate now|save a (life|child)|needs your help (today|now)|every second counts|before it'?s too late|(funeral|burial|cremation) (costs|expenses|bills|fees)|cover the (funeral|costs)|anything you can (send|spare|give|donate)|passed away suddenly)\b/,
       why: "Real charities don't rush you. To give, go to the charity's own website yourself, or check it on the Charities Regulator register." },
     { cat: "pretend", title: "Family-style greeting", level: "low",
-      re: /\b(hi|hello|hey) (mum|mam|mom|mammy|dad|daddy|nana|nan|granny|gran|grandma|grandad|grandpa)\b/,
+      re: /\b((hi|hello|hey) (mum|mam|mom|mammy|dad|daddy|nana|nan|granny|gran|grandma|grandad|grandpa|granda)|(mum|mam|mom|dad|nana|nan|granny|gran|granda|grandad),? (it'?s|its|this is) me)\b/,
       why: "Fine from a number you know. From an unknown number, this is how the \"Hi Mum\" scam starts." },
     { cat: "pretend", title: "Asks to control your device", level: "high",
       re: /\b(anydesk|teamviewer|ultraviewer|quick ?support|remote access|remote desktop|install (this|the|our) (app|software|program))\b/,
@@ -778,8 +780,8 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
       re: /\b(webcam|recorded you|recorded (a )?video of you|adult (site|website|videos?)|i have access to your (device|computer|phone|accounts?)|hacked your (device|computer|phone|account))\b/,
       why: "Claims that someone has hacked or filmed you are almost always a bluff to scare you into paying." },
     { cat: "pretend", title: "Parcel problem", level: "medium",
-      re: /\b(could not be delivered|couldn'?t be delivered|unable to deliver|delivery (failed|attempt|was unsuccessful)|failed delivery|(parcel|package|shipment) (is )?(on hold|held|waiting|pending)|held at (the )?(depot|customs)|reschedule (your )?delivery|missed (your )?(delivery|parcel))\b/,
-      why: "Fake delivery and customs-fee messages are the most common scam in Ireland. An Post and Revenue do not ask for customs payments by text. Check on the courier's own website or app instead." },
+      re: /\b(could not be delivered|couldn'?t be delivered|unable to deliver|delivery (failed|attempt|was unsuccessful)|failed delivery|(parcel|package|shipment)( from \w+)? (is )?(on hold|held|waiting|pending|stuck)|held at (the )?(depot|customs)|(held|stuck|detained) (at|in) [^.\n]{0,25}(airport|customs|depot|warehouse|sorting)|address (on (the|your) (label|parcel|package) )?(is |was )?(incomplete|unclear|invalid|incorrect|missing)|(we have|we've got|we are holding) (a |your )?(parcel|package) for you|reschedule (your )?delivery|missed (your )?(delivery|parcel))\b/,
+      why: "Fake delivery and customs-fee messages are the most common scam in Ireland. An Post never texts a payment link, and Revenue does not text customs charges. Check on the courier's own website or app instead." },
     { cat: "offer", title: "Free money out of the blue", level: function (n, words) {
         /* "no jackpot winner" in a club lotto result is not a prize scam */
         var strong = words.filter(function (w) { return !/^(jackpot|winner|lottery|prize|donation|grant|awarded|congratulations)$/.test(w); });
@@ -793,7 +795,7 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
       re: /\b(tax refund|tax rebate|refund (of|is) (due|available|pending|waiting)|refund expires|(a )?credit of [\u20ac$\u00a3]?\d|claim (it|your refund|your credit) (now|today)|(you are|you're) (due|owed|eligible for) a (refund|rebate)|overpaid|overpayment)\b/,
       why: "Revenue and genuine companies do not send refunds by asking you to click a link and enter card details." },
     { cat: "offer", title: "Too-good-to-be-true investment", level: "high",
-      re: /\b(guaranteed (returns?|profits?|income)|double your money|investment opportunity|trading platform|crypto investment|risk[- ]free|passive income|(state|government)[- ]backed (scheme|investment|platform)|limited places|trading bot|vip (group|club)|investment (group|club)|investors? club|deposit (from|of) (€|\$|£)?\d+ to start)\b/,
+      re: /\b(guaranteed (monthly |weekly |daily |steady )?(returns?|profits?|income)|double your money|investment opportunity|trading platform|crypto investment|risk[- ]free|passive income|(state|government)[- ]backed|(limited|only a few) (number of )?(places|spaces|spots)|places (are )?(going|filling|selling) (fast|quickly)|\d+ (places|spots|spaces) (left|remaining)|(endorsed|recommended|promoted|backed) by (the )?(taoiseach|tanaiste|tánaiste|president|minister|celebrity|billionaire|[\w'. -]{3,30}(scheme|platform|investment))|trading bot|vip (group|club)|investment (group|club)|investors? club|deposit (from|of) (€|\$|£)?\d+ to start)\b/,
       why: "Guaranteed big returns do not exist. Fake adverts even use AI videos of well-known people to promote these schemes." },
     { cat: "asks", title: "\"Safe account\" request", level: "high",
       re: /\b(safe account|secure account|(secure|safe) holding account|holding account|mov(e|ing) your (money|savings)|protect your (money|savings)|transfer (it|your money|your savings|the money|your funds) to|linked to (a )?(fraud|money laundering|crime|criminal)|fraud investigation|money laundering investigation)\b/,
@@ -802,7 +804,7 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
       re: /\b\d{2,3} ?(%|percent) (a|per|every|this|last) (month|week|day)\b|\breturns? (of|were|was) \d{2,3} ?(%|percent)|\b(made|returned|earned) \d{2,3} ?(%|percent)/,
       why: "No genuine investment pays this much this quickly." },
     { cat: "pretend", title: "Common romance-scam story", level: function (n) { return n >= 2 ? "high" : "medium"; },
-      re: /\b(oil rig|working (offshore|overseas)|deployed (abroad|overseas)|on a (ship|rig)|my flight home|stuck (abroad|at the airport)|(lend|loan) me|do you have whatsapp|add me on whatsapp|(text|message) me on whatsapp)\b/,
+      re: /\b(oil rig|working (offshore|overseas)|deployed (abroad|overseas)|on a (ship|rig)|my flight home|stuck (abroad|at the airport)|(lend|loan) me|do you have whatsapp|add me on whatsapp|(text|message) me on whatsapp|i hate (to )?ask(ing)?|(things|something) i can'?t tell anyone|(can'?t|cannot|won'?t be able to) (visit|come to|travel to) ireland|(money|funds) i can'?t (reach|access)|paperwork[^.\n]{0,40}(costs?|fees?)[^.\n]{0,20}money|(my|the) (bank|card|account) (is |has been )?(blocked|frozen) (here|abroad))\b/,
       why: "Someone you haven't met in person asking for money, with a story about working far away, is a classic romance scam." },
     { cat: "pretend", title: "Buyer or seller who can't meet", level: "medium",
       re: /\b(my courier will collect|(shipping|courier) (company|agent) (needs|requires|will)|not in ireland|(working|living) abroad|can't come (to )?(view|see)|overpaid|pay (you )?more than the asking)\b/,
@@ -814,7 +816,7 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
       re: /\b(pre-?approved|business funding|funding (is )?available|credit line|line of credit|fast loan|instant loan|loan (is )?approved|guaranteed loan|no credit check)\b/,
       why: "Unexpected loan offers often ask for a fee or your details up front, and the money never comes." },
     { cat: "offer", title: "Easy job offer", level: function (n) { return n >= 2 ? "high" : "medium"; },
-      re: /\b(work from home|working from home|earn (€|\$|£)?\s?\d+(\s?[-–]\s?(€|\$|£)?\d+)? (a|per) (day|hour|week)|(earn|make) [^.\n]{0,40}from home|easy money|no experience (needed|required)|part[- ]time job offer|like videos and earn|liking (instagram |facebook |tiktok |youtube )?(posts|videos)|selected for a (part[- ]time )?job)\b/,
+      re: /\b(work from home|working from home|earn (€|\$|£)?\s?\d+(\s?[-–]\s?(€|\$|£)?\d+)? (a|per) (day|hour|week)|(earn|make) [^.\n]{0,40}from home|easy money|no experience (needed|required)|part[- ]time job offer|like videos and earn|liking (instagram |facebook |tiktok |youtube )?(posts|videos)|selected for a (part[- ]time )?job|earn (€|\$|£)?\s?\d+ to (€|\$|£)?\d+ (a|per) (day|hour|week)|(rate|rating|review|reviewing|boost|boosting) (products|apps|hotels|restaurants|ratings|rankings|reviews)|\d+ minutes (a|per) day|flexible remote (role|job|work)|we found your (cv|profile|resume|details) online|complete (simple |easy |daily )?tasks)\b/,
       why: "Jobs offering easy money for little work are often scams that end with you paying them." },
     { cat: "offer", title: "Trying too hard to seem real", level: "medium",
       re: /\b(no need to respond|this is not a scam|not a scam|this is legit|100% (legit|genuine|safe|real)|not to ignore)\b/,
@@ -841,7 +843,7 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
       re: /\b(new bank (details|account)|change(d)? (of )?(our|my|the) bank (details|account)|(bank|account|payment) details\b[^.\n]{0,40}\b(have|has) changed|(pay|transfer)\b[^.\n]{0,50}\bto (the|our) new account|update (our|the) (bank|payment) details|(iban|account number) has changed|pay (into|to) (this|the|our) new account)\b/,
       why: "Fake \"we've changed bank account\" messages are a common way to steal payments. Always confirm by phone on a number you already have." },
     { cat: "pretend", title: "Unexpected order or invoice", level: "medium",
-      re: /\b(your order (has been|was|is) (placed|confirmed|processed)|invoice (attached|is attached|overdue)|overdue invoice|unpaid invoice|payment (overdue|failed|declined|unsuccessful)|subscription (has )?(expired|renewed|ended)|auto[- ]?renew(al|ed)?)\b/,
+      re: /\b(your order (has been|was|is) (placed|confirmed|processed)|an invoice from [^.\n]{0,40}(has been )?sent to you|you'?ve received an invoice|geek squad|invoice (attached|is attached|overdue)|overdue invoice|unpaid invoice|payment (overdue|failed|declined|unsuccessful)|subscription (has )?(expired|renewed|ended)|auto[- ]?renew(al|ed)?)\b/,
       why: "If you don't remember ordering or owing anything, check with the company yourself. Don't use the message's links." },
     { cat: "pretend", title: "Fake shared document", level: "medium",
       re: /\b(shared (a |the )?(document|file|folder|files) with you|(has|have) been shared with you|(has|have) shared (a |the )?(document|file|folder|files)|view (the )?documents?|open (the )?(pdf|file|document)|review and sign|docusign|onedrive|sharepoint|secure (message|portal|document))\b/,
@@ -852,6 +854,21 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
     { cat: "asks", title: "Asks you to enter a code on a login page", level: "high",
       re: /\b(device (login|code)|devicelogin|enter (this|the) code (at|on|into))\b/,
       why: "Typing a code someone sends you into a login page can give them access to your account, even on a real website." },
+    { cat: "asks", title: "Asks you to ring a number about a problem", level: "high",
+      re: /\b(held|on hold|mismatch|warrant|arrest|unpaid|owing|owed|overdue|outstanding balance|blocked|suspended|frozen|fraud|investigation|penalty|case number|discrepancy|compromised|(issue|problem) with your)\b[^\n]{0,200}\b(call|ring|phone|dial)\b[^.\n]{0,60}\+?\d[\d ()-]{7,}|\b(call|ring|phone|dial)\b[^.\n]{0,60}\+?\d[\d ()-]{7,}[^\n]{0,120}\b(to (correct|fix|resolve|release|reverse|cancel)|quote (the )?(case|reference))/,
+      why: "Scammers invent a money problem and give a number to ring. The person who answers is the scammer. Look up the organisation's real number yourself, and ring that." },
+    { cat: "asks", title: "Asks you to reply so a link works", level: "high",
+      re: /\b((reply|respond|text back)( with)? ["'“]?(y|yes|1)\b["'”]?[^.\n]{0,60}(activate|enable|link|click)|activate the link|(so|to) (that )?(we|you) can (activate|enable|unlock) (the |this )?link)\b/,
+      why: "Phones block links from strangers, so scammers ask you to reply first to switch the link on. Don't reply, and don't tap the link." },
+    { cat: "offer", title: "Offer to get your lost money back", level: "high",
+      re: /\b((recover|recovering|recovery of|get|getting) (back )?(your |the )?(lost|stolen) (money|funds|crypto\w*|bitcoin|investment)|(funds?|money|crypto) recovery|victims? of (an? )?(online |investment |crypto |romance )?(fraud|scam)|success rate|you pay nothing until|no win,? no fee|(money|funds|investment) back from (the )?(scam|fraud)\w*)\b/,
+      why: "If you lost money to a scam, 'recovery' firms that contact you first are a second scam. They ask for a fee and the money never comes back. Report it to the Gardaí and your bank." },
+    { cat: "asks", title: "Offer to use your bank account", level: "high",
+      re: /\b((receive|accept|get|handle)( money| payments?| funds| transfers?)?[^.\n]{0,30}\b(into|in|through) your (own )?(bank )?account[^.\n]{0,80}\b(keep|cut|commission|percent|%)|(keep|take|earn) (a |your |an? )?(\d+ ?%|\d+ percent|cut|commission|percentage)|payments? processing (agent|assistant|manager|officer)|(payment|money|transfer) (agent|processor|handler)|use your (bank )?account (to|for)|let (us|me|them) use your (bank )?account|(rent|lend|hire) (out )?your (bank )?account|forward (the |on the )?(rest|remainder|balance))\b/,
+      why: "Being paid to let money pass through your account makes you a \"money mule\". It is a crime, and you can be prosecuted even if you didn't know. No real job works this way." },
+    { cat: "pretend", title: "Accuses you of a crime", level: "high",
+      re: /\b((you are|you'?re|being) (currently )?(under|being) (criminal )?investigat\w*|under (criminal )?investigation|(your|the) (computer|device|laptop|phone|assets|accounts?|property) (will be|has been|have been|are being) (seized|confiscated|frozen)|(will be|to be) seized|(arrest )?warrant (has been |was )?(issued|out)|(linked|connected|associated) (to|with) (illegal|child|criminal|terror)\w*|criminal (case|charges?|proceedings)|case file (has been )?(opened|filed)|illegal (content|activity|images|websites?)|office of the garda commissioner|garda commissioner)\b/,
+      why: "Real Gardaí never accuse you of a crime by email, text or a cold call, and never ask you to pay money or a fine to avoid arrest. Ring your local Garda station using a number you look up yourself." },
     { cat: "links", title: "Pushes you to click", level: "low",
       re: /\b(click (here|the link|below|on the link)|clicking (here|the link|below)|tap (the link|here)|follow the link|link below|(use|visit|open|access) (this|the|our|the following) (link|page|portal))\b/,
       why: "Go to the company's website yourself instead of using a link in a message." }
@@ -864,7 +881,7 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
     var l = host.split(".").filter(Boolean);
     if (l.length <= 2) return l.join(".");
     var sld = l[l.length - 2], tld = l[l.length - 1];
-    if (tld.length === 2 && ["co","com","org","gov","ac","net","nhs","edu","ltd","plc"].indexOf(sld) !== -1) return l.slice(-3).join(".");
+    if (tld.length === 2 && tld !== "ie" && ["co","com","org","gov","ac","net","nhs","edu","ltd","plc"].indexOf(sld) !== -1) return l.slice(-3).join(".");
     return l.slice(-2).join(".");
   }
   function tldOf(host) { var l = host.split("."); return l[l.length - 1]; }
@@ -1073,6 +1090,13 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
       return short.length >= 4 && long.indexOf("-") === -1 && long.indexOf(short) === 0;
     };
     var orgLinks = [];
+    /* a newsletter that points to many different sites is not one "wrong" link */
+    var foreignSites = [];
+    links.forEach(function (L) {
+      var b = baseDomain(L.host);
+      if (senderBase && WELLKNOWN.indexOf(b) === -1 && !sameOwner(b, senderBase) && foreignSites.indexOf(b) === -1) foreignSites.push(b);
+    });
+    var newsletterLike = foreignSites.length >= 3;
     links.forEach(function (L) {
       /* directions on Google Maps are an everyday part of genuine messages */
       if (/^maps\.(app\.goo\.gl|google\.[a-z.]+)$/.test(L.host) || (/^(www\.)?(google\.[a-z.]+|goo\.gl)$/.test(L.host) && /\/maps\b/.test(L.raw))) return;
@@ -1093,7 +1117,7 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
       if (disguised) la("dg" + L.host, { cat: "links", level: "high", title: "Disguised link", ranges: lr,
         why: "It puts a familiar name at the front, but the real website is " + lb + "." });
       else if (!tracked && orgs.length && wrongOrg.length === orgs.length) orgLinks.push({ lb: lb, lr: lr });
-      else if (!tracked && senderBase && !senderFree && WELLKNOWN.indexOf(lb) === -1 && !sameOwner(lb, senderBase) && !orgs.some(orgOk)) la("mm", { cat: "links", level: "high", title: "Link goes somewhere else", ranges: lr,
+      else if (!tracked && senderBase && !senderFree && WELLKNOWN.indexOf(lb) === -1 && !sameOwner(lb, senderBase) && !orgs.some(orgOk) && !newsletterLike && !(STATE.indexOf(senderBase) !== -1 && STATE.indexOf(lb) !== -1)) la("mm", { cat: "links", level: "high", title: "Link goes somewhere else", ranges: lr,
         why: "The email came from " + senderBase + ", but the link goes to a different website: " + lb + "." });
       if (!L.https) la("http", { cat: "links", level: "medium", title: "Link without the padlock", ranges: lr,
         why: "The link starts with http:// instead of https://. Genuine login pages always use https." });
@@ -1107,7 +1131,11 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
         why: "Typing a code someone sends you into a login page can give them access to your account, even on a real website." });
       if (tldOf(L.host) !== "ie" && /(^|-)ie(-|$)/.test(lab)) la("ie" + lb, { cat: "links", level: "high", title: "Pretends to be an Irish website", ranges: lr,
         why: "Irish organisations use addresses ending in .ie. This one puts \"ie\" in the name, but it really ends in ." + tldOf(L.host) + "." });
-      if (/(^|-)gov(-|$)/.test(lab)) la("gv" + lb, { cat: "links", level: "high", title: "Pretends to be a government website", ranges: lr,
+      var hl = L.host.split(".");
+      if (hl.length >= 4 && hl.slice(1, hl.length - 2).some(function (x) { return x === "ie" || x === "com" || x === "org" || x === "net" || x === "gov"; }))
+        la("em" + L.host, { cat: "links", level: "high", title: "Disguised link", ranges: lr,
+          why: "It starts with what looks like a real website name, but the real website is " + lb + ". Only the last part of an address shows who owns it." });
+      if (/(^|-)gov(-|$)/.test(lab) && STATE.indexOf(lb) === -1) la("gv" + lb, { cat: "links", level: "high", title: "Pretends to be a government website", ranges: lr,
         why: "Irish government websites end in gov.ie. " + lb + " only puts \"gov\" in the name to look official." });
       if (/[a-z][0135][a-z]/.test(lab)) la("lk" + lb, { cat: "links", level: "medium", title: "Look-alike website name", ranges: lr,
         why: "Numbers swapped in for letters is a trick to copy a real website name." });
@@ -1130,6 +1158,10 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
     });
 
     /* ---- word rules ---- */
+    /* a password reset that links only to the sender's own site and says "ignore it if it wasn't you" is normal */
+    var selfReset = !!senderBase && !senderFree && links.length > 0 &&
+      links.every(function (L) { return sameOwner(baseDomain(L.host), senderBase); }) &&
+      /\bif you (did not|didn'?t) (request|ask for|make) (this|it)[^.\n]{0,60}\b(ignore|disregard|safely)/i.test(norm);
     RULES.forEach(function (r) {
       var re = new RegExp(r.re.source, "gi"), m, hits = [];
       while ((m = re.exec(norm)) && hits.length < 8) {
@@ -1138,6 +1170,8 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
         var before = norm.slice(Math.max(0, m.index - 90), m.index);
         if (r.cat !== "style" && (/\b(not|no one|nobody|won't|don't|doesn't|didn't)\b[^.!?\n]{0,28}$/i.test(before) ||
           /\bnever\b[^.!?\n]{0,80}$/i.test(before) || /\bif you (would like|'d like|wish|want|need) to\b[^.!?\n]{0,40}$/i.test(before))) continue;
+        if (selfReset && (r.title === "Password expiry warning" || r.title === "Rushing you") &&
+          /^(reset your password|password reset|within (an?|one|1|\d+) ?(hour|hours|hrs|minutes|mins))$/i.test(m[0])) continue;
         hits.push(m);
       }
       if (!hits.length) return;
@@ -1481,7 +1515,10 @@ footer { font-size: 0.88rem; color: var(--muted); max-width: 70ch; }
     [/Blackmail/, "money, using a frightening threat. Don't pay and don't reply."],
     [/passwords or bank details|Fake .*(website|address)|Disguised link|Look-alike|Password expiry|account is locked|Unusual activity|Fake shared document/, "your login or card details, through a fake website or form."],
     [/investment|Unrealistic returns/i, "money you \"invest\" with them. You would never get it back."],
-    [/Call to cancel|Asks you to call a number/, "you to ring them, so they can talk you into paying or giving details."],
+    [/Offer to use your bank account/, "to use your bank account to pass on stolen money. You could be prosecuted."],
+    [/lost money back/, "a fee to \"recover\" money you already lost to a scam. This is a second scam."],
+    [/Accuses you of a crime/, "money or details, by scaring you with a made-up crime. Real Gardaí never ask for payment."],
+    [/Call to cancel|Asks you to call a number|ring a number/, "you to ring them, so they can talk you into paying or giving details."],
     [/Emergency story|Messaging from a new number|Family-style/, "money, by pretending to be someone you love who is in trouble."],
     [/romance/i, "your trust first, and then your money."],
     [/Easy job offer/, "a \"fee\" for a job that doesn't exist, or the use of your bank account."],
